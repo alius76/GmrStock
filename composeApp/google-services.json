@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "384550126211",
+    "project_id": "gmrstock",
+    "storage_bucket": "gmrstock.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:384550126211:android:d532a12e79a55ff1e4d1b6",
+        "android_client_info": {
+          "package_name": "com.alius.gmrstock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAadbArjVqNU2rIw-m7Rmk-K2Oj_AlphbM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
