@@ -22,22 +22,36 @@ data class FirebaseDocument(
 ) {
     fun toLoteDto(): LoteDto {
         val f = fields
+
+        fun parseTimestampToMillis(key: String): Long? {
+            val timestampStr = f[key]?.jsonObject?.get("timestampValue")?.jsonPrimitive?.content
+            return try {
+                timestampStr?.let {
+                    kotlinx.datetime.Instant.parse(it).toEpochMilliseconds()
+                }
+            } catch (e: Exception) {
+                println("⚠️ Error al parsear timestamp '$key': ${e.message}")
+                null
+            }
+        }
+
         return LoteDto(
             id = name.substringAfterLast("/"),
             number = f["number"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             description = f["description"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-            date = f["date"]?.jsonObject?.get("integerValue")?.jsonPrimitive?.longOrNull,
+            date = parseTimestampToMillis("date"),
             location = f["location"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             count = f["count"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             weight = f["weight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             status = f["status"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             totalWeight = f["totalWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             qrCode = f["qrCode"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content,
-            bigBag = emptyList(), // Puedes mapearlo si decides incluir BigBags
-            booked = null,        // Similar para Cliente
-            dateBooked = f["dateBooked"]?.jsonObject?.get("integerValue")?.jsonPrimitive?.longOrNull,
+            bigBag = emptyList(),
+            booked = null,
+            dateBooked = parseTimestampToMillis("dateBooked"),
             remark = f["remark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
         )
     }
+
 
 }
