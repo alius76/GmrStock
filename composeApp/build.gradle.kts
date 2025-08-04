@@ -70,9 +70,12 @@ kotlin {
             implementation(libs.voyager.tabNavigator)
 
             implementation(libs.gitlive.firebase.firestore)
-
+            implementation(libs.ktor.client.core)
             // ✅ Firebase Auth (KMP wrapper para iOS)
             implementation(libs.gitlive.firebase.auth) // 👈 NUEVO
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
 
         commonTest.dependencies {

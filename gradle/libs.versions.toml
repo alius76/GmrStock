@@ -21,6 +21,7 @@ kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.6.3"
 gitlive = "1.13.0"
 kotlinxDatetime = "0.6.0"
+ktorClientCore = "2.3.2"
 napier = "2.6.1"
 pdfbox = "2.0.29"
 voyager = "1.1.0-beta02"
@@ -50,6 +51,8 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 android-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 gitlive-firebase-firestore = { group = "dev.gitlive", name = "firebase-firestore", version.ref = "gitlive" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorClientCore" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
