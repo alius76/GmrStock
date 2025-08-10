@@ -1,6 +1,6 @@
 package com.alius.gmrstock.bottombar
 
-import HomeScreenContent
+import com.alius.gmrstock.presentation.screens.HomeScreenContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable

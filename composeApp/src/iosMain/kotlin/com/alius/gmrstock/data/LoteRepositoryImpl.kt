@@ -2,15 +2,16 @@ package com.alius.gmrstock.data
 
 import com.alius.gmrstock.data.mappers.LoteDtoMapper
 import com.alius.gmrstock.domain.model.LoteModel
+import com.alius.gmrstock.domain.model.MaterialGroup
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.json.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 
 class LoteRepositoryImpl(
     private val client: HttpClient = HttpClient()
@@ -21,46 +22,17 @@ class LoteRepositoryImpl(
     override suspend fun listarLotes(data: String): List<LoteModel> {
         return try {
             val url = "https://firestore.googleapis.com/v1/projects/gmrstock/databases/(default)/documents/lote"
+
             println("📡 Solicitando lotes desde: $url")
 
             val response: HttpResponse = client.get(url) {
-                //parameter("orderBy", "fields.number.stringValue")
+                parameter("orderBy", "fields.number.stringValue")
             }
-
-            println("🌐 Código HTTP: ${response.status}")
-            println("🔍 Content-Type: ${response.headers[HttpHeaders.ContentType]}")
 
             val jsonBody = response.bodyAsText()
             println("🧾 Respuesta JSON cruda:\n$jsonBody")
 
-            if (jsonBody.isBlank()) {
-                println("⚠️ El cuerpo de la respuesta está vacío.")
-                return emptyList()
-            }
-
-            // 🔍 Paso nuevo: inspección manual del JSON
-            val jsonElement: JsonElement = try {
-                json.parseToJsonElement(jsonBody)
-            } catch (e: Exception) {
-                println("❌ Error al parsear JSON a JsonElement: ${e.message}")
-                return emptyList()
-            }
-
-            println("🔬 JsonElement inspeccionado:\n$jsonElement")
-
-            if (jsonElement !is JsonObject || !jsonElement.containsKey("documents")) {
-                println("🚫 La clave 'documents' no está presente en el JSON. Firestore devolvió: $jsonElement")
-                return emptyList()
-            }
-
-            // ✅ Ahora intentamos decodificar normalmente
-            val parsed = try {
-                json.decodeFromJsonElement(FirebaseListResponse.serializer(), jsonElement)
-            } catch (e: Exception) {
-                println("❌ Error al decodificar FirebaseListResponse: ${e.message}")
-                return emptyList()
-            }
-
+            val parsed = json.decodeFromString(FirebaseListResponse.serializer(), jsonBody)
             println("✅ Documentos parseados: ${parsed.documents.size}")
 
             parsed.documents.mapNotNull { doc ->
@@ -77,7 +49,6 @@ class LoteRepositoryImpl(
 
         } catch (e: Exception) {
             println("❌ Error general en listarLotes: ${e.message}")
-            e.printStackTrace()
             emptyList()
         }
     }
@@ -85,8 +56,60 @@ class LoteRepositoryImpl(
     override suspend fun agregarLoteConBigBags() {
         throw NotImplementedError("Firestore no está disponible en iOS (Kotlin/Native).")
     }
+
+    override suspend fun listarGruposPorDescripcion(filter: String): List<MaterialGroup> {
+        val lotes = listarLotes(filter)
+        return agruparPorMaterial(lotes)
+    }
+
+    // Aquí la función getLoteByNumber usando POST runQuery
+    override suspend fun getLoteByNumber(number: String): LoteModel? {
+        val url = "https://firestore.googleapis.com/v1/projects/gmrstock/databases/(default)/documents:runQuery"
+
+        val queryJson = buildJsonObject {
+            putJsonObject("structuredQuery") {
+                putJsonArray("from") {
+                    add(buildJsonObject { put("collectionId", "lote") })
+                }
+                putJsonObject("where") {
+                    putJsonObject("fieldFilter") {
+                        putJsonObject("field") { put("fieldPath", "number") }
+                        put("op", "EQUAL")
+                        putJsonObject("value") { put("stringValue", number) }
+                    }
+                }
+                put("limit", 1)
+            }
+        }
+
+        return try {
+            val response: HttpResponse = client.post(url) {
+                contentType(ContentType.Application.Json)
+                //autenticación de Firebase:
+                // headers { append(HttpHeaders.Authorization, "Bearer $authToken") }
+                setBody(queryJson) // Enviamos el JsonObject directamente
+            }
+
+            val body = response.bodyAsText()
+            println("🧾 Respuesta runQuery:\n$body")
+
+            val jsonArray = Json.parseToJsonElement(body).jsonArray
+            val documentElement = jsonArray.firstOrNull()
+                ?.jsonObject
+                ?.get("document")
+                ?: return null // No hay coincidencia
+
+            val firebaseDocument = json.decodeFromJsonElement<FirebaseDocument>(documentElement)
+            val dto = firebaseDocument.toLoteDto()
+            LoteDtoMapper.fromDto(dto)
+
+        } catch (e: Exception) {
+            println("❌ Error en getLoteByNumber: ${e.message}")
+            null
+        }
+    }
+
 }
 
 actual fun getLoteRepository(): LoteRepository = LoteRepositoryImpl()
-
 

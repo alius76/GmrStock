@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.Timestamp
 import com.alius.gmrstock.data.mappers.LoteDtoMapper
 import com.alius.gmrstock.domain.model.LoteModel
+import com.alius.gmrstock.domain.model.MaterialGroup
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -90,6 +91,30 @@ class LoteRepositoryImpl : LoteRepository {
             println("❌ Error al agregar lote: ${e.message}")
         }
     }
+
+    override suspend fun listarGruposPorDescripcion(filter: String): List<MaterialGroup> {
+        // Reutilizamos listarLotes
+        val lotes = listarLotes(filter)
+        return agruparPorMaterial(lotes)
+    }
+    override suspend fun getLoteByNumber(number: String): LoteModel? {
+        return try {
+            val snapshot = firestore
+                .whereEqualTo("number", number)
+                .limit(1)
+                .get()
+                .await()
+
+            val doc = snapshot.documents.firstOrNull() ?: return null
+            val dto = doc.toObject(LoteDtoAndroid::class.java)?.toCommonDto()
+            dto?.let { LoteDtoMapper.fromDto(it) }
+        } catch (e: Exception) {
+            Log.e("LoteRepository", "Error al obtener lote por número: ${e.message}", e)
+            null
+        }
+    }
 }
+
+
 
 actual fun getLoteRepository(): LoteRepository = LoteRepositoryImpl()
