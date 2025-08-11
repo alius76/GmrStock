@@ -1,30 +1,12 @@
 package com.alius.gmrstock.bottombar
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCut
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Polymer
-import androidx.compose.material.icons.filled.Train
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import cafe.adriel.voyager.core.screen.Screen
@@ -33,19 +15,16 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabDisposable
 import cafe.adriel.voyager.navigator.tab.TabNavigator
-import com.alius.gmrstock.domain.model.User
-import androidx.compose.runtime.rememberCoroutineScope
 import com.alius.gmrstock.data.AuthRepository
+import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.LoginScreen
 import kotlinx.coroutines.launch
-
 
 class BottomBarScreen(
     private val user: User,
     private val colors: BottomBarColors = BottomBarColors(),
     private val authRepository: AuthRepository,
-    private val databaseUrl: String,
-    private val onChangeDatabase: () -> Unit   // <-- Nuevo parámetro para manejar cambio de BD
+    private val onChangeDatabase: () -> Unit
 ) : Screen {
 
     @Composable
@@ -55,8 +34,8 @@ class BottomBarScreen(
 
         var homeRefreshKey by remember { mutableStateOf(0) }
 
-        // Pasar databaseUrl y onChangeDatabase a HomeTab
-        val homeTab = remember { HomeTab(user, databaseUrl, onChangeDatabase) }
+        // Ya no pasamos databaseUrl, HomeTab lo leerá de LocalDatabaseUrl
+        val homeTab = remember { HomeTab(user, onChangeDatabase) }
         val materialTab = remember { MaterialTab(user) }
         val batchTab = remember { BatchTab(user) }
         val processTab = remember { ProcessTab(user) }

@@ -1,6 +1,5 @@
 package com.alius.gmrstock.bottombar
 
-import com.alius.gmrstock.presentation.screens.HomeScreenContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.runtime.Composable
@@ -9,11 +8,10 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.alius.gmrstock.domain.model.User
-
+import com.alius.gmrstock.presentation.screens.HomeScreenContent
 
 class HomeTab(
     private val user: User,
-    private val databaseUrl: String,
     private val onChangeDatabase: () -> Unit
 ) : Tab {
 
@@ -32,6 +30,6 @@ class HomeTab(
 
     @Composable
     override fun Content() {
-        HomeScreenContent(user, databaseUrl, onChangeDatabase).Content()
+        HomeScreenContent(user, onChangeDatabase).Content()
     }
 }

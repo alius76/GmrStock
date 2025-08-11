@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.agruparPorMaterial
 import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.BigBags
@@ -23,12 +23,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 class HomeScreenContent(
     private val user: User,
-    private val databaseUrl: String,
     private val onChangeDatabase: () -> Unit
 ) : Screen {
 
     @Composable
     override fun Content() {
+        val databaseUrl = LocalDatabaseUrl.current  // 🔹 Ahora lo obtenemos del CompositionLocal
         val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
         val coroutineScope = rememberCoroutineScope()
 
@@ -38,7 +38,6 @@ class HomeScreenContent(
         var errorMessage by remember { mutableStateOf<String?>(null) }
 
         val sheetStateGroup = rememberModalBottomSheetState()
-
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
         var selectedGroupForSheet by remember { mutableStateOf<MaterialGroup?>(null) }
 
@@ -140,7 +139,7 @@ class HomeScreenContent(
                     onViewBigBags = { bigBagsList: List<BigBags> ->
                         println("Mostrando ${bigBagsList.size} BigBags")
                     },
-                    databaseUrl = databaseUrl  // <-- Aquí pasas el parámetro que tienes en HomeScreenContent
+                    databaseUrl = databaseUrl  // 🔹 sigue usándolo donde lo necesites
                 )
             }
         }
