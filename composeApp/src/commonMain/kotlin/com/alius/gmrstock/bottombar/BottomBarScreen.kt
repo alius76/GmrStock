@@ -43,8 +43,9 @@ import kotlinx.coroutines.launch
 class BottomBarScreen(
     private val user: User,
     private val colors: BottomBarColors = BottomBarColors(),
-    private val authRepository: AuthRepository
-
+    private val authRepository: AuthRepository,
+    private val databaseUrl: String,
+    private val onChangeDatabase: () -> Unit   // <-- Nuevo parámetro para manejar cambio de BD
 ) : Screen {
 
     @Composable
@@ -54,8 +55,8 @@ class BottomBarScreen(
 
         var homeRefreshKey by remember { mutableStateOf(0) }
 
-        // Instancia cada Tab pasando el usuario
-        val homeTab = remember { HomeTab(user) }
+        // Pasar databaseUrl y onChangeDatabase a HomeTab
+        val homeTab = remember { HomeTab(user, databaseUrl, onChangeDatabase) }
         val materialTab = remember { MaterialTab(user) }
         val batchTab = remember { BatchTab(user) }
         val processTab = remember { ProcessTab(user) }

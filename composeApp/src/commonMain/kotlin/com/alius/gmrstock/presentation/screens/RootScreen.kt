@@ -25,43 +25,43 @@ class RootScreen : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val platform = getPlatform()
-
-        if (!platform.isAuthSupported) {
-            UnsupportedPlatformScreen(platform.name)
-            return
-        }
-
         val authRepository = getAuthRepository()
+
         var checkingUser by remember { mutableStateOf(true) }
+        var user by remember { mutableStateOf<User?>(null) }
+        var selectedDbUrl by remember { mutableStateOf<String?>(null) }
 
         LaunchedEffect(Unit) {
-            val user: User? = authRepository.getCurrentUser()
+            user = authRepository.getCurrentUser()
             checkingUser = false
-            if (user != null) {
-                navigator.replace(BottomBarScreen(user, BottomBarColors(),authRepository, ))
-            } else {
+        }
+
+        when {
+            checkingUser -> {
+                CircularProgressIndicator()
+            }
+            user == null -> {
+                // Usuario no logueado, ir a login
                 navigator.replace(LoginScreen(authRepository))
             }
-        }
-
-        if (checkingUser) {
-            CircularProgressIndicator()
-        }
-    }
-
-    @Composable
-    fun UnsupportedPlatformScreen(platformName: String) {
-        Surface {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "La aplicación no está disponible en $platformName.",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(Modifier.height(8.dp))
-                Text("Por favor, utiliza un dispositivo Android o iOS.")
+            selectedDbUrl == null -> {
+                // Usuario logueado pero sin DB seleccionada, mostrar selector
+                DatabaseSelectionScreen { url ->
+                    selectedDbUrl = url
+                }.Content()
+            }
+            else -> {
+                // Usuario logueado y DB seleccionada, mostrar BottomBarScreen pasándole databaseUrl
+                BottomBarScreen(
+                    user = user!!,
+                    authRepository = authRepository,
+                    databaseUrl = selectedDbUrl!!,
+                    colors = BottomBarColors(),
+                    onChangeDatabase = {
+                        selectedDbUrl = null  // Esto hará que regrese a seleccionar la base de datos
+                    }
+                ).Content()
             }
         }
     }
-
 }

@@ -13,65 +13,66 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 
 class LoteRepositoryImpl(
-    private val client: HttpClient
+    private val client: HttpClient,
+    private val baseUrl: String
 ) : LoteRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun listarLotes(data: String): List<LoteModel> {
         return try {
-            val url = "https://firestore.googleapis.com/v1/projects/gmrstock/databases/(default)/documents:runQuery"
+            val url = baseUrl // <--- usa la URL que te pasaron en el constructor
             println("🌐 Ejecutando structuredQuery con filtro: '$data'")
 
             val queryJson = if (data.isNotBlank()) {
                 """
-            {
-                "structuredQuery": {
-                    "from": [{ "collectionId": "lote" }],
-                    "where": {
-                        "compositeFilter": {
-                            "op": "AND",
-                            "filters": [
-                                {
-                                    "fieldFilter": {
-                                        "field": { "fieldPath": "number" },
-                                        "op": "GREATER_THAN_OR_EQUAL",
-                                        "value": { "stringValue": "$data" }
+                {
+                    "structuredQuery": {
+                        "from": [{ "collectionId": "lote" }],
+                        "where": {
+                            "compositeFilter": {
+                                "op": "AND",
+                                "filters": [
+                                    {
+                                        "fieldFilter": {
+                                            "field": { "fieldPath": "number" },
+                                            "op": "GREATER_THAN_OR_EQUAL",
+                                            "value": { "stringValue": "$data" }
+                                        }
+                                    },
+                                    {
+                                        "fieldFilter": {
+                                            "field": { "fieldPath": "number" },
+                                            "op": "LESS_THAN",
+                                            "value": { "stringValue": "${data}\uf8ff" }
+                                        }
                                     }
-                                },
-                                {
-                                    "fieldFilter": {
-                                        "field": { "fieldPath": "number" },
-                                        "op": "LESS_THAN",
-                                        "value": { "stringValue": "${data}\uf8ff" }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "orderBy": [
-                        {
-                            "field": { "fieldPath": "number" },
-                            "direction": "ASCENDING"
-                        }
-                    ]
+                                ]
+                            }
+                        },
+                        "orderBy": [
+                            {
+                                "field": { "fieldPath": "number" },
+                                "direction": "ASCENDING"
+                            }
+                        ]
+                    }
                 }
-            }
-            """.trimIndent()
+                """.trimIndent()
             } else {
                 """
-            {
-                "structuredQuery": {
-                    "from": [{ "collectionId": "lote" }],
-                    "orderBy": [
-                        {
-                            "field": { "fieldPath": "number" },
-                            "direction": "ASCENDING"
-                        }
-                    ]
+                {
+                    "structuredQuery": {
+                        "from": [{ "collectionId": "lote" }],
+                        "orderBy": [
+                            {
+                                "field": { "fieldPath": "number" },
+                                "direction": "ASCENDING"
+                            }
+                        ]
+                    }
                 }
-            }
-            """.trimIndent()
+                """.trimIndent()
             }
 
             val response: HttpResponse = client.post(url) {
@@ -88,6 +89,7 @@ class LoteRepositoryImpl(
         }
     }
 
+
     override suspend fun agregarLoteConBigBags() {
         // Implementa tu lógica aquí
     }
@@ -102,7 +104,7 @@ class LoteRepositoryImpl(
     }
 
     override suspend fun getLoteByNumber(number: String): LoteModel? {
-        val url = "https://firestore.googleapis.com/v1/projects/gmrstock/databases/(default)/documents:runQuery"
+        val url = baseUrl  // <--- usa baseUrl aquí también
 
         val queryJson = """
         {
@@ -118,7 +120,7 @@ class LoteRepositoryImpl(
                 "limit": 1
             }
         }
-    """.trimIndent()
+        """.trimIndent()
 
         return try {
             println("🔍 Buscando lote con número: $number")
@@ -133,6 +135,7 @@ class LoteRepositoryImpl(
             null
         }
     }
+
 
     private fun parseRunQueryResponse(jsonBody: String): List<LoteModel> {
         println("📥 Respuesta JSON cruda recibida (primeros 500 chars):\n${jsonBody.take(500)}")

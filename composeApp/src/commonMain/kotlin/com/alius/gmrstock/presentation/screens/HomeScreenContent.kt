@@ -21,11 +21,15 @@ import com.alius.gmrstock.ui.components.MaterialGroupCard
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
-class HomeScreenContent(private val user: User) : Screen {
+class HomeScreenContent(
+    private val user: User,
+    private val databaseUrl: String,
+    private val onChangeDatabase: () -> Unit
+) : Screen {
 
     @Composable
     override fun Content() {
-        val loteRepository = remember { getLoteRepository() }
+        val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
         val coroutineScope = rememberCoroutineScope()
 
         var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
@@ -33,17 +37,17 @@ class HomeScreenContent(private val user: User) : Screen {
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
 
-        // Estado para el BottomSheet Material3 (sin parámetros)
         val sheetStateGroup = rememberModalBottomSheetState()
 
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
         var selectedGroupForSheet by remember { mutableStateOf<MaterialGroup?>(null) }
 
-        // Snackbar host state para mostrar mensajes
         val snackbarHostState = remember { SnackbarHostState() }
 
-        // Cargar datos
-        LaunchedEffect(Unit) {
+        // Cargar datos cada vez que cambie databaseUrl
+        LaunchedEffect(databaseUrl) {
+            isLoading = true
+            errorMessage = null
             coroutineScope.launch {
                 try {
                     lotes = loteRepository.listarLotes("")
@@ -57,6 +61,16 @@ class HomeScreenContent(private val user: User) : Screen {
         }
 
         Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("¡Bienvenido, ${user.email}!") },
+                    actions = {
+                        Button(onClick = onChangeDatabase) {
+                            Text("Cambiar base de datos")
+                        }
+                    }
+                )
+            },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
             Column(
@@ -65,8 +79,6 @@ class HomeScreenContent(private val user: User) : Screen {
                     .padding(16.dp)
                     .padding(paddingValues)
             ) {
-                Text(text = "¡Bienvenido, ${user.email}!", fontSize = 24.sp)
-
                 Spacer(Modifier.height(24.dp))
 
                 when {
@@ -127,7 +139,8 @@ class HomeScreenContent(private val user: User) : Screen {
                     },
                     onViewBigBags = { bigBagsList: List<BigBags> ->
                         println("Mostrando ${bigBagsList.size} BigBags")
-                    }
+                    },
+                    databaseUrl = databaseUrl  // <-- Aquí pasas el parámetro que tienes en HomeScreenContent
                 )
             }
         }

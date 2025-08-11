@@ -41,7 +41,7 @@ class LoginScreen(
 
         LaunchedEffect(user) {
             user?.let {
-                navigator.replace(BottomBarScreen(it, colors, authRepository)) // Pasa los colores para la BottomBar
+                navigator.replace(RootScreen())
             }
         }
 

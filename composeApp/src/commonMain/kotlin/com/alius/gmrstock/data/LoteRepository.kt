@@ -10,4 +10,4 @@ interface LoteRepository {
     suspend fun getLoteByNumber(number: String): LoteModel?
 }
 
-expect fun getLoteRepository(): LoteRepository
+expect fun getLoteRepository(databaseUrl: String): LoteRepository

@@ -29,10 +29,11 @@ fun GroupMaterialBottomSheetContent(
     onDismissRequest: () -> Unit,
     snackbarHostState: SnackbarHostState,
     onGeneratePdf: suspend (LoteModel) -> Unit,
-    onViewBigBags: (List<BigBags>) -> Unit
+    onViewBigBags: (List<BigBags>) -> Unit,
+    databaseUrl: String    // <--- Nuevo parámetro agregado aquí
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val loteRepository = remember { getLoteRepository() }
+    val loteRepository = remember { getLoteRepository(databaseUrl) }
 
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }

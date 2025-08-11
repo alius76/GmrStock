@@ -11,7 +11,11 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.alius.gmrstock.domain.model.User
 
 
-class HomeTab(private val user: User) : Tab {
+class HomeTab(
+    private val user: User,
+    private val databaseUrl: String,
+    private val onChangeDatabase: () -> Unit
+) : Tab {
 
     override val options: TabOptions
         @Composable
@@ -28,6 +32,6 @@ class HomeTab(private val user: User) : Tab {
 
     @Composable
     override fun Content() {
-        HomeScreenContent(user).Content()  // <-- Llamar explícitamente al Composable Content()
+        HomeScreenContent(user, databaseUrl, onChangeDatabase).Content()
     }
 }
