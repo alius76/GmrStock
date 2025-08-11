@@ -3,12 +3,9 @@ package com.alius.gmrstock.data
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.longOrNull
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import com.alius.gmrstock.domain.model.BigBags
-import com.alius.gmrstock.domain.model.Cliente
 import kotlinx.datetime.Instant
 
 @Serializable
@@ -38,18 +35,23 @@ data class FirebaseDocument(
         }
 
         // Parsear la lista de BigBags del campo "bigBag"
-        val bigBagList = f["bigBag"]?.jsonArray?.mapNotNull { bbJson ->
-            // Cada BigBag es un objeto con campo "fields"
-            val bbFields = bbJson.jsonObject["fields"]?.jsonObject ?: return@mapNotNull null
+        val bigBagList = f["bigBag"]
+            ?.jsonObject
+            ?.get("arrayValue")
+            ?.jsonObject
+            ?.get("values")
+            ?.jsonArray
+            ?.mapNotNull { bbJson ->
+                val bbFields = bbJson.jsonObject["mapValue"]?.jsonObject?.get("fields")?.jsonObject ?: return@mapNotNull null
 
-            BigBags(
-                bbNumber = bbFields["bbNumber"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-                bbWeight = bbFields["bbWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-                bbLocation = bbFields["bbLocation"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-                bbStatus = bbFields["bbStatus"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-                bbRemark = bbFields["bbRemark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
-            )
-        } ?: emptyList()
+                BigBags(
+                    bbNumber = bbFields["bbNumber"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                    bbWeight = bbFields["bbWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                    bbLocation = bbFields["bbLocation"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                    bbStatus = bbFields["bbStatus"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                    bbRemark = bbFields["bbRemark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
+                )
+            } ?: emptyList()
 
         // Parsear el campo booked si existe
         val bookedEmail = f["booked"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content

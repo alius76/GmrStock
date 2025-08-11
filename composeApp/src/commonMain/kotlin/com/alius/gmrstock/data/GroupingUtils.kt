@@ -14,7 +14,8 @@ fun Double.formatWeight(): String {
 }
 
 fun agruparPorMaterial(lotes: List<LoteModel>): List<MaterialGroup> {
-    return lotes.groupBy { it.description }
+    println("🧐 Agrupando ${lotes.size} lotes por descripción")
+    val grupos = lotes.groupBy { it.description }
         .map { (descripcion, lotesConDescripcion) ->
             val totalWeightDouble = lotesConDescripcion.sumOf {
                 it.totalWeight.replace(",", ".").toDoubleOrNull() ?: 0.0
@@ -25,6 +26,8 @@ fun agruparPorMaterial(lotes: List<LoteModel>): List<MaterialGroup> {
                 it.count.toIntOrNull() ?: 0
             }
 
+            println("📦 Grupo '$descripcion': ${lotesConDescripcion.size} lotes, peso total: $totalWeightStr, totalBigBags: $totalBigBags")
+
             MaterialGroup(
                 description = descripcion,
                 totalWeight = totalWeightStr,
@@ -34,4 +37,7 @@ fun agruparPorMaterial(lotes: List<LoteModel>): List<MaterialGroup> {
             )
         }
         .sortedBy { it.description }
+
+    println("✅ Se generaron ${grupos.size} grupos de materiales")
+    return grupos
 }

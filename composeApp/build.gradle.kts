@@ -43,7 +43,7 @@ kotlin {
             implementation(libs.firebase.auth.ktx) // 👈 NUEVO
             implementation(libs.firebase.analytics.ktx)
             implementation(libs.firebase.firestore.ktx)
-
+            implementation(libs.ktor.client.okhttp)
             implementation(libs.itextpdf)
             implementation(libs.zxing.android.embedded)
         }
@@ -70,12 +70,16 @@ kotlin {
             implementation(libs.voyager.tabNavigator)
 
             implementation(libs.gitlive.firebase.firestore)
+
             implementation(libs.ktor.client.core)
-            // ✅ Firebase Auth (KMP wrapper para iOS)
-            implementation(libs.gitlive.firebase.auth) // 👈 NUEVO
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+
+            implementation(libs.gitlive.firebase.auth)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.ktor.client.ios)
         }
 
         commonTest.dependencies {
