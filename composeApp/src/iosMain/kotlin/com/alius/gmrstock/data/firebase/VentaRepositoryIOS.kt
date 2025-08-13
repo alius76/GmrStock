@@ -26,8 +26,8 @@ class VentaRepositoryIOS(
     override suspend fun mostrarTodasLasVentas(): List<Venta> {
         val snapshot = firestore.collection("venta").get()
         return snapshot.documents.mapNotNull { doc ->
-            // En iOS .data es nullable Map<String, Any?>
-            doc.data?.toVenta()
+            val dataMap: Map<String, Any?> = doc.data()
+            dataMap.toVenta()
         }
     }
 }
