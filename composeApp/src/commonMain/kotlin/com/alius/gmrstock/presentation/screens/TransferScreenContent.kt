@@ -6,21 +6,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.alius.gmrstock.core.LocalFirebaseConfig
-import com.alius.gmrstock.data.firebase.getVentaRepository
+import com.alius.gmrstock.data.getVentaRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.ui.components.VentasList
 
 @Composable
-fun TransferScreenContent(user: User) {
-    val firebaseConfig = LocalFirebaseConfig.current
-    val ventaRepository = remember { getVentaRepository(firebaseConfig) }
+fun TransferScreenContent(user: User, databaseUrl: String) {
+    // Obtenemos el repositorio de ventas con la base de datos proporcionada
+    val ventaRepository = remember(databaseUrl) { getVentaRepository(databaseUrl) }
 
     var ventas by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(databaseUrl) {
         ventas = ventaRepository.mostrarTodasLasVentas()
         loading = false
     }

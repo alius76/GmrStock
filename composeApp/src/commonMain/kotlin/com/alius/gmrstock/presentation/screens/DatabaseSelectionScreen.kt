@@ -11,11 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.data.FirestoreUrls
-import com.alius.gmrstock.data.firebase.FirebaseDatabasesConfig
-import com.alius.gmrstock.data.firebase.FirebaseDbConfig
 
 class DatabaseSelectionScreen(
-    private val onDatabaseSelected: (String, FirebaseDbConfig) -> Unit
+    private val onDatabaseSelected: (String) -> Unit
 ) : Screen {
 
     @Composable
@@ -39,7 +37,7 @@ class DatabaseSelectionScreen(
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
-                    onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL, FirebaseDatabasesConfig.DATABASE_1) },
+                    onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
@@ -48,7 +46,7 @@ class DatabaseSelectionScreen(
                 }
 
                 Button(
-                    onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL, FirebaseDatabasesConfig.DATABASE_2) },
+                    onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)

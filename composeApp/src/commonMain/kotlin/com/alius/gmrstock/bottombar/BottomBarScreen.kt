@@ -18,6 +18,7 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.alius.gmrstock.data.AuthRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.LoginScreen
+import com.alius.gmrstock.core.LocalDatabaseUrl
 import kotlinx.coroutines.launch
 
 class BottomBarScreen(
@@ -34,12 +35,14 @@ class BottomBarScreen(
 
         var homeRefreshKey by remember { mutableStateOf(0) }
 
-        // Ya no pasamos databaseUrl, HomeTab lo leerá de LocalDatabaseUrl
+        // Leemos la base de datos actual del CompositionLocal
+        val databaseUrl = LocalDatabaseUrl.current
+
         val homeTab = remember { HomeTab(user, onChangeDatabase) }
         val materialTab = remember { MaterialTab(user) }
         val batchTab = remember { BatchTab(user) }
         val processTab = remember { ProcessTab(user) }
-        val transferTab = remember { TransferTab(user) }
+        val transferTab = remember { TransferTab(user, databaseUrl) }
 
         TabNavigator(
             homeTab,

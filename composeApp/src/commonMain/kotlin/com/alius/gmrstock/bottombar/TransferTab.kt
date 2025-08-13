@@ -11,8 +11,10 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.TransferScreenContent
 
-
-class TransferTab(private val user: User) : Tab {
+class TransferTab(
+    private val user: User,
+    private val databaseUrl: String
+) : Tab {
 
     override val key: String = "TransferTab_${user.id}"
 
@@ -31,6 +33,6 @@ class TransferTab(private val user: User) : Tab {
 
     @Composable
     override fun Content() {
-        TransferScreenContent(user)
+        TransferScreenContent(user = user, databaseUrl = databaseUrl)
     }
 }

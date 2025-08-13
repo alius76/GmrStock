@@ -8,8 +8,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alius.gmrstock.bottombar.BottomBarColors
 import com.alius.gmrstock.bottombar.BottomBarScreen
 import com.alius.gmrstock.core.LocalDatabaseUrl
-import com.alius.gmrstock.core.LocalFirebaseConfig
-import com.alius.gmrstock.data.firebase.FirebaseDbConfig
 import com.alius.gmrstock.data.getAuthRepository
 import com.alius.gmrstock.domain.model.User
 
@@ -24,7 +22,6 @@ class RootScreen : Screen {
         var user by remember { mutableStateOf<User?>(null) }
 
         var selectedDbUrl by remember { mutableStateOf<String?>(null) }
-        var selectedFirebaseConfig by remember { mutableStateOf<FirebaseDbConfig?>(null) }
 
         LaunchedEffect(Unit) {
             user = authRepository.getCurrentUser()
@@ -32,31 +29,22 @@ class RootScreen : Screen {
         }
 
         when {
-            checkingUser -> {
-                CircularProgressIndicator()
-            }
-            user == null -> {
-                navigator.replace(LoginScreen(authRepository))
-            }
-            selectedDbUrl == null || selectedFirebaseConfig == null -> {
-                DatabaseSelectionScreen { url, firebaseConfig ->
+            checkingUser -> CircularProgressIndicator()
+            user == null -> navigator.replace(LoginScreen(authRepository))
+            selectedDbUrl == null -> {
+                DatabaseSelectionScreen { url ->
                     selectedDbUrl = url
-                    selectedFirebaseConfig = firebaseConfig
                 }.Content()
             }
             else -> {
                 CompositionLocalProvider(
-                    LocalDatabaseUrl provides selectedDbUrl!!,
-                    LocalFirebaseConfig provides selectedFirebaseConfig!!
+                    LocalDatabaseUrl provides selectedDbUrl!!
                 ) {
                     BottomBarScreen(
                         user = user!!,
                         authRepository = authRepository,
                         colors = BottomBarColors(),
-                        onChangeDatabase = {
-                            selectedDbUrl = null
-                            selectedFirebaseConfig = null
-                        }
+                        onChangeDatabase = { selectedDbUrl = null }
                     ).Content()
                 }
             }
