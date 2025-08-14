@@ -15,19 +15,22 @@ import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
 
 @Composable
-fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
+fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .width(160.dp)
+            .padding(4.dp)
             .clickable { showDialog = true },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             // Nombre del cliente + Badge a la derecha
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -36,31 +39,39 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
             ) {
                 Text(
                     text = venta.ventaCliente,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF029083)
+                    color = Color(0xFF029083),
+                    maxLines = 1
                 )
 
                 Box(
                     modifier = Modifier
                         .background(Color(0xFFE0F7F4), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "${venta.ventaBigbags.size} BigBags",
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF029083)
                     )
                 }
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(text = "Lote: ${venta.ventaLote}", style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
+            Text(text = venta.ventaMaterial, style = MaterialTheme.typography.bodySmall, color = Color.DarkGray)
+
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text(text = "Lote: ${venta.ventaLote}", color = Color.DarkGray)
-            Text(text = "Material: ${venta.ventaMaterial}", color = Color.DarkGray)
-            Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}", color = Color.DarkGray)
+            Text(
+                text = formatInstant(venta.ventaFecha),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
         }
     }
 
