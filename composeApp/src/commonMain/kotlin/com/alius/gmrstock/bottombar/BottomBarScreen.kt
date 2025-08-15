@@ -39,8 +39,8 @@ class BottomBarScreen(
         val databaseUrl = LocalDatabaseUrl.current
 
         val homeTab = remember { HomeTab(user, onChangeDatabase) }
-        val materialTab = remember { MaterialTab(user, databaseUrl) }
-        val batchTab = remember { BatchTab(user) }
+        val clientTab = remember { ClientTab(user, databaseUrl) }
+        val batchTab = remember { BatchTab(user, databaseUrl) }
         val processTab = remember { ProcessTab(user) }
         val transferTab = remember { TransferTab(user, databaseUrl) }
 
@@ -51,7 +51,7 @@ class BottomBarScreen(
                     it,
                     listOf(
                         homeTab,
-                        materialTab,
+                        clientTab,
                         batchTab,
                         processTab,
                         transferTab
@@ -102,16 +102,16 @@ class BottomBarScreen(
                         )
 
                         BottomNavigationItem(
-                            selected = tabNavigator.current.key == materialTab.key,
-                            onClick = { tabNavigator.current = materialTab },
-                            icon = { Icon(Icons.Default.Polymer, contentDescription = null) },
-                            label = { Text(materialTab.options.title) }
+                            selected = tabNavigator.current.key == clientTab.key,
+                            onClick = { tabNavigator.current = clientTab },
+                            icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                            label = { Text(clientTab.options.title) }
                         )
 
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == batchTab.key,
                             onClick = { tabNavigator.current = batchTab },
-                            icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                            icon = { Icon(Icons.Default.Polymer, contentDescription = null) },
                             label = { Text(batchTab.options.title) }
                         )
 

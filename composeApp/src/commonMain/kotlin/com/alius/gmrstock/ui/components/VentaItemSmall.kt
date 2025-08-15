@@ -44,7 +44,7 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
             // Bloque 1: Nombre del cliente
             Text(
                 text = venta.ventaCliente,
-                style = MaterialTheme.typography.titleMedium,
+                //style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor,
                 fontSize = 14.sp,

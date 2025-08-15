@@ -10,7 +10,10 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.BatchScreenContent
 
-class BatchTab(private val user: User) : Tab {
+class BatchTab(
+    private val user: User,
+    private val databaseUrl: String
+) : Tab {
 
     override val key: String = "BatchTab_${user.id}"
 
@@ -29,6 +32,6 @@ class BatchTab(private val user: User) : Tab {
 
     @Composable
     override fun Content() {
-        BatchScreenContent(user)
+        BatchScreenContent(user = user, databaseUrl = databaseUrl)
     }
 }
