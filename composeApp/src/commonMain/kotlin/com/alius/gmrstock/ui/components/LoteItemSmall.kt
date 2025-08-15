@@ -11,25 +11,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
-import com.alius.gmrstock.ui.theme.BadgeTextColor
+import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.TextPrimary
-import com.alius.gmrstock.ui.theme.TextSecondary
+import com.alius.gmrstock.ui.theme.BadgeTextColor
 
 @Composable
-fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
-    var showDialog by remember { mutableStateOf(false) }
+fun LoteItemSmall(lote: LoteModel) {
+    var showBigBagsDialog by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier
+        modifier = Modifier
             .width(180.dp)
             .height(220.dp)
             .padding(6.dp)
-            .clickable { showDialog = true },
+            .clickable { showBigBagsDialog = true },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -39,39 +37,44 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(10.dp),
             verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally // centramos todo
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Bloque 1: Nombre del cliente
+            // Bloque 1: Número del lote
             Text(
-                text = venta.ventaCliente,
+                text = "Lote: ${lote.number}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor,
-                fontSize = 14.sp,
                 maxLines = 1
             )
 
-            // Bloque 2: Lote, material y fecha
+            // Bloque 2: Descripción, fecha, ubicación y peso
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally // centramos el bloque interno
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Lote: ${venta.ventaLote}",
+                    text = lote.description,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
+                )
+                Text(
+                    text = "Fecha: ${formatInstant(lote.date)}",
                     color = TextPrimary
                 )
                 Text(
-                    text = venta.ventaMaterial,
+                    text = lote.location,
                     color = TextPrimary,
                     maxLines = 1
                 )
                 Text(
-                    text = formatInstant(venta.ventaFecha),
+                    text = "Peso: ${lote.totalWeight} Kg",
                     color = TextPrimary
                 )
             }
 
-            // Bloque 3: Badge al final centrado
+            // Bloque 3: Cantidad en badge al final
             Box(
                 modifier = Modifier
                     .background(SecondaryColor, RoundedCornerShape(12.dp))
@@ -79,8 +82,7 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "BigBags ${venta.ventaBigbags.size}",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "BigBags ${lote.count}",
                     fontWeight = FontWeight.SemiBold,
                     color = BadgeTextColor
                 )
@@ -88,23 +90,24 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
         }
     }
 
-    if (showDialog) {
+    // Diálogo de BigBags
+    if (showBigBagsDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showBigBagsDialog = false },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
+                TextButton(onClick = { showBigBagsDialog = false }) {
                     Text("Cerrar", color = PrimaryColor)
                 }
             },
             title = {
                 Text(
-                    text = "BigBags vendidos",
+                    text = "Lista de BigBags",
                     color = PrimaryColor,
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
-                VentaBigBagsDialogContent(venta.ventaBigbags)
+                BigBagsDialogContent(bigBags = lote.bigBag)
             }
         )
     }

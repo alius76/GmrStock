@@ -1,7 +1,9 @@
 package com.alius.gmrstock.domain.model
 
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class LoteModel(
     val id: String,
     val number: String,
@@ -16,5 +18,6 @@ data class LoteModel(
     val bigBag: List<BigBags>,
     val booked: String?,
     val dateBooked: Instant?,
-    val remark: String
+    val remark: String,
+    val createdAt: Instant?
 )

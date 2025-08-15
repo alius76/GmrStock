@@ -14,37 +14,21 @@ import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.components.BigBagsDialogContent
+import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.*
+import com.alius.gmrstock.core.utils.formatInstant
 
 @Composable
 fun LoteCard(
     lote: LoteModel,
     modifier: Modifier = Modifier,
-    customGreenColor: androidx.compose.ui.graphics.Color,
     scope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
     onGeneratePdf: suspend (LoteModel) -> Unit,
     onViewBigBags: (List<BigBags>) -> Unit
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
-
-    fun formatInstantToDDMMYYYY(instant: Instant?): String {
-        if (instant == null) return "N/A"
-        return try {
-            // Convertir a zona horaria local
-            val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            val day = localDateTime.dayOfMonth.toString().padStart(2, '0')
-            val month = localDateTime.monthNumber.toString().padStart(2, '0')
-            val year = localDateTime.year.toString()
-            "$day/$month/$year"
-        } catch (e: Exception) {
-            "N/A"
-        }
-    }
-
 
     Card(
         modifier = modifier
@@ -66,7 +50,7 @@ fun LoteCard(
                     text = "Lote: ${lote.number}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = customGreenColor,
+                    color = PrimaryColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -88,7 +72,7 @@ fun LoteCard(
                     Icon(
                         Icons.Default.PictureAsPdf,
                         contentDescription = "Generar PDF",
-                        tint = customGreenColor
+                        tint = PrimaryColor
                     )
                 }
 
@@ -98,7 +82,7 @@ fun LoteCard(
                     Icon(
                         Icons.Default.Expand,
                         contentDescription = "Ver Bigbags",
-                        tint = customGreenColor
+                        tint = PrimaryColor
                     )
                 }
             }
@@ -109,11 +93,11 @@ fun LoteCard(
             )
 
             DetailRow("Descripción:", lote.description)
-            DetailRow("Fecha:", formatInstantToDDMMYYYY(lote.date))
+            DetailRow("Fecha:", formatInstant(lote.date))
             DetailRow("Ubicación:", lote.location)
-            DetailRow("Cantidad:", lote.count)
             DetailRow("Observación:", lote.remark)
-            DetailRow("Peso total:", "${lote.totalWeight} Kg", customGreenColor)
+            DetailRow("BigBags:", lote.count)
+            DetailRow("Peso total:", "${lote.totalWeight} Kg", PrimaryColor)
         }
     }
 
@@ -124,14 +108,14 @@ fun LoteCard(
                 TextButton(onClick = { showBigBagsDialog = false }) {
                     Text(
                         "Cerrar",
-                        color = customGreenColor
+                        color = PrimaryColor
                     )
                 }
             },
             title = {
                 Text(
                     text = "Lista de BigBags",
-                    color = customGreenColor,
+                    color = PrimaryColor,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -153,9 +137,9 @@ fun DetailRow(label: String, value: String, valueColor: androidx.compose.ui.grap
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.widthIn(min = 100.dp) // ancho mínimo para etiquetas
+            modifier = Modifier.widthIn(min = 100.dp)
         )
-        Spacer(modifier = Modifier.width(8.dp)) // espacio pequeño entre etiqueta y valor
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,

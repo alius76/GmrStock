@@ -11,7 +11,10 @@ import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.MaterialScreenContent
 
-class MaterialTab(private val user: User) : Tab {
+class MaterialTab(
+    private val user: User,
+    private val databaseUrl: String
+) : Tab {
 
     override val key: String = "MaterialTab_${user.id}"
 
@@ -30,6 +33,6 @@ class MaterialTab(private val user: User) : Tab {
 
     @Composable
     override fun Content() {
-        MaterialScreenContent(user)
+        MaterialScreenContent(user = user, databaseUrl = databaseUrl)
     }
 }

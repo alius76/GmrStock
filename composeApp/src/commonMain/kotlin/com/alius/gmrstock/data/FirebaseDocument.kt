@@ -9,11 +9,6 @@ import com.alius.gmrstock.domain.model.BigBags
 import kotlinx.datetime.Instant
 
 @Serializable
-data class FirebaseListResponse(
-    val documents: List<FirebaseDocument> = emptyList()
-)
-
-@Serializable
 data class FirebaseDocument(
     val name: String,
     val fields: Map<String, JsonElement>
@@ -42,7 +37,10 @@ data class FirebaseDocument(
             ?.get("values")
             ?.jsonArray
             ?.mapNotNull { bbJson ->
-                val bbFields = bbJson.jsonObject["mapValue"]?.jsonObject?.get("fields")?.jsonObject ?: return@mapNotNull null
+                val bbFields = bbJson.jsonObject["mapValue"]
+                    ?.jsonObject
+                    ?.get("fields")
+                    ?.jsonObject ?: return@mapNotNull null
 
                 BigBags(
                     bbNumber = bbFields["bbNumber"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
@@ -71,7 +69,10 @@ data class FirebaseDocument(
             bigBag = bigBagList,
             booked = bookedEmail,
             dateBooked = parseTimestampToMillis("dateBooked"),
-            remark = f["remark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
+            remark = f["remark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+            createdAt = parseTimestampToMillis("createdAt") // ⬅ nuevo campo mapeado
         )
     }
 }
+
+

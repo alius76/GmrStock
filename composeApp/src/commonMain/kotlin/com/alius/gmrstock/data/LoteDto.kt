@@ -1,9 +1,8 @@
 package com.alius.gmrstock.data
 
 import com.alius.gmrstock.domain.model.BigBags
-import com.alius.gmrstock.domain.model.Cliente
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Contextual
+
 
 @Serializable
 data class LoteDto(
@@ -20,6 +19,7 @@ data class LoteDto(
     val bigBag: List<BigBags> = emptyList(),
     val booked: String? = null,
     val dateBooked: Long? = null,
-    val remark: String = ""
+    val remark: String = "",
+    val createdAt: Long? = null
 )
 

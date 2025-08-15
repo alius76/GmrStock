@@ -19,9 +19,10 @@ object LoteDtoMapper {
             totalWeight = dto.totalWeight,
             qrCode = dto.qrCode,
             bigBag = dto.bigBag,
-            booked = dto.booked,                          // ✅ Ya no hay mapeo a Cliente
+            booked = dto.booked,
             dateBooked = dto.dateBooked?.let { Instant.fromEpochMilliseconds(it) },
-            remark = dto.remark
+            remark = dto.remark,
+            createdAt = dto.createdAt?.let { Instant.fromEpochMilliseconds(it) } // ⬅ mapeo
         )
     }
 
@@ -38,10 +39,10 @@ object LoteDtoMapper {
             totalWeight = model.totalWeight,
             qrCode = model.qrCode,
             bigBag = model.bigBag,
-            booked = model.booked,                        // ✅ Ya no hay mapeo a Cliente
+            booked = model.booked,
             dateBooked = model.dateBooked?.toEpochMilliseconds(),
-            remark = model.remark
+            remark = model.remark,
+            createdAt = model.createdAt?.toEpochMilliseconds() // ⬅ mapeo
         )
     }
 }
-

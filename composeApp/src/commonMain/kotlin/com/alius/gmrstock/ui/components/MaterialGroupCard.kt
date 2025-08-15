@@ -1,11 +1,12 @@
 package com.alius.gmrstock.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,6 +16,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.MaterialGroup
+import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.SecondaryColor
+import com.alius.gmrstock.ui.theme.BadgeTextColor
+import com.alius.gmrstock.ui.theme.TextPrimary
 
 @Composable
 fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
@@ -25,9 +30,9 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            // Fila superior: descripción y badge de lotes con icono
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -37,21 +42,44 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
                     text = group.description,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF029083),
+                    color = PrimaryColor,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
+
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Lotes: ${group.totalLotes}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray,
-                    fontSize = 14.sp
-                )
+
+                Box(
+                    modifier = Modifier
+                        .background(SecondaryColor, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Inventory,
+                            contentDescription = "Lotes",
+                            tint = BadgeTextColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Lotes ${group.totalLotes}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = BadgeTextColor,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
+
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Fila de información adicional
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -60,15 +88,14 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
                 Text(
                     text = "BigBags: ${group.totalBigBags}",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = TextPrimary
                 )
                 Text(
                     text = "Peso Total: ${group.totalWeight} Kg",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = TextPrimary
                 )
             }
         }
     }
 }
-

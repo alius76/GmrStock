@@ -39,7 +39,7 @@ class BottomBarScreen(
         val databaseUrl = LocalDatabaseUrl.current
 
         val homeTab = remember { HomeTab(user, onChangeDatabase) }
-        val materialTab = remember { MaterialTab(user) }
+        val materialTab = remember { MaterialTab(user, databaseUrl) }
         val batchTab = remember { BatchTab(user) }
         val processTab = remember { ProcessTab(user) }
         val transferTab = remember { TransferTab(user, databaseUrl) }

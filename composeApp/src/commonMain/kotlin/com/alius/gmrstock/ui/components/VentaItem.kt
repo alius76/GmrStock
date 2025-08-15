@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +15,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.ui.theme.BadgeTextColor
+import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.SecondaryColor
+import com.alius.gmrstock.ui.theme.TextPrimary
 
 @Composable
 fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
@@ -28,7 +34,7 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Nombre del cliente + Badge a la derecha
+            // Fila superior: Nombre cliente + Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -38,29 +44,45 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                     text = venta.ventaCliente,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF029083)
+                    color = PrimaryColor
                 )
 
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFFE0F7F4), RoundedCornerShape(12.dp))
+                        .background(SecondaryColor, RoundedCornerShape(12.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "${venta.ventaBigbags.size} BigBags",
+                        text = "BigBags ${venta.ventaBigbags.size}",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF029083)
+                        color = BadgeTextColor
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "Lote: ${venta.ventaLote}", color = Color.DarkGray)
-            Text(text = "Material: ${venta.ventaMaterial}", color = Color.DarkGray)
-            Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}", color = Color.DarkGray)
+            // Fila de información del lote con icono
+            Row(
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Inventory,
+                    contentDescription = "Lote",
+                    tint = PrimaryColor,
+                    modifier = Modifier.size(36.dp)
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column {
+                    Text(text = "Lote: ${venta.ventaLote}", color = TextPrimary)
+                    Text(text = "Material: ${venta.ventaMaterial}", color = TextPrimary)
+                    Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}", color = TextPrimary)
+                }
+            }
         }
     }
 
@@ -69,10 +91,16 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
             onDismissRequest = { showDialog = false },
             confirmButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("Cerrar")
+                    Text("Cerrar", color = PrimaryColor)
                 }
             },
-            title = { Text("BigBags vendidos") },
+            title = {
+                Text(
+                    text = "BigBags vendidos",
+                    color = PrimaryColor,
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
                 VentaBigBagsDialogContent(venta.ventaBigbags)
             }
