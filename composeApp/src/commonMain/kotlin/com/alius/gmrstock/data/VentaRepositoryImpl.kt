@@ -59,6 +59,25 @@ class VentaRepositoryImpl(
             .sortedByDescending { it.ventaFecha }
     }
 
+    override suspend fun mostrarVentasDelMes(): List<Venta> = withContext(Dispatchers.IO) {
+        val ahora = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val mesActual = ahora.month
+        val anioActual = ahora.year
+
+        println("📅 Filtrando ventas del mes: $mesActual / $anioActual")
+
+        val ventasMes = obtenerVentas()
+            .filter { venta ->
+                venta.ventaFecha?.toLocalDateTime(TimeZone.currentSystemDefault())?.let {
+                    it.month == mesActual && it.year == anioActual
+                } ?: false
+            }
+            .sortedByDescending { it.ventaFecha }
+
+        println("✅ Ventas encontradas en el mes: ${ventasMes.size}")
+        ventasMes
+    }
+
     /**
      * Método privado reutilizable para obtener ventas desde Firestore
      */
