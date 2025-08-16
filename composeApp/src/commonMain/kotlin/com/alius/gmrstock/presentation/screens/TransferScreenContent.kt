@@ -40,6 +40,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
         loading = true
         ventasHoy = ventaRepository.mostrarLasVentasDeHoy()
         ultimasVentas = ventaRepository.mostrarLasUltimasVentas()
+        println("✅ Cantidad de ultimasVentas obtenidas: ${ultimasVentas.size}")
         loading = false
     }
 

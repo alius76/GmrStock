@@ -1,5 +1,9 @@
 package com.alius.gmrstock.data
 
+import com.alius.gmrstock.data.firestore.buildQueryPorFecha
+import com.alius.gmrstock.data.firestore.buildQueryPorNumero
+import com.alius.gmrstock.data.firestore.buildQueryPorNumeroExacto
+import com.alius.gmrstock.data.firestore.buildQueryUltimosLotes
 import com.alius.gmrstock.data.firestore.parseRunQueryResponse
 import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.LoteModel
@@ -18,44 +22,30 @@ class LoteRepositoryImpl(
     private val baseUrl: String
 ) : LoteRepository {
 
-    // ✅ Función privada para traer TODOS los lotes desde Firestore
-    private suspend fun obtenerLotes(): List<LoteModel> = withContext(Dispatchers.IO) {
+    /**
+     * Función genérica para ejecutar una query contra Firestore
+     */
+    private suspend fun ejecutarQuery(query: String): List<LoteModel> = withContext(Dispatchers.IO) {
         try {
-            val body = """
-            {
-              "structuredQuery": {
-                "from": [{ "collectionId": "lote" }]
-              }
-            }
-            """.trimIndent()
-
             println("🌐 POST $baseUrl")
-            println("📤 Body: $body")
+            println("📤 Body: $query")
 
             val response: HttpResponse = client.post(baseUrl) {
-                headers {
-                    append("Content-Type", "application/json")
-                }
-                setBody(body)
+                headers { append("Content-Type", "application/json") }
+                setBody(query)
             }
 
-            parseRunQueryResponse(response.bodyAsText())
+            val responseText = response.bodyAsText()
+            parseRunQueryResponse(responseText)
         } catch (e: Exception) {
-            println("❌ Error en obtenerLotes: ${e.message}")
+            println("❌ Error en ejecutarQuery: ${e.message}")
             emptyList()
         }
     }
 
     override suspend fun listarLotes(data: String): List<LoteModel> {
-        return try {
-            obtenerLotes().filter {
-                it.number.contains(data, ignoreCase = true) ||
-                        it.description.contains(data, ignoreCase = true)
-            }
-        } catch (e: Exception) {
-            println("❌ Error general en listarLotes: ${e.message}")
-            emptyList()
-        }
+        val query = buildQueryPorNumero(data)
+        return ejecutarQuery(query)
     }
 
     override suspend fun listarGruposPorDescripcion(filter: String): List<MaterialGroup> {
@@ -64,23 +54,29 @@ class LoteRepositoryImpl(
     }
 
     override suspend fun getLoteByNumber(number: String): LoteModel? {
-        return obtenerLotes().firstOrNull { it.number == number }
+        val query = buildQueryPorNumeroExacto(number)
+        return ejecutarQuery(query).firstOrNull()
     }
 
     override suspend fun listarLotesCreadosHoy(): List<LoteModel> {
         val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        return listarLotesPorFecha(hoy)
+        val inicioDeHoy = hoy.atStartOfDayIn(TimeZone.currentSystemDefault())
+        val inicioDeManana = inicioDeHoy.plus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+
+        val query = buildQueryPorFecha(inicioDeHoy, inicioDeManana)
+        return ejecutarQuery(query)
     }
 
     override suspend fun listarLotesPorFecha(fecha: LocalDate): List<LoteModel> {
-        return obtenerLotes().filter { lote ->
-            lote.createdAt?.toLocalDateTime(TimeZone.currentSystemDefault())?.date == fecha
-        }
+        val inicio = fecha.atStartOfDayIn(TimeZone.currentSystemDefault())
+        val fin = inicio.plus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+
+        val query = buildQueryPorFecha(inicio, fin)
+        return ejecutarQuery(query)
     }
 
     override suspend fun listarUltimosLotes(cantidad: Int): List<LoteModel> {
-        return obtenerLotes()
-            .sortedByDescending { it.date ?: Instant.DISTANT_PAST }
-            .take(cantidad)
+        val query = buildQueryUltimosLotes(cantidad)
+        return ejecutarQuery(query)
     }
 }
