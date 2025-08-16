@@ -112,3 +112,4 @@ fun LoteItemSmall(lote: LoteModel) {
         )
     }
 }
+

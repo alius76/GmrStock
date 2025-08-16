@@ -20,6 +20,7 @@ import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.BadgeTextColor
 import com.alius.gmrstock.ui.theme.TextPrimary
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun ClientGroupSellCard(
@@ -83,23 +84,15 @@ fun ClientGroupSellCard(
             // Mostrar kilos totales vendidos como entero
             Text(
                 text = "Kilos vendidos: ${group.totalKilosVendidos} kg",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = TextPrimary
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Fila opcional con observaciones
-            if (group.cliente.cliObservaciones.isNotEmpty()) {
-                Text(
-                    text = group.cliente.cliObservaciones,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+
         }
     }
 }

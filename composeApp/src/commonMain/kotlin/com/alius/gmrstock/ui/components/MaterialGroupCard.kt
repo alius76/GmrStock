@@ -20,6 +20,7 @@ import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.BadgeTextColor
 import com.alius.gmrstock.ui.theme.TextPrimary
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
@@ -87,13 +88,15 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
             ) {
                 Text(
                     text = "BigBags: ${group.totalBigBags}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextSecondary
                 )
                 Text(
                     text = "Peso Total: ${group.totalWeight} Kg",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextPrimary
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextSecondary
                 )
             }
         }

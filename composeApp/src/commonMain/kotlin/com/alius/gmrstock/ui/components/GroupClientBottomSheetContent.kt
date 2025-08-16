@@ -68,7 +68,7 @@ fun GroupClientBottomSheetContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp),
+                        .wrapContentHeight(), // ajusta al contenido
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -79,8 +79,7 @@ fun GroupClientBottomSheetContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(vertical = 24.dp),
+                        .wrapContentHeight(), // ajusta al contenido
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -95,6 +94,7 @@ fun GroupClientBottomSheetContent(
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .wrapContentHeight() // altura según las cards
                         .padding(horizontal = 16.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)

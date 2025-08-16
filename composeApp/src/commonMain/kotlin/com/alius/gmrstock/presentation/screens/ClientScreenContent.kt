@@ -7,6 +7,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.alius.gmrstock.data.getVentaRepository
 import com.alius.gmrstock.domain.model.ClientGroupSell
@@ -15,6 +18,11 @@ import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.ui.components.ClientGroupSellCard
 import com.alius.gmrstock.ui.components.GroupClientBottomSheetContent
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +44,18 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
         loading = false
     }
 
+    // Mapeo de meses en español
+    val monthNamesEs = listOf(
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    )
+
+    // Obtener mes actual multiplataforma
+    val currentMonth = remember {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        monthNamesEs[now.monthNumber - 1] // monthNumber es 1..12
+    }
+
     // Agrupar ventas por cliente y calcular total kilos
     val grouped: List<Pair<ClientGroupSell, List<Venta>>> = ventas
         .groupBy { it.ventaCliente }
@@ -50,6 +70,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                 totalKilosVendidos = totalKilos.toString()
             ) to ventasCliente
         }
+        .sortedBy { it.first.cliente.cliNombre.lowercase() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (loading) {
@@ -66,6 +87,16 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Encabezado con título
+                item {
+                    Text(
+                        text = "Clientes activos en $currentMonth",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
                 items(grouped) { group ->
                     ClientGroupSellCard(group = group.first) { clickedGroup ->
                         selectedClientGroup = clickedGroup
@@ -87,7 +118,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                         selectedClientGroup = null
                     },
                     sheetState = bottomSheetState,
-                    modifier = Modifier.fillMaxHeight(0.6f)
+                    modifier = Modifier.fillMaxHeight(0.45f)
                 ) {
                     GroupClientBottomSheetContent(
                         cliente = selectedClientGroup!!.cliente,

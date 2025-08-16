@@ -118,7 +118,7 @@ class HomeScreenContent(
                     }
                 },
                 sheetState = sheetStateGroup,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxHeight(0.5f)
             ) {
                 GroupMaterialBottomSheetContent(
                     loteNumbers = selectedGroupForSheet!!.loteNumbers,

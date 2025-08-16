@@ -92,7 +92,7 @@ fun LoteCard(
                 color = MaterialTheme.colorScheme.outlineVariant
             )
 
-            DetailRow("Descripción:", lote.description)
+            DetailRow("Material:", lote.description)
             DetailRow("Fecha:", formatInstant(lote.date))
             DetailRow("Ubicación:", lote.location)
             DetailRow("Observación:", lote.remark)

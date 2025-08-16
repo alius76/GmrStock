@@ -50,6 +50,7 @@ fun GroupMaterialBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(400.dp)
             .padding(vertical = 24.dp)
             .navigationBarsPadding()
     ) {
@@ -81,9 +82,7 @@ fun GroupMaterialBottomSheetContent(
         when {
             isLoading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -92,10 +91,7 @@ fun GroupMaterialBottomSheetContent(
 
             lotes.isEmpty() -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(vertical = 24.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

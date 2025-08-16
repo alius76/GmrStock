@@ -89,7 +89,7 @@ fun LoteItem(lote: LoteModel) {
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = lote.description,
+                        text = "Material: ${lote.description}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextPrimary,
                         maxLines = 1
