@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getVentaRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.domain.model.Venta
@@ -57,11 +58,15 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
         ) {
             // Sección Ventas de Hoy
             item {
+                Spacer(modifier = Modifier.height(20.dp)) // espacio específico arriba del título
                 Text(
                     text = "Ventas de hoy",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,                  // Negrita
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp) // Más margen superior
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )
 
                 if (ventasHoy.isEmpty()) {
@@ -118,10 +123,14 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
             item {
                 Text(
                     text = "Últimas ventas",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,      // Negrita
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
+
             }
 
             items(ultimasVentas) { venta ->

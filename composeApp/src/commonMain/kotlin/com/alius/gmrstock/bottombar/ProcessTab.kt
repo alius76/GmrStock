@@ -1,6 +1,6 @@
 package com.alius.gmrstock.bottombar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.VectorPainter
@@ -18,11 +18,11 @@ class ProcessTab(private val user: User) : Tab {
     override val options: TabOptions
         @Composable
         get() {
-            val icon: VectorPainter = rememberVectorPainter(Icons.Default.Person)
+            val icon: VectorPainter = rememberVectorPainter(Icons.Default.Autorenew)
             return remember {
                 TabOptions(
                     index = 4u,
-                    title = "Process",
+                    title = "WIP",
                     icon = icon
                 )
             }

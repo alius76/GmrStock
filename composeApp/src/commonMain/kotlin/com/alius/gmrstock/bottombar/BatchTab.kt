@@ -1,6 +1,7 @@
 package com.alius.gmrstock.bottombar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.VectorPainter
@@ -20,11 +21,11 @@ class BatchTab(
     override val options: TabOptions
         @Composable
         get() {
-            val icon: VectorPainter = rememberVectorPainter(Icons.Default.Person)
+            val icon: VectorPainter = rememberVectorPainter(Icons.Outlined.ShoppingBag)
             return remember {
                 TabOptions(
                     index = 3u,
-                    title = "Batch",
+                    title = "Lotes",
                     icon = icon
                 )
             }

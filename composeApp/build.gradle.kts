@@ -47,6 +47,8 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.itextpdf)
             implementation(libs.zxing.android.embedded)
+
+            implementation(libs.ktor.client.okhttp)
         }
 
         commonMain.dependencies {
@@ -77,6 +79,12 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+
+
+            implementation(libs.coil.compose)
+
+
+
 
 
         }

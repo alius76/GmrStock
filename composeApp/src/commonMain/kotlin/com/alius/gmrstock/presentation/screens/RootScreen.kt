@@ -20,7 +20,6 @@ class RootScreen : Screen {
 
         var checkingUser by remember { mutableStateOf(true) }
         var user by remember { mutableStateOf<User?>(null) }
-
         var selectedDbUrl by remember { mutableStateOf<String?>(null) }
 
         LaunchedEffect(Unit) {
@@ -29,14 +28,23 @@ class RootScreen : Screen {
         }
 
         when {
-            checkingUser -> CircularProgressIndicator()
-            user == null -> navigator.replace(LoginScreen(authRepository))
+            checkingUser -> {
+                println("📌 [RootScreen] Comprobando usuario...")
+                CircularProgressIndicator()
+            }
+            user == null -> {
+                println("📌 [RootScreen] Usuario no logueado, navegando a LoginScreen")
+                navigator.replace(LoginScreen(authRepository))
+            }
             selectedDbUrl == null -> {
+                println("📌 [RootScreen] Mostrando selección de base de datos")
                 DatabaseSelectionScreen { url ->
+                    println("📌 [RootScreen] Base de datos seleccionada: $url")
                     selectedDbUrl = url
                 }.Content()
             }
             else -> {
+                println("📌 [RootScreen] Usuario logueado, base de datos seleccionada: $selectedDbUrl")
                 CompositionLocalProvider(
                     LocalDatabaseUrl provides selectedDbUrl!!
                 ) {
@@ -44,7 +52,10 @@ class RootScreen : Screen {
                         user = user!!,
                         authRepository = authRepository,
                         colors = BottomBarColors(),
-                        onChangeDatabase = { selectedDbUrl = null }
+                        onChangeDatabase = {
+                            println("📌 [RootScreen] Cambiando base de datos")
+                            selectedDbUrl = null
+                        }
                     ).Content()
                 }
             }

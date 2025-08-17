@@ -9,6 +9,7 @@ object AppContextProvider {
 
     fun init(application: Application) {
         appContext = application.applicationContext
+        println("📌 [AppContextProvider] Context inicializado")
     }
 }
 

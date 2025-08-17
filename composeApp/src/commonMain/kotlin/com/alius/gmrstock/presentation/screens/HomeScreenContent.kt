@@ -7,7 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.agruparPorMaterial
@@ -18,7 +21,9 @@ import com.alius.gmrstock.domain.model.MaterialGroup
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.GroupMaterialBottomSheetContent
 import com.alius.gmrstock.ui.components.MaterialGroupCard
+import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 class HomeScreenContent(
@@ -61,46 +66,71 @@ class HomeScreenContent(
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("¡Bienvenido, ${user.email}!") },
-                    actions = {
-                        Button(onClick = onChangeDatabase) {
-                            Text("Cambiar base de datos")
-                        }
-                    }
-                )
+                // AppBar personalizada
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp) // ajusta margen a tu gusto
+                ) {
+                    Text(
+                        text = "Bienvenido, ${user.email}",
+                        fontSize = 16.sp,
+                        color = PrimaryColor,
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    )
+                }
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp)
                     .padding(paddingValues)
             ) {
-                Spacer(Modifier.height(24.dp))
+                // Reducimos el espacio superior entre la top bar y el contenido
+                Spacer(Modifier.height(4.dp))
 
                 when {
                     isLoading -> {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                     }
                     errorMessage != null -> {
-                        Text(text = "Error: $errorMessage", color = MaterialTheme.colorScheme.error)
+                        Text(
+                            text = "Error: $errorMessage",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
                     }
                     materialGroups.isEmpty() -> {
-                        Text(text = "No se encontraron materiales.")
+                        Text(
+                            text = "No se encontraron materiales.",
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
                     }
                     else -> {
-                        LazyColumn {
-                            items(materialGroups) { group ->
-                                MaterialGroupCard(group = group) { clickedGroup ->
-                                    selectedGroupForSheet = clickedGroup
-                                    showGroupMaterialBottomSheet = true
-                                    coroutineScope.launch {
-                                        sheetStateGroup.show()
+                        Column {
+                            Text(
+                                text = "Materiales en stock",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.padding(top = 4.dp, bottom = 18.dp)
+                            )
+
+                            LazyColumn {
+                                items(materialGroups) { group ->
+                                    MaterialGroupCard(group = group) { clickedGroup ->
+                                        selectedGroupForSheet = clickedGroup
+                                        showGroupMaterialBottomSheet = true
+                                        coroutineScope.launch {
+                                            sheetStateGroup.show()
+                                        }
                                     }
+                                    Spacer(modifier = Modifier.height(8.dp))
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }

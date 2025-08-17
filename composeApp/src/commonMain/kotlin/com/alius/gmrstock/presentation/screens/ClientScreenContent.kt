@@ -11,6 +11,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getVentaRepository
 import com.alius.gmrstock.domain.model.ClientGroupSell
 import com.alius.gmrstock.domain.model.User
@@ -89,10 +90,14 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
             ) {
                 // Encabezado con título
                 item {
+                    Spacer(modifier = Modifier.height(20.dp)) // espacio específico arriba del título
                     Text(
                         text = "Clientes activos en $currentMonth",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }

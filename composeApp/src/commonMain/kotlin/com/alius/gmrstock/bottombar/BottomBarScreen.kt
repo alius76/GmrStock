@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.outlined.Inventory
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -35,7 +38,6 @@ class BottomBarScreen(
 
         var homeRefreshKey by remember { mutableStateOf(0) }
 
-        // Leemos la base de datos actual del CompositionLocal
         val databaseUrl = LocalDatabaseUrl.current
 
         val homeTab = remember { HomeTab(user, onChangeDatabase) }
@@ -68,17 +70,30 @@ class BottomBarScreen(
                         contentColor = Color.White,
                         modifier = Modifier.statusBarsPadding(),
                         actions = {
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    authRepository.logout()
-                                    parentNavigator.replace(LoginScreen(authRepository))
+                            // Solo mostrar botones en HomeTab
+                            if (tabNavigator.current.key.startsWith(homeTab.key)) {
+                                // Botón Cerrar sesión
+                                IconButton(onClick = {
+                                    coroutineScope.launch {
+                                        authRepository.logout()
+                                        parentNavigator.replace(LoginScreen(authRepository))
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.PowerSettingsNew,
+                                        contentDescription = "Cerrar sesión",
+                                        tint = Color.White
+                                    )
                                 }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.ExitToApp,
-                                    contentDescription = "Cerrar sesión",
-                                    tint = Color.White
-                                )
+
+                                // Botón Swap
+                                IconButton(onClick = { onChangeDatabase() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.SwapHoriz,
+                                        contentDescription = "Swap base de datos",
+                                        tint = Color.White
+                                    )
+                                }
                             }
                         }
                     )
@@ -97,35 +112,35 @@ class BottomBarScreen(
                                 }
                                 tabNavigator.current = homeTab
                             },
-                            icon = { Icon(Icons.Default.Home, contentDescription = null) },
+                            icon = { Icon(Icons.Filled.Dashboard, contentDescription = null) },
                             label = { Text(homeTab.options.title) }
                         )
 
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == clientTab.key,
                             onClick = { tabNavigator.current = clientTab },
-                            icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                            icon = { Icon(Icons.Filled.Person, contentDescription = null) },
                             label = { Text(clientTab.options.title) }
                         )
 
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == batchTab.key,
                             onClick = { tabNavigator.current = batchTab },
-                            icon = { Icon(Icons.Default.Polymer, contentDescription = null) },
+                            icon = { Icon(Icons.Outlined.ShoppingBag, contentDescription = null) },
                             label = { Text(batchTab.options.title) }
                         )
 
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == processTab.key,
                             onClick = { tabNavigator.current = processTab },
-                            icon = { Icon(Icons.Default.ContentCut, contentDescription = null) },
+                            icon = { Icon(Icons.Default.Autorenew, contentDescription = null) },
                             label = { Text(processTab.options.title) }
                         )
 
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == transferTab.key,
                             onClick = { tabNavigator.current = transferTab },
-                            icon = { Icon(Icons.Default.Train, contentDescription = null) },
+                            icon = { Icon(Icons.Filled.EuroSymbol, contentDescription = null) },
                             label = { Text(transferTab.options.title) }
                         )
                     }

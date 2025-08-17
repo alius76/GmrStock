@@ -1,6 +1,7 @@
 package com.alius.gmrstock.bottombar
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EuroSymbol
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -21,11 +22,11 @@ class TransferTab(
     override val options: TabOptions
         @Composable
         get() {
-            val icon: VectorPainter = rememberVectorPainter(Icons.Default.Person)
+            val icon: VectorPainter = rememberVectorPainter(Icons.Filled.EuroSymbol)
             return remember {
                 TabOptions(
                     index = 5u,
-                    title = "Transfer",
+                    title = "Ventas",
                     icon = icon
                 )
             }

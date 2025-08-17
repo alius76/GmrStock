@@ -1,7 +1,7 @@
 package com.alius.gmrstock.bottombar
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -18,11 +18,11 @@ class HomeTab(
     override val options: TabOptions
         @Composable
         get() {
-            val icon = rememberVectorPainter(Icons.Default.Home)
+            val icon = rememberVectorPainter(Icons.Filled.Dashboard)
             return remember {
                 TabOptions(
                     index = 1u,
-                    title = "Home",
+                    title = "Inicio",
                     icon = icon
                 )
             }

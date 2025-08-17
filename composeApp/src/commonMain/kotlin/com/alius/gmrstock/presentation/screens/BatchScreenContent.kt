@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.User
@@ -75,10 +76,14 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
             ) {
                 // --- Sección Lotes creados hoy ---
                 item {
+                    Spacer(modifier = Modifier.height(20.dp)) // espacio específico arriba del título
                     Text(
                         text = "Lotes creados hoy",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                     )
 
@@ -136,8 +141,11 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
                 item {
                     Text(
                         text = "Últimos lotes",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
