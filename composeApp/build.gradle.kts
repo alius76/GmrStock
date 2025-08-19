@@ -39,17 +39,17 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
 
-            // ✅ Firebase (Android)
+            // ✅ Firebase Auth (Android)
             implementation(project.dependencies.platform(libs.android.firebase.bom))
-            implementation(libs.firebase.auth.ktx)
+            implementation(libs.firebase.auth.ktx) // 👈 NUEVO
             implementation(libs.firebase.analytics.ktx)
             implementation(libs.firebase.firestore.ktx)
-
-            // ✅ Ktor Android
             implementation(libs.ktor.client.okhttp)
-
             implementation(libs.itextpdf)
             implementation(libs.zxing.android.embedded)
+
+            implementation(libs.ktor.client.okhttp)
+
         }
 
         commonMain.dependencies {
@@ -60,47 +60,37 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(compose.materialIconsExtended)
 
-            // ✅ Corrutinas, serialización, settings, logs
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.settings)
             implementation(libs.napier)
+            implementation(libs.core)
+            implementation(compose.materialIconsExtended)
 
-            // ✅ Navegación
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.tabNavigator)
 
-            // ✅ Firebase multiplatform
-            implementation(libs.gitlive.firebase.firestore)
-            implementation(libs.gitlive.firebase.auth)
 
-            // ✅ Ktor multiplatform
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
 
-            // ✅ Coil 3 multiplatform
-            implementation(libs.coil.compose)
-            implementation(libs.coil.compose.core)
-            implementation(libs.coil.network.ktor3)
+
+
+
         }
-
         iosMain.dependencies {
-            // ✅ Ktor para iOS
             implementation(libs.ktor.client.darwin)
-
-            // ✅ Firebase multiplatform (GitLive)
-            implementation(libs.gitlive.firebase.firestore)
-            implementation(libs.gitlive.firebase.auth)
+            implementation(libs.ktor.client.ios)
         }
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+
     }
 }
 

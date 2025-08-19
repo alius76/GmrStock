@@ -1,33 +1,20 @@
 package com.alius.gmrstock.presentation.screens
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import coil3.compose.AsyncImage
+import com.alius.gmrstock.data.loadPlatformImage
+import com.alius.gmrstock.data.PlatformImageComposable
 import com.alius.gmrstock.data.FirestoreUrls
-import com.alius.gmrstock.data.getDatabaseLogoPath
-import kotlinx.coroutines.delay
-
+ 
 class DatabaseSelectionScreen(
     private val onDatabaseSelected: (String) -> Unit
 ) : Screen {
-
+ 
     @Composable
     override fun Content() {
         Surface(
@@ -41,51 +28,45 @@ class DatabaseSelectionScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Animación de fade-in para el logo
-                var visible by remember { mutableStateOf(false) }
-                LaunchedEffect(Unit) {
-                    delay(200)
-                    visible = true
+                // 🔹 Logo superior
+                val logoImage = loadPlatformImage("logo.png")
+                if (logoImage != null) {
+                    PlatformImageComposable(
+                        image = logoImage,
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .height(220.dp)
+                    )
+                } else {
+                    Text("LOGO", color = MaterialTheme.colorScheme.onBackground)
                 }
-                val alpha by animateFloatAsState(if (visible) 1f else 0f)
-
-                // Logo centrado, sin fondo ni sombra de botón
-                AsyncImage(
-                    model = getDatabaseLogoPath("logo.png"),
-                    contentDescription = "Logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .height(220.dp)
-                        .alpha(alpha)
-                )
-
+ 
                 Spacer(modifier = Modifier.height(32.dp))
-
-                // Texto principal refinado
+ 
                 Text(
                     text = "Seleccione base de datos",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
+                    style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )
-
+ 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botones de selección con animación y sombra suave
+                // 🔹 Botones con imágenes
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    val db1Image = loadPlatformImage("gmr_stock_p07.png")
                     DatabaseLogoButton(
-                        fileName = "gmr_stock_p07.png",
+                        image = db1Image,
+                        label = "DB1",
                         onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
                     )
-
+ 
+                    val db2Image = loadPlatformImage("gmr_stock_p08.png")
                     DatabaseLogoButton(
-                        fileName = "gmr_stock_p08.png",
+                        image = db2Image,
+                        label = "DB2",
                         onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
                     )
                 }
@@ -95,34 +76,46 @@ class DatabaseSelectionScreen(
 }
 
 @Composable
-fun DatabaseLogoButton(fileName: String, onClick: () -> Unit) {
-    var pressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(if (pressed) 0.92f else 1f)
-    val elevation by animateFloatAsState(if (pressed) 4.dp.value else 12.dp.value)
-
+fun DatabaseLogoButton(
+    image: Any?,
+    label: String,
+    onClick: () -> Unit
+) {
     Surface(
-        modifier = Modifier
-            .size(160.dp)
-            .scale(scale)
-            .shadow(elevation.dp, RoundedCornerShape(16.dp))
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        pressed = true
-                        tryAwaitRelease()
-                        pressed = false
-                    },
-                    onTap = { onClick() }
-                )
-            },
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface
+        modifier = Modifier.size(160.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surface,
+        onClick = onClick
     ) {
-        AsyncImage(
-            model = getDatabaseLogoPath(fileName),
-            contentDescription = fileName,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+        Box(contentAlignment = Alignment.Center) {
+            if (image != null) {
+                PlatformImageComposable(
+                    image = image,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text(
+                    text = label,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
