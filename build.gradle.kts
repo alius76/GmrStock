@@ -11,3 +11,12 @@ plugins {
 
     id("com.google.gms.google-services") version "4.4.2" apply false
 }
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // ✅ Añade esta línea aquí
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    }
+}

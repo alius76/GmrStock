@@ -2,29 +2,38 @@ package com.alius.gmrstock.data
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import platform.Foundation.NSBundle
-import platform.Foundation.NSTemporaryDirectory
-import platform.Foundation.NSData
-import platform.UIKit.UIImage
+import androidx.compose.ui.interop.UIKitView
+import kotlinx.cinterop.ExperimentalForeignApi
 
-private val availableLogos = listOf("logo.png", "gmr_stock_p07.png", "gmr_stock_p08.png")
+import platform.Foundation.NSBundle
+import platform.UIKit.UIImage
+import platform.UIKit.UIImageView
+import platform.UIKit.UIViewContentMode
+
+private val logoMap = mapOf(
+    "logo.png" to "logo",
+    "gmr_stock_p07.png" to "gmr_stock_p07",
+    "gmr_stock_p08.png" to "gmr_stock_p08"
+)
 
 actual fun loadPlatformImage(fileName: String): Any? {
-    if (!availableLogos.contains(fileName)) return null
-    val path = NSBundle.mainBundle.pathForResource(fileName.removeSuffix(".png"), "png") ?: return null
-    val data = NSData.dataWithContentsOfFile(path) ?: return null
-    val tempFile = NSTemporaryDirectory() + fileName
-    data.writeToFile(tempFile, true)
-    return UIImage.imageWithContentsOfFile(tempFile)
+    val resourceName = logoMap[fileName] ?: return null
+    val path = NSBundle.mainBundle.pathForResource(resourceName, "png") ?: return null
+    return UIImage.imageWithContentsOfFile(path)
 }
 
+@OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun PlatformImageComposable(image: Any?, modifier: Modifier) {
     if (image is UIImage) {
-        Image(bitmap = image.asImageBitmap(), contentDescription = null, modifier = modifier)
+        UIKitView(
+            modifier = modifier,
+            factory = {
+                UIImageView().apply {
+                    this.contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
+                    this.image = image
+                }
+            }
+        )
     }
 }
-

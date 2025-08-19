@@ -34,7 +34,7 @@ settings-multiplatform = "1.3.0"
 firebase-bom = "33.1.0"
 zxingAndroidEmbedded = "4.3.0"
 googleServices = "4.4.2"
-
+skiko = "0.9.23"
 coil3 = "3.3.0"
 
 [libraries]
@@ -89,7 +89,7 @@ zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", ve
 zxing-javase = { module = "com.google.zxing:javase", version.ref = "javase" }
 
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
-
+skiko = { module = "org.jetbrains.skiko:skiko-jetbrains-runtime", version.ref = "skiko" }
 
 
 
