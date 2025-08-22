@@ -2,7 +2,9 @@ package com.alius.gmrstock.data.firestore
 
 import com.alius.gmrstock.data.FirebaseDocument
 import com.alius.gmrstock.data.mappers.LoteDtoMapper
+import com.alius.gmrstock.data.mappers.ProcessMapper
 import com.alius.gmrstock.domain.model.LoteModel
+import com.alius.gmrstock.domain.model.Process
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonArray
@@ -10,6 +12,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 
 private val json = Json { ignoreUnknownKeys = true }
+
 
 fun parseRunQueryResponse(jsonBody: String): List<LoteModel> {
     println("📥 Respuesta JSON cruda recibida (primeros 500 chars):\n${jsonBody.take(500)}")

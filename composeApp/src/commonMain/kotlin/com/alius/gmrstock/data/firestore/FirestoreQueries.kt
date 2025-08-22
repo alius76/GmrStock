@@ -230,4 +230,72 @@ fun buildQueryUltimosLotes(limit: Int = 5): String {
     """.trimIndent()
 }
 
+fun buildQueryProcesoPorNumero(number: String): String {
+    return """
+    {
+        "structuredQuery": {
+            "from": [{"collectionId": "wip"}],
+            "where": {
+                "fieldFilter": {
+                    "field": {"fieldPath": "number"},
+                    "op": "EQUAL",
+                    "value": {"stringValue": "$number"}
+                }
+            },
+            "limit": 1
+        }
+    }
+    """.trimIndent()
+}
+
+fun buildQueryProcesosPorFecha(inicio: Instant, fin: Instant): String {
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "wip" }],
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "date" },
+                                "op": "GREATER_THAN_OR_EQUAL",
+                                "value": { "timestampValue": "$inicio" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "date" },
+                                "op": "LESS_THAN",
+                                "value": { "timestampValue": "$fin" }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "date" }, "direction": "DESCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
+}
+
+fun buildQueryUltimosProcesos(limit: Int = 10): String {
+    return """
+    {
+      "structuredQuery": {
+        "from": [{"collectionId": "wip"}],
+        "orderBy": [
+          {
+            "field": {"fieldPath": "date"},
+            "direction": "DESCENDING"
+          }
+        ],
+        "limit": $limit
+      }
+    }
+    """.trimIndent()
+}
 

@@ -11,7 +11,10 @@ import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.ProcessScreenContent
 
 
-class ProcessTab(private val user: User) : Tab {
+class ProcessTab(
+    private val user: User,
+    private val databaseUrl: String
+) : Tab {
 
     override val key: String = "ProcessTab_${user.id}"
 
@@ -30,6 +33,6 @@ class ProcessTab(private val user: User) : Tab {
 
     @Composable
     override fun Content() {
-        ProcessScreenContent(user)
+        ProcessScreenContent(user = user, databaseUrl = databaseUrl)
     }
 }

@@ -5,16 +5,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.data.loadPlatformImage
 import com.alius.gmrstock.data.PlatformImageComposable
 import com.alius.gmrstock.data.FirestoreUrls
- 
+
 class DatabaseSelectionScreen(
     private val onDatabaseSelected: (String) -> Unit
 ) : Screen {
- 
+
     @Composable
     override fun Content() {
         Surface(
@@ -34,21 +37,24 @@ class DatabaseSelectionScreen(
                     PlatformImageComposable(
                         image = logoImage,
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(0.95f)
                             .height(220.dp)
                     )
                 } else {
                     Text("LOGO", color = MaterialTheme.colorScheme.onBackground)
                 }
- 
+
                 Spacer(modifier = Modifier.height(32.dp))
- 
+
                 Text(
                     text = "Seleccione base de datos",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
                     color = MaterialTheme.colorScheme.secondary
                 )
- 
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // 🔹 Botones con imágenes
@@ -62,7 +68,7 @@ class DatabaseSelectionScreen(
                         label = "DB1",
                         onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
                     )
- 
+
                     val db2Image = loadPlatformImage("gmr_stock_p08.png")
                     DatabaseLogoButton(
                         image = db2Image,
@@ -81,13 +87,19 @@ fun DatabaseLogoButton(
     label: String,
     onClick: () -> Unit
 ) {
-    Surface(
+    ElevatedCard(
         modifier = Modifier.size(160.dp),
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surface,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.elevatedCardElevation(8.dp),
         onClick = onClick
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             if (image != null) {
                 PlatformImageComposable(
                     image = image,
@@ -102,13 +114,6 @@ fun DatabaseLogoButton(
         }
     }
 }
-
-
-
-
-
-
-
 
 
 

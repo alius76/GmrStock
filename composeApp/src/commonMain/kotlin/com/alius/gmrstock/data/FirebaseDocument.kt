@@ -73,6 +73,7 @@ data class FirebaseDocument(
             createdAt = parseTimestampToMillis("createdAt") // ⬅ nuevo campo mapeado
         )
     }
+
 }
 
 
