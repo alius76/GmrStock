@@ -3,6 +3,7 @@ package com.alius.gmrstock.presentation.screens
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import com.alius.gmrstock.data.getProcessRepository
 import com.alius.gmrstock.domain.model.Process
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.ProcessItem
+import com.alius.gmrstock.ui.components.RatioProductionCard
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -27,8 +29,6 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
     val repository = remember(databaseUrl) { getProcessRepository(databaseUrl) }
     var procesos by remember { mutableStateOf<List<Process>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
-
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(databaseUrl) {
         loading = true
@@ -48,10 +48,11 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Título y manejo de "sin procesos"
             item {
-                Spacer(modifier = Modifier.height(20.dp)) // espacio arriba del título
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
-                    text = "Lotes en progeso",
+                    text = "Lotes en progreso",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold
@@ -98,8 +99,37 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            items(procesos) { proceso ->
-                ProcessItem(proceso = proceso)
+            // Lista horizontal de procesos
+            item {
+                if (procesos.isNotEmpty()) {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(procesos) { proceso ->
+                            ProcessItem(proceso = proceso)
+                        }
+                    }
+                }
+            }
+
+            // Título de la gráfica
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Gráfico de producción del mes",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+
+            // Card de la gráfica
+            item {
+                RatioProductionCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                )
             }
         }
     }
