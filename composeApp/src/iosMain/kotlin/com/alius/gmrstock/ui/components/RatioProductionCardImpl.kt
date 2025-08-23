@@ -1,100 +1,109 @@
 package com.alius.gmrstock.ui.components
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.interop.UIKitView
-import kotlinx.cinterop.CValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.CoreGraphics.*
-import platform.Foundation.*
+import platform.Foundation.NSString
+import platform.Foundation.create
+import platform.CoreGraphics.CGPointMake
 import platform.UIKit.*
 
-class RatioProductionUIView(
-    frame: CValue<CGRect>,
-    val data: List<RatioData>
-) : UIView(frame) {
-
-    @OptIn(ExperimentalForeignApi::class)
-    override fun draw(rect: CValue<CGRect>) {
-        val context = UIGraphicsGetCurrentContext() ?: return
-        val width = rect.size.width
-        val height = rect.size.height
-
-        val leftPadding = 50.0
-        val bottomPadding = 30.0
-        val chartWidth = width - leftPadding
-        val chartHeight = height - bottomPadding
-        val maxWeight = 100_000.0
-
-        val backgroundColor = UIColor.whiteColor.CGColor
-        val lineColor = UIColor.systemBlueColor.CGColor
-        val axisColor = UIColor.lightGrayColor.CGColor
-        val textColor = UIColor.blackColor
-
-        // Fondo
-        context.setFillColor(backgroundColor)
-        context.fillRect(rect)
-
-        if (data.isEmpty()) return
-
-        // Eje Y abreviado
-        val yLabels = listOf(0.0, 20_000.0, 40_000.0, 60_000.0, 80_000.0, 100_000.0)
-        val yLabelStrings = listOf("0", "20K", "40K", "60K", "80K", "100K")
-        context.setLineWidth(1.0)
-        context.setStrokeColor(axisColor)
-        yLabels.forEachIndexed { index, value ->
-            val y = chartHeight - value / maxWeight * chartHeight
-            context.moveTo(leftPadding, y)
-            context.addLineTo(leftPadding + chartWidth, y)
-            context.strokePath()
-
-            val label = NSString.stringWithString(yLabelStrings[index])
-            label.drawAtPoint(
-                CGPointMake(0.0, y - 7.0),
-                mapOf(
-                    NSFontAttributeName to UIFont.systemFontOfSize(12.0),
-                    NSForegroundColorAttributeName to textColor
-                )
-            )
-        }
-
-        // Línea de datos
-        context.setStrokeColor(lineColor)
-        context.setLineWidth(2.0)
-        for (i in 0 until data.size - 1) {
-            val x1 = leftPadding + i * chartWidth / (data.size - 1)
-            val y1 = chartHeight - data[i].listRatioTotalWeight / maxWeight * chartHeight
-            val x2 = leftPadding + (i + 1) * chartWidth / (data.size - 1)
-            val y2 = chartHeight - data[i + 1].listRatioTotalWeight / maxWeight * chartHeight
-            context.moveTo(x1, y1)
-            context.addLineTo(x2, y2)
-            context.strokePath()
-        }
-
-        // Eje X: primer y último día
-        val xIndices = listOf(0, data.size - 1)
-        xIndices.forEach { i ->
-            val x = leftPadding + i * chartWidth / (data.size - 1)
-            val date = NSDate(timeIntervalSince1970 = data[i].listRatioDate / 1000.0)
-            val calendar = NSCalendar.currentCalendar
-            val day = calendar.component(NSCalendarUnitDay, date)
-            val label = NSString.stringWithString("$day")
-            label.drawAtPoint(
-                CGPointMake(x - 5.0, chartHeight + 2.0),
-                mapOf(
-                    NSFontAttributeName to UIFont.systemFontOfSize(12.0),
-                    NSForegroundColorAttributeName to textColor
-                )
-            )
-        }
-    }
+/**
+ * Helper nativo para dibujar texto en iOS
+ */
+@OptIn(ExperimentalForeignApi::class)
+fun drawTextAt(x: Double, y: Double, text: String, fontSize: Double = 12.0) {
+    val nsText: NSString = NSString.create(string = text)
+    nsText.drawAtPoint(
+        point = CGPointMake(x, y),
+        withAttributes = mapOf<Any?, Any?>(
+            NSFontAttributeName to UIFont.systemFontOfSize(fontSize),
+            NSForegroundColorAttributeName to UIColor.blackColor
+        )
+    )
 }
 
 @Composable
 actual fun RatioProductionCard(modifier: Modifier) {
     val data = generateRatioData()
-    UIKitView(
+    Card(
         modifier = modifier,
-        factory = { RatioProductionUIView(CGRectMake(0.0, 0.0, 350.0, 250.0), data) }
-    )
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            if (data.isEmpty()) return@Canvas
+
+            val leftPadding = 50f
+            val bottomPadding = 30f
+            val chartWidth = size.width - leftPadding
+            val chartHeight = size.height - bottomPadding
+            val maxWeight = 100_000f
+            val stepX = chartWidth / (data.size - 1)
+            val scaleY = chartHeight / maxWeight
+
+            // Eje Y con etiquetas
+            val yLabels = listOf(0f, 20000f, 40000f, 60000f, 80000f, 100000f)
+            val yLabelStrings = listOf("0", "20K", "40K", "60K", "80K", "100K")
+            yLabels.forEachIndexed { index, value ->
+                val y = chartHeight - value * scaleY
+                drawLine(
+                    color = Color.LightGray,
+                    start = Offset(leftPadding, y),
+                    end = Offset(leftPadding + chartWidth, y)
+                )
+                // Etiqueta Y nativa
+                drawTextAt(
+                    x = 0.0,
+                    y = y.toDouble(),
+                    text = yLabelStrings[index],
+                    fontSize = 12.0
+                )
+            }
+
+            // Línea de datos
+            for (i in 0 until data.size - 1) {
+                val x1 = leftPadding + i * stepX
+                val y1 = chartHeight - data[i].listRatioTotalWeight * scaleY
+                val x2 = leftPadding + (i + 1) * stepX
+                val y2 = chartHeight - data[i + 1].listRatioTotalWeight * scaleY
+                drawLine(
+                    color = PrimaryColor,
+                    start = Offset(x1, y1),
+                    end = Offset(x2, y2),
+                    strokeWidth = 4f
+                )
+            }
+
+            // Eje X: Día 1 y último día
+            val baseY = chartHeight + 20f
+            drawTextAt(
+                x = leftPadding.toDouble(),
+                y = baseY.toDouble(),
+                text = "Día 1",
+                fontSize = 12.0
+            )
+            drawTextAt(
+                x = (leftPadding + (data.size - 1) * stepX - 30f).toDouble(),
+                y = baseY.toDouble(),
+                text = "Día ${data.size}",
+                fontSize = 12.0
+            )
+        }
+    }
 }

@@ -85,7 +85,8 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.ktor.client.ios)
-            implementation(libs.skiko)
+            implementation(libs.gitlive.firebase.firestore)
+            implementation(libs.gitlive.firebase.auth)
         }
 
         commonTest.dependencies {

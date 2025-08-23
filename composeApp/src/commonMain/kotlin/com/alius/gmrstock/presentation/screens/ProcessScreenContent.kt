@@ -22,7 +22,6 @@ import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.ProcessItem
 import com.alius.gmrstock.ui.components.RatioProductionCard
 import kotlinx.coroutines.launch
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProcessScreenContent(user: User, databaseUrl: String) {
@@ -33,8 +32,13 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
     LaunchedEffect(databaseUrl) {
         loading = true
         procesos = repository.listarProcesos()
-        println("✅ Total de procesos obtenidos: ${procesos.size}")
+        println("✅ Total de procesos obtenidos: ${procesos.size} en iOS/Android")
         loading = false
+    }
+
+    // Mensaje de debug visual y en consola
+    LaunchedEffect(Unit) {
+        println("📱 ProcessScreenContent se está mostrando en iOS/Android")
     }
 
     if (loading) {
@@ -48,7 +52,7 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Título y manejo de "sin procesos"
+
             item {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
@@ -117,8 +121,11 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "Gráfico de producción del mes",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    text = "Producción del mes",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }

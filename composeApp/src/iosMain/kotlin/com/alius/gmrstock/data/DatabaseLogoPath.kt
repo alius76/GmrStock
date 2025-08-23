@@ -17,8 +17,6 @@ private val logoMap = mapOf(
 
 /**
  * Carga la imagen desde el asset catalog de iOS.
- * @param fileName nombre de la imagen en commonMain
- * @return UIImage o null si no se encuentra
  */
 actual fun loadPlatformImage(fileName: String): Any? {
     val resourceName = logoMap[fileName] ?: return null
@@ -26,7 +24,8 @@ actual fun loadPlatformImage(fileName: String): Any? {
 }
 
 /**
- * Composable que recibe un UIImage y lo muestra dentro de Compose.
+ * Composable que muestra UIImage dentro de Compose.
+ * Se desactiva la interacción para que los clicks se detecten en Compose.
  */
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -38,6 +37,7 @@ actual fun PlatformImageComposable(image: Any?, modifier: Modifier) {
                 UIImageView().apply {
                     contentMode = UIViewContentMode.UIViewContentModeScaleAspectFit
                     this.image = image
+                    this.userInteractionEnabled = false // 👈 permite que Compose capture los taps
                 }
             }
         )

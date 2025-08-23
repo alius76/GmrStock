@@ -18,7 +18,7 @@ fun generateRatioData(): List<RatioData> {
 
     for (i in 0 until 31) {
         val timestamp = baseTime + i * 24 * 60 * 60 * 1000L // sumar días en millis
-        val weight = (50..500).random()
+        val weight = (500..15000).random()
         data.add(RatioData(timestamp, weight))
     }
 

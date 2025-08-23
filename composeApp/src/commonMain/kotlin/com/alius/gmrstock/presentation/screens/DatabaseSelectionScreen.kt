@@ -63,18 +63,38 @@ class DatabaseSelectionScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     val db1Image = loadPlatformImage("gmr_stock_p07.png")
-                    DatabaseLogoButton(
-                        image = db1Image,
-                        label = "DB1",
-                        onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        DatabaseLogoButton(
+                            image = db1Image,
+                            label = "DB1",
+                            onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
+                        ) {
+                            Text("Seleccionar")
+                        }
+                    }
 
                     val db2Image = loadPlatformImage("gmr_stock_p08.png")
-                    DatabaseLogoButton(
-                        image = db2Image,
-                        label = "DB2",
-                        onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        DatabaseLogoButton(
+                            image = db2Image,
+                            label = "DB2",
+                            onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
+                        ) {
+                            Text("Seleccionar")
+                        }
+                    }
                 }
             }
         }
@@ -114,13 +134,4 @@ fun DatabaseLogoButton(
         }
     }
 }
-
-
-
-
-
-
-
-
-
 
