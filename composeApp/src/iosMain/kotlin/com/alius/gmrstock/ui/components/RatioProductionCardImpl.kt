@@ -10,32 +10,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.NSString
-import platform.Foundation.create
-import platform.CoreGraphics.CGPointMake
-import platform.UIKit.*
 
-@OptIn(ExperimentalForeignApi::class)
-fun drawTextAt(x: Double, y: Double, text: String, fontSize: Double = 12.0) {
-    val nsText: NSString = NSString.create(string = text)
-    nsText.drawAtPoint(
-        point = CGPointMake(x, y),
-        withAttributes = mapOf<Any?, Any?>(
-            NSFontAttributeName to UIFont.systemFontOfSize(fontSize),
-            NSForegroundColorAttributeName to UIColor.blackColor
-        )
-    )
-}
-
+@OptIn(ExperimentalTextApi::class)
 @Composable
 actual fun RatioProductionCard(
     modifier: Modifier,
     ratioDataList: List<RatioData>
 ) {
     val data = ratioDataList
+    val textMeasurer = rememberTextMeasurer()
 
     Card(
         modifier = modifier,
@@ -50,29 +40,42 @@ actual fun RatioProductionCard(
         ) {
             if (data.isEmpty()) return@Canvas
 
+            val yLabelXOffset = 2.dp.toPx()
+
             val leftPadding = 50f
-            val bottomPadding = 30f
             val chartWidth = size.width - leftPadding
-            val chartHeight = size.height - bottomPadding
+            val chartHeight = size.height - 20.dp.toPx()
             val maxWeight = 100_000f
             val stepX = if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
             val scaleY = chartHeight / maxWeight
+            val textStyle = TextStyle(
+                color = Color.Black,
+                fontSize = 12.sp
+            )
 
             // Eje Y con etiquetas
             val yLabels = listOf(0f, 20000f, 40000f, 60000f, 80000f, 100000f)
-            val yLabelStrings = listOf("0", "20K", "40K", "60K", "80K", "100K")
+            val yLabelStrings = listOf("", "20K", "40K", "60K", "80K", "100K")
             yLabels.forEachIndexed { index, value ->
                 val y = chartHeight - value * scaleY
+
+                // Dibuja la línea de la cuadrícula
                 drawLine(
                     color = Color.LightGray,
                     start = Offset(leftPadding, y),
                     end = Offset(leftPadding + chartWidth, y)
                 )
-                drawTextAt(
-                    x = 0.0,
-                    y = y.toDouble(),
+
+                // Dibuja la etiqueta del eje Y
+                val measuredText = textMeasurer.measure(yLabelStrings[index], textStyle)
+                drawText(
+                    textMeasurer = textMeasurer,
                     text = yLabelStrings[index],
-                    fontSize = 12.0
+                    topLeft = Offset(
+                        x = leftPadding - measuredText.size.width - yLabelXOffset,
+                        y = y - measuredText.size.height / 2
+                    ),
+                    style = textStyle
                 )
             }
 
@@ -91,18 +94,32 @@ actual fun RatioProductionCard(
             }
 
             // Eje X: primer y último día real
-            val baseY = chartHeight + 20f
-            drawTextAt(
-                x = leftPadding.toDouble(),
-                y = baseY.toDouble(),
+            // AHORA CALCULAMOS LA POSICIÓN Y TENIENDO EN CUENTA LA ALTURA DEL TEXTO
+            val measuredFirstDayText = textMeasurer.measure("Día ${data.first().day}", textStyle)
+            val baseY = size.height - measuredFirstDayText.size.height - 1.dp.toPx()
+
+            // Etiqueta del primer día
+            drawText(
+                textMeasurer = textMeasurer,
                 text = "Día ${data.first().day}",
-                fontSize = 12.0
+                topLeft = Offset(
+                    x = leftPadding,
+                    y = baseY
+                ),
+                style = textStyle
             )
-            drawTextAt(
-                x = (leftPadding + (data.size - 1) * stepX - 30f).toDouble(),
-                y = baseY.toDouble(),
-                text = "Día ${data.last().day}",
-                fontSize = 12.0
+
+            // Etiqueta del último día
+            val lastDayText = "Día ${data.last().day}"
+            val measuredLastDayText = textMeasurer.measure(lastDayText, textStyle)
+            drawText(
+                textMeasurer = textMeasurer,
+                text = lastDayText,
+                topLeft = Offset(
+                    x = leftPadding + chartWidth - measuredLastDayText.size.width,
+                    y = baseY
+                ),
+                style = textStyle
             )
         }
     }

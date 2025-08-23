@@ -17,7 +17,7 @@ actual fun RatioProductionCard(
     modifier: Modifier,
     ratioDataList: List<RatioData>
 ) {
-    val data = ratioDataList // <-- ahora usa la lista recibida
+    val data = ratioDataList
 
     Card(
         modifier = modifier,
@@ -25,8 +25,8 @@ actual fun RatioProductionCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        val leftPadding = 50f // espacio para etiquetas Y
-        val bottomPadding = 30f // espacio para etiquetas X
+        val leftPadding = 50f
+        val bottomPadding = 30f
         Canvas(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             if (data.isEmpty()) return@Canvas
 
@@ -38,7 +38,7 @@ actual fun RatioProductionCard(
 
             // Eje Y abreviado
             val yLabels = listOf(0f, 20_000f, 40_000f, 60_000f, 80_000f, 100_000f)
-            val yLabelStrings = listOf("0", "20K", "40K", "60K", "80K", "100K")
+            val yLabelStrings = listOf("", "20K", "40K", "60K", "80K", "100K")
             yLabels.forEachIndexed { index, value ->
                 val y = chartHeight - value * scaleY
                 drawLine(
@@ -71,20 +71,32 @@ actual fun RatioProductionCard(
                 )
             }
 
-            // Eje X: primer y último día
-            val xIndices = listOf(0, data.size - 1)
-            xIndices.forEach { i ->
-                val x = leftPadding + i * stepX
-                drawContext.canvas.nativeCanvas.drawText(
-                    "${data[i].day}",
-                    x,
-                    chartHeight + 20f,
-                    android.graphics.Paint().apply {
-                        textSize = 24f
-                        color = android.graphics.Color.BLACK
-                    }
-                )
+            // Eje X: primer y último día (dibujados individualmente)
+            val paint = android.graphics.Paint().apply {
+                textSize = 24f
+                color = android.graphics.Color.BLACK
             }
+            val yPos = chartHeight + 40f
+
+            // Etiqueta del primer día
+            drawContext.canvas.nativeCanvas.drawText(
+                "Día ${data.first().day}",
+                leftPadding,
+                yPos,
+                paint
+            )
+
+            // Etiqueta del último día
+            val lastDayText = "Día ${data.last().day}"
+            val textWidth = paint.measureText(lastDayText)
+            val x = leftPadding + chartWidth
+            val xOffset = 20f // Ajusta este valor para mover la etiqueta a la izquierda
+            drawContext.canvas.nativeCanvas.drawText(
+                lastDayText,
+                x - textWidth - xOffset, // La posición X se ajusta restando el ancho del texto y el offset
+                yPos,
+                paint
+            )
         }
     }
 }
