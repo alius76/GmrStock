@@ -13,6 +13,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.data.loadPlatformImage
 import com.alius.gmrstock.data.PlatformImageComposable
 import com.alius.gmrstock.data.FirestoreUrls
+import com.alius.gmrstock.ui.theme.PrimaryColor
 
 class DatabaseSelectionScreen(
     private val onDatabaseSelected: (String) -> Unit
@@ -62,6 +63,7 @@ class DatabaseSelectionScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+                    // Botón para DB1
                     val db1Image = loadPlatformImage("gmr_stock_p07.png")
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -69,16 +71,27 @@ class DatabaseSelectionScreen(
                         DatabaseLogoButton(
                             image = db1Image,
                             label = "DB1",
-                            onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
+                        TextButton(
+                            onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) },
+                            // Aplica estilos directamente en el botón para mejor coherencia
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
                         ) {
-                            Text("Seleccionar")
+                            Text(
+                                "Seleccionar",
+                                // Aumenta el tamaño de la fuente para mejor visibilidad
+                                fontSize = 22.sp,
+                                // Usa negrita (bold)
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryColor
+                            )
                         }
                     }
 
+                    // Botón para DB2
                     val db2Image = loadPlatformImage("gmr_stock_p08.png")
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -86,13 +99,20 @@ class DatabaseSelectionScreen(
                         DatabaseLogoButton(
                             image = db2Image,
                             label = "DB2",
-                            onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
+                        TextButton(
+                            onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
                         ) {
-                            Text("Seleccionar")
+                            Text(
+                                "Seleccionar",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryColor
+                            )
                         }
                     }
                 }
@@ -104,8 +124,7 @@ class DatabaseSelectionScreen(
 @Composable
 fun DatabaseLogoButton(
     image: Any?,
-    label: String,
-    onClick: () -> Unit
+    label: String
 ) {
     ElevatedCard(
         modifier = Modifier.size(160.dp),
@@ -114,7 +133,6 @@ fun DatabaseLogoButton(
             containerColor = Color.White
         ),
         elevation = CardDefaults.elevatedCardElevation(8.dp),
-        onClick = onClick
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -134,4 +152,3 @@ fun DatabaseLogoButton(
         }
     }
 }
-

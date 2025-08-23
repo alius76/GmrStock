@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EuroSymbol
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -69,7 +70,7 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
-                    imageVector = Icons.Default.Inventory,
+                    imageVector = Icons.Filled.EuroSymbol,
                     contentDescription = "Lote",
                     tint = PrimaryColor,
                     modifier = Modifier.size(36.dp)

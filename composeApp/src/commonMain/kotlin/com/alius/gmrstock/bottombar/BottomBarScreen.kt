@@ -6,7 +6,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Autorenew
-import androidx.compose.material.icons.outlined.Inventory
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
@@ -65,7 +64,7 @@ class BottomBarScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text(tabNavigator.current.options.title) },
+                        title = { Text("Llorens|gmr Stock - ${tabNavigator.current.options.title}") },
                         backgroundColor = Color(0xFF029083),
                         contentColor = Color.White,
                         modifier = Modifier.statusBarsPadding(),

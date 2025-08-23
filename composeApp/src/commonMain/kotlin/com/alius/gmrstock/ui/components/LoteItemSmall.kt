@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +48,14 @@ fun LoteItemSmall(lote: LoteModel) {
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor,
                 maxLines = 1
+            )
+
+            // NUEVO: Icono debajo del número de lote
+            Icon(
+                imageVector = Icons.Default.Inventory,
+                contentDescription = "Lote",
+                tint = PrimaryColor,
+                modifier = Modifier.size(36.dp)
             )
 
             // Bloque 2: Descripción, fecha, ubicación y peso
@@ -112,4 +122,3 @@ fun LoteItemSmall(lote: LoteModel) {
         )
     }
 }
-

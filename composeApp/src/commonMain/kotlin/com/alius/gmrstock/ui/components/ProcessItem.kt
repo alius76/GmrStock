@@ -26,54 +26,52 @@ fun ProcessItem(proceso: Process, modifier: Modifier = Modifier) {
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .width(180.dp)
+            .height(220.dp)
+            .padding(6.dp)
             .clickable { showDialog = true },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-            // Fila superior: Número de proceso
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            // Número de proceso
+            Text(
+                text = proceso.number,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryColor
+            )
+
+            // NUEVO: Icono debajo del número de proceso
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Proceso",
+                tint = PrimaryColor,
+                modifier = Modifier.size(42.dp)
+            )
+
+            // Información del proceso
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Proceso: ${proceso.number}",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryColor
+                    text = proceso.description,
+                    fontWeight = FontWeight.Bold
                 )
-
-                // Opcional: algún badge si es necesario
-                // Box(...) { Text(...) }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Fila de información con icono
-            Row(
-                verticalAlignment = Alignment.Top
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Proceso",
-                    tint = PrimaryColor,
-                    modifier = Modifier.size(36.dp)
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column {
-                    Text(text = "Descripción: ${proceso.description}", color = TextPrimary)
-                    Text(text = "Fecha: ${formatInstant(proceso.date)}", color = TextPrimary)
-                }
+                Text(text = "Fecha: ${formatInstant(proceso.date)}", color = TextPrimary)
             }
         }
     }
 
+    // Diálogo del proceso
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },

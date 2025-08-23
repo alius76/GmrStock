@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EuroSymbol
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,27 +40,41 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally // centramos todo
+            // ✅ Usa Arrangement.Top para alinear el contenido arriba
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Bloque 1: Nombre del cliente
             Text(
                 text = venta.ventaCliente,
-                //style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor,
                 fontSize = 14.sp,
                 maxLines = 1
             )
+            // ✅ Spacer para agregar margen entre el texto y el ícono
+            Spacer(modifier = Modifier.height(2.dp))
+
+            // 🔹 Ícono de Euro
+            Icon(
+                imageVector = Icons.Filled.EuroSymbol,
+                contentDescription = "Euro Icon",
+                tint = PrimaryColor,
+                modifier = Modifier.size(32.dp)
+            )
+
+            // ✅ Spacer para separar el ícono del siguiente bloque
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Bloque 2: Lote, material y fecha
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally // centramos el bloque interno
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Lote: ${venta.ventaLote}",
-                    color = TextPrimary
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = venta.ventaMaterial,
@@ -70,6 +86,9 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                     color = TextPrimary
                 )
             }
+
+            // ✅ Spacer con peso para empujar el badge hacia abajo
+            Spacer(modifier = Modifier.weight(1f))
 
             // Bloque 3: Badge al final centrado
             Box(
