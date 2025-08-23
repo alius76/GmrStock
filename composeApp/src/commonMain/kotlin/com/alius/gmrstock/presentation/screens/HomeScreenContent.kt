@@ -7,10 +7,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.agruparPorMaterial
@@ -22,18 +23,19 @@ import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.GroupMaterialBottomSheetContent
 import com.alius.gmrstock.ui.components.MaterialGroupCard
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 class HomeScreenContent(
     private val user: User,
-    private val onChangeDatabase: () -> Unit
+    private val onChangeDatabase: () -> Unit,
+    private val onLogoutClick: () -> Unit = {} // ✅ agregado
 ) : Screen {
 
     @Composable
     override fun Content() {
-        val databaseUrl = LocalDatabaseUrl.current  // 🔹 Ahora lo obtenemos del CompositionLocal
+        val databaseUrl = LocalDatabaseUrl.current
         val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
         val coroutineScope = rememberCoroutineScope()
 
@@ -66,18 +68,31 @@ class HomeScreenContent(
 
         Scaffold(
             topBar = {
-                // AppBar personalizada
-                Box(
+                // AppBar personalizada con icono + email
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp) // ajusta margen a tu gusto
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
                 ) {
+                    // Primero el email
                     Text(
-                        text = "Bienvenido, ${user.email}",
-                        fontSize = 16.sp,
-                        color = PrimaryColor,
-                        modifier = Modifier.align(Alignment.TopEnd)
+                        text = user.email,
+                        fontSize = 14.sp,
+                        color = TextSecondary
                     )
+
+                    Spacer(modifier = Modifier.width(0.dp)) // Pequeño espacio entre email y icono
+
+                    // Luego el icono de logout
+                    IconButton(onClick = { onLogoutClick() }) {
+                        Icon(
+                            imageVector = Icons.Default.PowerSettingsNew,
+                            contentDescription = "Cerrar sesión",
+                            tint = PrimaryColor
+                        )
+                    }
                 }
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -88,7 +103,6 @@ class HomeScreenContent(
                     .padding(horizontal = 16.dp)
                     .padding(paddingValues)
             ) {
-                // Reducimos el espacio superior entre la top bar y el contenido
                 Spacer(Modifier.height(4.dp))
 
                 when {
@@ -117,7 +131,7 @@ class HomeScreenContent(
                                     fontWeight = FontWeight.Bold
                                 ),
                                 color = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.padding(top = 4.dp, bottom = 18.dp)
+                                modifier = Modifier.padding(top = 0.dp, bottom = 18.dp)
                             )
 
                             LazyColumn {
@@ -169,7 +183,7 @@ class HomeScreenContent(
                     onViewBigBags = { bigBagsList: List<BigBags> ->
                         println("Mostrando ${bigBagsList.size} BigBags")
                     },
-                    databaseUrl = databaseUrl  // 🔹 sigue usándolo donde lo necesites
+                    databaseUrl = databaseUrl
                 )
             }
         }

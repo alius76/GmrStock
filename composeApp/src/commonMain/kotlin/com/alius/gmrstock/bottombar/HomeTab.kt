@@ -12,7 +12,8 @@ import com.alius.gmrstock.presentation.screens.HomeScreenContent
 
 class HomeTab(
     private val user: User,
-    private val onChangeDatabase: () -> Unit
+    private val onChangeDatabase: () -> Unit,
+    private val onLogoutClick: () -> Unit = {}   // ← callback logout
 ) : Tab {
 
     override val options: TabOptions
@@ -30,6 +31,10 @@ class HomeTab(
 
     @Composable
     override fun Content() {
-        HomeScreenContent(user, onChangeDatabase).Content()
+        HomeScreenContent(
+            user = user,
+            onChangeDatabase = onChangeDatabase,
+            onLogoutClick = onLogoutClick
+        ).Content()
     }
 }

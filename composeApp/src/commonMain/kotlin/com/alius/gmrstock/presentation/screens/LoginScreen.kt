@@ -39,6 +39,7 @@ class LoginScreen(
         val errorMessage by logic.errorMessage.collectAsState()
         val user by logic.user.collectAsState()
 
+
         LaunchedEffect(user) {
             user?.let {
                 navigator.replace(RootScreen())
@@ -56,6 +57,14 @@ class LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                Text(
+                    text = "GMR Stock",
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF029083),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     "Iniciar Sesión / Registro",
                     fontSize = 30.sp,
@@ -144,6 +153,13 @@ class LoginScreen(
                         else Text("Registrar", fontSize = 16.sp, color = Color.White)
                     }
                 }
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Version: 1.0.0",
+                    fontSize = 14.sp,
+                    color = Color.DarkGray
+                )
+
             }
         }
     }

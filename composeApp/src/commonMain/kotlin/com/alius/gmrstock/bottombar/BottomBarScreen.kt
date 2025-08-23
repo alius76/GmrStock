@@ -1,6 +1,7 @@
 package com.alius.gmrstock.bottombar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -9,8 +10,11 @@ import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -39,7 +43,20 @@ class BottomBarScreen(
 
         val databaseUrl = LocalDatabaseUrl.current
 
-        val homeTab = remember { HomeTab(user, onChangeDatabase) }
+        // Ahora pasamos también el callback de logout al HomeTab
+        val homeTab = remember {
+            HomeTab(
+                user = user,
+                onChangeDatabase = onChangeDatabase,
+                onLogoutClick = {
+                    coroutineScope.launch {
+                        authRepository.logout()
+                        parentNavigator.replace(LoginScreen(authRepository))
+                    }
+                }
+            )
+        }
+
         val clientTab = remember { ClientTab(user, databaseUrl) }
         val batchTab = remember { BatchTab(user, databaseUrl) }
         val processTab = remember { ProcessTab(user, databaseUrl) }
@@ -64,29 +81,26 @@ class BottomBarScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("Llorens|gmr Stock - ${tabNavigator.current.options.title}") },
+                        title = { Text("GMR Stock - ${tabNavigator.current.options.title}") },
                         backgroundColor = Color(0xFF029083),
                         contentColor = Color.White,
                         modifier = Modifier.statusBarsPadding(),
                         actions = {
                             // Solo mostrar botones en HomeTab
                             if (tabNavigator.current.key.startsWith(homeTab.key)) {
-                                // Botón Cerrar sesión
-                                IconButton(onClick = {
-                                    coroutineScope.launch {
-                                        authRepository.logout()
-                                        parentNavigator.replace(LoginScreen(authRepository))
-                                    }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.PowerSettingsNew,
-                                        contentDescription = "Cerrar sesión",
-                                        tint = Color.White
+                                // Botón Swap con texto
+                                Row(
+                                    modifier = Modifier
+                                        .clickable { onChangeDatabase() }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "SWAP",
+                                        color = Color.White,
+                                        fontSize = 14.sp
                                     )
-                                }
-
-                                // Botón Swap
-                                IconButton(onClick = { onChangeDatabase() }) {
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Icon(
                                         imageVector = Icons.Default.SwapHoriz,
                                         contentDescription = "Swap base de datos",
