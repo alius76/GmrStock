@@ -1,6 +1,11 @@
 package com.alius.gmrstock.data.firestore
 
 import kotlinx.datetime.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.toInstant
 
 
 fun buildQueryVentasDeHoy(inicio: Instant, fin: Instant): String {
@@ -295,6 +300,57 @@ fun buildQueryUltimosProcesos(limit: Int = 10): String {
         ],
         "limit": $limit
       }
+    }
+    """.trimIndent()
+}
+
+fun buildQueryRatiosDelMesActual(): String {
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    val year = now.year
+    val month = now.monthNumber
+
+    // Primer día del mes a medianoche
+    val inicioDelMes = LocalDateTime(year, month, 1, 0, 0)
+        .toInstant(TimeZone.currentSystemDefault())
+
+    // Primer día del mes siguiente a medianoche
+    val primerDiaSiguienteMes = if (month == 12) {
+        LocalDateTime(year + 1, 1, 1, 0, 0).toInstant(TimeZone.currentSystemDefault())
+    } else {
+        LocalDateTime(year, month + 1, 1, 0, 0).toInstant(TimeZone.currentSystemDefault())
+    }
+
+    val finDelMes = primerDiaSiguienteMes
+
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "ratio" }],
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "GREATER_THAN_OR_EQUAL",
+                                "value": { "timestampValue": "$inicioDelMes" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "LESS_THAN",
+                                "value": { "timestampValue": "$finDelMes" }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "ratioDate" }, "direction": "ASCENDING" }
+            ]
+        }
     }
     """.trimIndent()
 }

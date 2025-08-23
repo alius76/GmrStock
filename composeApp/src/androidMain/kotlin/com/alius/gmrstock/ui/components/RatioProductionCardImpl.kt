@@ -13,8 +13,12 @@ import androidx.compose.ui.unit.dp
 import com.alius.gmrstock.ui.theme.PrimaryColor
 
 @Composable
-actual fun RatioProductionCard(modifier: Modifier) {
-    val data = generateRatioData() // 31 días de datos
+actual fun RatioProductionCard(
+    modifier: Modifier,
+    ratioDataList: List<RatioData>
+) {
+    val data = ratioDataList // <-- ahora usa la lista recibida
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
@@ -29,7 +33,7 @@ actual fun RatioProductionCard(modifier: Modifier) {
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val maxWeight = 100_000f
-            val stepX = chartWidth / (data.size - 1)
+            val stepX = if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
             val scaleY = chartHeight / maxWeight
 
             // Eje Y abreviado
@@ -56,9 +60,9 @@ actual fun RatioProductionCard(modifier: Modifier) {
             // Línea de datos
             for (i in 0 until data.size - 1) {
                 val x1 = leftPadding + i * stepX
-                val y1 = chartHeight - data[i].listRatioTotalWeight * scaleY
+                val y1 = chartHeight - data[i].totalWeight * scaleY
                 val x2 = leftPadding + (i + 1) * stepX
-                val y2 = chartHeight - data[i + 1].listRatioTotalWeight * scaleY
+                val y2 = chartHeight - data[i + 1].totalWeight * scaleY
                 drawLine(
                     color = PrimaryColor,
                     start = Offset(x1, y1),
@@ -72,7 +76,7 @@ actual fun RatioProductionCard(modifier: Modifier) {
             xIndices.forEach { i ->
                 val x = leftPadding + i * stepX
                 drawContext.canvas.nativeCanvas.drawText(
-                    "${i + 1}",
+                    "${data[i].day}",
                     x,
                     chartHeight + 20f,
                     android.graphics.Paint().apply {

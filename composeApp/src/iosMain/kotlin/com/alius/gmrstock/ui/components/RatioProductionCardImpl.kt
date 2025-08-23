@@ -18,9 +18,6 @@ import platform.Foundation.create
 import platform.CoreGraphics.CGPointMake
 import platform.UIKit.*
 
-/**
- * Helper nativo para dibujar texto en iOS
- */
 @OptIn(ExperimentalForeignApi::class)
 fun drawTextAt(x: Double, y: Double, text: String, fontSize: Double = 12.0) {
     val nsText: NSString = NSString.create(string = text)
@@ -34,8 +31,12 @@ fun drawTextAt(x: Double, y: Double, text: String, fontSize: Double = 12.0) {
 }
 
 @Composable
-actual fun RatioProductionCard(modifier: Modifier) {
-    val data = generateRatioData()
+actual fun RatioProductionCard(
+    modifier: Modifier,
+    ratioDataList: List<RatioData>
+) {
+    val data = ratioDataList
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
@@ -54,7 +55,7 @@ actual fun RatioProductionCard(modifier: Modifier) {
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val maxWeight = 100_000f
-            val stepX = chartWidth / (data.size - 1)
+            val stepX = if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
             val scaleY = chartHeight / maxWeight
 
             // Eje Y con etiquetas
@@ -67,7 +68,6 @@ actual fun RatioProductionCard(modifier: Modifier) {
                     start = Offset(leftPadding, y),
                     end = Offset(leftPadding + chartWidth, y)
                 )
-                // Etiqueta Y nativa
                 drawTextAt(
                     x = 0.0,
                     y = y.toDouble(),
@@ -79,9 +79,9 @@ actual fun RatioProductionCard(modifier: Modifier) {
             // Línea de datos
             for (i in 0 until data.size - 1) {
                 val x1 = leftPadding + i * stepX
-                val y1 = chartHeight - data[i].listRatioTotalWeight * scaleY
+                val y1 = chartHeight - data[i].totalWeight * scaleY
                 val x2 = leftPadding + (i + 1) * stepX
-                val y2 = chartHeight - data[i + 1].listRatioTotalWeight * scaleY
+                val y2 = chartHeight - data[i + 1].totalWeight * scaleY
                 drawLine(
                     color = PrimaryColor,
                     start = Offset(x1, y1),
@@ -90,18 +90,18 @@ actual fun RatioProductionCard(modifier: Modifier) {
                 )
             }
 
-            // Eje X: Día 1 y último día
+            // Eje X: primer y último día real
             val baseY = chartHeight + 20f
             drawTextAt(
                 x = leftPadding.toDouble(),
                 y = baseY.toDouble(),
-                text = "Día 1",
+                text = "Día ${data.first().day}",
                 fontSize = 12.0
             )
             drawTextAt(
                 x = (leftPadding + (data.size - 1) * stepX - 30f).toDouble(),
                 y = baseY.toDouble(),
-                text = "Día ${data.size}",
+                text = "Día ${data.last().day}",
                 fontSize = 12.0
             )
         }

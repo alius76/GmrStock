@@ -17,28 +17,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getProcessRepository
+import com.alius.gmrstock.data.getRatioRepository
 import com.alius.gmrstock.domain.model.Process
+import com.alius.gmrstock.domain.model.Ratio
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.ProcessItem
+import com.alius.gmrstock.ui.components.RatioData
 import com.alius.gmrstock.ui.components.RatioProductionCard
+import com.alius.gmrstock.ui.components.generateRatioDataFromCollection
 import kotlinx.coroutines.launch
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProcessScreenContent(user: User, databaseUrl: String) {
-    val repository = remember(databaseUrl) { getProcessRepository(databaseUrl) }
+    // Repositorios
+    val processRepository = remember(databaseUrl) { getProcessRepository(databaseUrl) }
+    val ratioRepository = remember(databaseUrl) { getRatioRepository(databaseUrl) }
+
+    // Estados
     var procesos by remember { mutableStateOf<List<Process>>(emptyList()) }
+    var ratios by remember { mutableStateOf<List<Ratio>>(emptyList()) }
+    var ratioDataList by remember { mutableStateOf<List<RatioData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
+    val scope = rememberCoroutineScope()
+
+    // Cargar procesos y ratios
     LaunchedEffect(databaseUrl) {
         loading = true
-        procesos = repository.listarProcesos()
-        println("✅ Total de procesos obtenidos: ${procesos.size} en iOS/Android")
-        loading = false
-    }
-
-    // Mensaje de debug visual y en consola
-    LaunchedEffect(Unit) {
-        println("📱 ProcessScreenContent se está mostrando en iOS/Android")
+        scope.launch {
+            procesos = processRepository.listarProcesos()
+            println("✅ Total de procesos obtenidos: ${procesos.size}")
+            ratios = ratioRepository.listarRatiosDelMes()
+            ratioDataList = generateRatioDataFromCollection(ratios)
+            println("✅ Total de ratios del mes: ${ratioDataList.size}")
+            loading = false
+        }
     }
 
     if (loading) {
@@ -52,7 +66,7 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
+            // Título procesos
             item {
                 Spacer(modifier = Modifier.height(20.dp))
                 Text(
@@ -64,7 +78,10 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )
+            }
 
+            // Lista de procesos
+            item {
                 if (procesos.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -100,12 +117,7 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                             }
                         }
                     }
-                }
-            }
-
-            // Lista horizontal de procesos
-            item {
-                if (procesos.isNotEmpty()) {
+                } else {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -117,25 +129,27 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // Título de la gráfica
+            // Título gráfica
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "Producción del mes",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold),
+                        fontWeight = FontWeight.Bold
+                    ),
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
 
-            // Card de la gráfica
+            // Gráfica
             item {
                 RatioProductionCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp)
+                        .height(250.dp),
+                    ratioDataList = ratioDataList
                 )
             }
         }
