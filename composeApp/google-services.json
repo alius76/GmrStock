@@ -1,13 +1,32 @@
 {
   "project_info": {
-    "project_number": "384550126211",
-    "project_id": "gmrstock",
-    "storage_bucket": "gmrstock.firebasestorage.app"
+    "project_number": "983598044129",
+    "project_id": "firestoreavanzadocompose-62d26",
+    "storage_bucket": "firestoreavanzadocompose-62d26.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:384550126211:android:d532a12e79a55ff1e4d1b6",
+        "mobilesdk_app_id": "1:983598044129:android:db05f09097f508faca38a0",
+        "android_client_info": {
+          "package_name": "com.alius.antex"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAt5zKICoaw7Q7YOMXxgPqZ6dMG_8EYYl0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983598044129:android:63e44657a603720eca38a0",
         "android_client_info": {
           "package_name": "com.alius.gmrstock"
         }
@@ -15,7 +34,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAadbArjVqNU2rIw-m7Rmk-K2Oj_AlphbM"
+          "current_key": "AIzaSyAt5zKICoaw7Q7YOMXxgPqZ6dMG_8EYYl0"
         }
       ],
       "services": {

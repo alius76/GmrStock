@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyB3ENndGqs_EkBT_43YseQ3FvU0QwmAb7w</string>
+	<string>AIzaSyAz058oAAv4YoCQoNMTjg8SnrH2wBLpqW0</string>
 	<key>GCM_SENDER_ID</key>
-	<string>384550126211</string>
+	<string>983598044129</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.alius.gmrstock</string>
 	<key>PROJECT_ID</key>
-	<string>gmrstock</string>
+	<string>firestoreavanzadocompose-62d26</string>
 	<key>STORAGE_BUCKET</key>
-	<string>gmrstock.firebasestorage.app</string>
+	<string>firestoreavanzadocompose-62d26.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:384550126211:ios:11d90b418f899a7ae4d1b6</string>
+	<string>1:983598044129:ios:1880c81c7fda1e68ca38a0</string>
 </dict>
 </plist>

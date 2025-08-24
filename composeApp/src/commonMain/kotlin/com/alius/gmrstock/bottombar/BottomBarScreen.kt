@@ -25,6 +25,7 @@ import com.alius.gmrstock.data.AuthRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.presentation.screens.LoginScreen
 import com.alius.gmrstock.core.LocalDatabaseUrl
+import com.alius.gmrstock.data.FirestoreUrls
 import kotlinx.coroutines.launch
 
 class BottomBarScreen(
@@ -42,6 +43,12 @@ class BottomBarScreen(
         var homeRefreshKey by remember { mutableStateOf(0) }
 
         val databaseUrl = LocalDatabaseUrl.current
+
+        val identificadorFabrica = when (databaseUrl) {
+            FirestoreUrls.DB1_URL -> "Planta 07"
+            FirestoreUrls.DB2_URL -> "Planta 08"
+            else -> "Desconocida"
+        }
 
         // Ahora pasamos también el callback de logout al HomeTab
         val homeTab = remember {
@@ -81,7 +88,7 @@ class BottomBarScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("GMR Stock - ${tabNavigator.current.options.title}") },
+                        title = { Text("GMR Stock - $identificadorFabrica") },
                         backgroundColor = Color(0xFF029083),
                         contentColor = Color.White,
                         modifier = Modifier.statusBarsPadding(),
