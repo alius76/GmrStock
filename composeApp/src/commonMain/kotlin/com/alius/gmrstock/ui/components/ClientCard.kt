@@ -101,7 +101,7 @@ fun DetailRow(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.widthIn(min = 100.dp)
+            modifier = Modifier.widthIn(min = 70.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(

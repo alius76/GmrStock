@@ -28,7 +28,7 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
 
     Card(
         modifier = modifier
-            .width(180.dp)
+            .width(200.dp)
             .height(220.dp)
             .padding(6.dp)
             .clickable { showDialog = true },

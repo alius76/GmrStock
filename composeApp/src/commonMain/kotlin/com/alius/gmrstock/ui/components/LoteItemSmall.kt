@@ -26,7 +26,7 @@ fun LoteItemSmall(lote: LoteModel) {
 
     Card(
         modifier = Modifier
-            .width(180.dp)
+            .width(200.dp)
             .height(220.dp)
             .padding(6.dp)
             .clickable { showBigBagsDialog = true },
