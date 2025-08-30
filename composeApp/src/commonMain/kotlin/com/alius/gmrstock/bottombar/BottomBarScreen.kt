@@ -137,10 +137,10 @@ class BottomBarScreen(
                         )
 
                         BottomNavigationItem(
-                            selected = tabNavigator.current.key == clientTab.key,
-                            onClick = { tabNavigator.current = clientTab },
-                            icon = { Icon(Icons.Filled.Person, contentDescription = null) },
-                            label = { Text(clientTab.options.title) }
+                            selected = tabNavigator.current.key == processTab.key,
+                            onClick = { tabNavigator.current = processTab },
+                            icon = { Icon(Icons.Default.Autorenew, contentDescription = null) },
+                            label = { Text(processTab.options.title) }
                         )
 
                         BottomNavigationItem(
@@ -151,17 +151,17 @@ class BottomBarScreen(
                         )
 
                         BottomNavigationItem(
-                            selected = tabNavigator.current.key == processTab.key,
-                            onClick = { tabNavigator.current = processTab },
-                            icon = { Icon(Icons.Default.Autorenew, contentDescription = null) },
-                            label = { Text(processTab.options.title) }
-                        )
-
-                        BottomNavigationItem(
                             selected = tabNavigator.current.key == transferTab.key,
                             onClick = { tabNavigator.current = transferTab },
                             icon = { Icon(Icons.Filled.EuroSymbol, contentDescription = null) },
                             label = { Text(transferTab.options.title) }
+                        )
+
+                        BottomNavigationItem(
+                            selected = tabNavigator.current.key == clientTab.key,
+                            onClick = { tabNavigator.current = clientTab },
+                            icon = { Icon(Icons.Filled.BarChart, contentDescription = null) },
+                            label = { Text(clientTab.options.title) }
                         )
                     }
                 }

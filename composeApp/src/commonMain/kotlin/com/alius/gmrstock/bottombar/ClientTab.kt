@@ -1,7 +1,7 @@
 package com.alius.gmrstock.bottombar
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.VectorPainter
@@ -22,11 +22,11 @@ class ClientTab(
     override val options: TabOptions
         @Composable
         get() {
-            val icon: VectorPainter = rememberVectorPainter(Icons.Default.Person)
+            val icon: VectorPainter = rememberVectorPainter(Icons.Filled.BarChart)
             return remember {
                 TabOptions(
                     index = 2u,
-                    title = "Clientes",
+                    title = "Ranking",
                     icon = icon
                 )
             }
