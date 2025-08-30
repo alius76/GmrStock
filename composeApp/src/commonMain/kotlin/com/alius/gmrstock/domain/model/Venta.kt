@@ -9,5 +9,6 @@ data class Venta(
     val ventaLote: String = "",
     val ventaMaterial: String = "",
     val ventaFecha: Instant?,
+    val ventaPesoTotal: String? = null,
     val ventaBigbags: List<VentaBigbag> = emptyList()
 )

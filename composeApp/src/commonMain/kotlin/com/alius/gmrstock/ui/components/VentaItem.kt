@@ -82,6 +82,15 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                     Text(text = "Lote: ${venta.ventaLote}", color = TextPrimary)
                     Text(text = "Material: ${venta.ventaMaterial}", color = TextPrimary)
                     Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}", color = TextPrimary)
+
+                    // NUEVO: Peso total
+                    val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "$it Kg" }
+                        ?: "No disponible"
+
+                    Text(
+                        text = "Peso total: $pesoTexto",
+                        color = TextPrimary,
+                    )
                 }
             }
         }

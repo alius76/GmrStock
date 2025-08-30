@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getVentaRepository
@@ -20,10 +18,8 @@ import com.alius.gmrstock.ui.components.ClientGroupSellCard
 import com.alius.gmrstock.ui.components.GroupClientBottomSheetContent
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -62,16 +58,18 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
         .groupBy { it.ventaCliente }
         .map { (clienteNombre, ventasCliente) ->
             val totalKilos = ventasCliente.sumOf { venta ->
-                venta.ventaBigbags.sumOf { it.ventaBbWeight.toIntOrNull() ?: 0 }
+                // Si ventaPesoTotal existe y tiene valor válido, usarlo
+                venta.ventaPesoTotal?.toIntOrNull()
+                    ?: venta.ventaBigbags.sumOf { it.ventaBbWeight.toIntOrNull() ?: 0 }
             }
 
             ClientGroupSell(
                 cliente = com.alius.gmrstock.domain.model.Cliente(cliNombre = clienteNombre),
                 totalVentasMes = ventasCliente.size,
-                totalKilosVendidos = totalKilos.toString()
+                totalKilosVendidos = totalKilos
             ) to ventasCliente
         }
-        .sortedBy { it.first.cliente.cliNombre.lowercase() }
+        .sortedByDescending { it.first.totalKilosVendidos }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (loading) {
@@ -90,9 +88,9 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
             ) {
                 // Encabezado con título
                 item {
-                    Spacer(modifier = Modifier.height(20.dp)) // espacio específico arriba del título
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        text = "Clientes activos en $currentMonth",
+                        text = "Top clientes en $currentMonth",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold

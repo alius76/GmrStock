@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 data class ClientGroupSell(
     val cliente: Cliente,
     val totalVentasMes: Int,
-    val totalKilosVendidos: String
+    val totalKilosVendidos: Int
 )

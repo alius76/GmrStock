@@ -29,6 +29,10 @@ object VentaMapper {
                 }
             } ?: emptyList()
 
+        // NUEVO: lectura de ventaPesoTotal
+        val ventaPesoTotal = fields["ventaPesoTotal"]?.jsonObject
+            ?.get("stringValue")?.jsonPrimitive?.contentOrNull
+
         return Venta(
             ventaCliente = fields["ventaCliente"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             ventaLote = fields["ventaLote"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
@@ -36,9 +40,9 @@ object VentaMapper {
             ventaFecha = fields["ventaFecha"]?.jsonObject?.get("timestampValue")?.jsonPrimitive?.contentOrNull?.let {
                 Instant.parse(it)
             },
-            ventaBigbags = ventaBigbags
+            ventaBigbags = ventaBigbags,
+            ventaPesoTotal = ventaPesoTotal
         )
     }
 }
-
 
