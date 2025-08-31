@@ -16,7 +16,7 @@ data class LoteModel(
     val totalWeight: String,
     val qrCode: String?,
     val bigBag: List<BigBags>,
-    val booked: String?,
+    val booked: Cliente? = null,
     val dateBooked: Instant?,
     val remark: String,
     val createdAt: Instant?

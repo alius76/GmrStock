@@ -16,7 +16,7 @@ data class LoteDtoAndroid(
     var totalWeight: String = "",
     var qrCode: String? = null,
     var bigBag: List<BigBags> = emptyList(),
-    val booked: String? = null,
+    val booked: Cliente? = null,
     var dateBooked: Timestamp? = null,
     var remark: String = ""
 ) {

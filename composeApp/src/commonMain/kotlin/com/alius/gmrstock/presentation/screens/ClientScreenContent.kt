@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import androidx.compose.ui.Alignment
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -31,9 +32,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
     var loading by remember { mutableStateOf(true) }
 
     val coroutineScope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(databaseUrl) {
         loading = true
@@ -41,24 +40,20 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
         loading = false
     }
 
-    // Mapeo de meses en español
     val monthNamesEs = listOf(
         "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
 
-    // Obtener mes actual multiplataforma
     val currentMonth = remember {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        monthNamesEs[now.monthNumber - 1] // monthNumber es 1..12
+        monthNamesEs[now.monthNumber - 1]
     }
 
-    // Agrupar ventas por cliente y calcular total kilos
     val grouped: List<Pair<ClientGroupSell, List<Venta>>> = ventas
         .groupBy { it.ventaCliente }
         .map { (clienteNombre, ventasCliente) ->
             val totalKilos = ventasCliente.sumOf { venta ->
-                // Si ventaPesoTotal existe y tiene valor válido, usarlo
                 venta.ventaPesoTotal?.toIntOrNull()
                     ?: venta.ventaBigbags.sumOf { it.ventaBbWeight.toIntOrNull() ?: 0 }
             }
@@ -75,7 +70,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
         if (loading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = androidx.compose.ui.Alignment.Center
+                contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
             }
@@ -86,7 +81,6 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Encabezado con título
                 item {
                     Spacer(modifier = Modifier.height(20.dp))
                     Text(
@@ -113,8 +107,8 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // BottomSheet usando ModalBottomSheet
-            if (selectedClientGroup != null) {
+            // Protección: solo mostrar BottomSheet si selectedClientGroup no es null
+            selectedClientGroup?.let { clientGroup ->
                 ModalBottomSheet(
                     onDismissRequest = {
                         coroutineScope.launch { bottomSheetState.hide() }
@@ -124,7 +118,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                     modifier = Modifier.fillMaxHeight(0.45f)
                 ) {
                     GroupClientBottomSheetContent(
-                        cliente = selectedClientGroup!!.cliente,
+                        cliente = clientGroup.cliente,
                         ventas = selectedClientVentas,
                         onDismissRequest = {
                             coroutineScope.launch { bottomSheetState.hide() }

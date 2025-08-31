@@ -1,6 +1,7 @@
 package com.alius.gmrstock.data
 
 import com.alius.gmrstock.domain.model.BigBags
+import com.alius.gmrstock.domain.model.Cliente
 import kotlinx.serialization.Serializable
 
 
@@ -17,7 +18,7 @@ data class LoteDto(
     val totalWeight: String,
     val qrCode: String? = null,
     val bigBag: List<BigBags> = emptyList(),
-    val booked: String? = null,
+    val booked: Cliente? = null,
     val dateBooked: Long? = null,
     val remark: String = "",
     val createdAt: Long? = null

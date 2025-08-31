@@ -1,15 +1,18 @@
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Expand
 import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.BigBags
@@ -35,7 +38,7 @@ fun LoteCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-        .clickable { showBigBagsDialog = true },
+            .clickable { showBigBagsDialog = true },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
@@ -58,24 +61,35 @@ fun LoteCard(
                     modifier = Modifier.weight(1f)
                 )
 
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            try {
-                                onGeneratePdf(lote)
-                                snackbarHostState.showSnackbar("PDF generado correctamente para el lote ${lote.number}")
-                            } catch (e: Exception) {
-                                snackbarHostState.showSnackbar("Error al generar PDF: ${e.message}")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Tooltip para cliente reservado
+                    if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                        BookedTooltipIcon(lote = lote)
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    // Botón para generar PDF
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                try {
+                                    onGeneratePdf(lote)
+                                    snackbarHostState.showSnackbar(
+                                        "PDF generado correctamente para el lote ${lote.number}"
+                                    )
+                                } catch (e: Exception) {
+                                    snackbarHostState.showSnackbar("Error al generar PDF: ${e.message}")
+                                }
                             }
-                        }
-                    },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        Icons.Default.PictureAsPdf,
-                        contentDescription = "Generar PDF",
-                        tint = PrimaryColor
-                    )
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.PictureAsPdf,
+                            contentDescription = "Generar PDF",
+                            tint = PrimaryColor
+                        )
+                    }
                 }
             }
 
@@ -93,15 +107,13 @@ fun LoteCard(
         }
     }
 
+    // Dialog para BigBags
     if (showBigBagsDialog) {
         AlertDialog(
             onDismissRequest = { showBigBagsDialog = false },
             confirmButton = {
                 TextButton(onClick = { showBigBagsDialog = false }) {
-                    Text(
-                        "Cerrar",
-                        color = PrimaryColor
-                    )
+                    Text("Cerrar", color = PrimaryColor)
                 }
             },
             title = {
@@ -116,6 +128,41 @@ fun LoteCard(
                 BigBagsDialogContent(bigBags = lote.bigBag)
             }
         )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun BookedTooltipIcon(lote: LoteModel) {
+    var showTooltip by remember { mutableStateOf(false) }
+
+    Box {
+        Icon(
+            imageVector = Icons.Default.VpnKey,
+            contentDescription = "Lote reservado",
+            tint = PrimaryColor,
+            modifier = Modifier
+                .size(24.dp)
+                .combinedClickable(
+                    onClick = { /* no hacemos nada al click normal */ },
+                    onLongClick = { showTooltip = true } // muestra tooltip al mantener presionado
+                )
+        )
+
+        DropdownMenu(
+            expanded = showTooltip,
+            onDismissRequest = { showTooltip = false },
+            offset = DpOffset(x = 0.dp, y = 8.dp)
+        ) {
+            Text(
+                text = "Nombre: ${lote.booked?.cliNombre}",
+                modifier = Modifier.padding(8.dp)
+            )
+            Text(
+                text = "Observaciones: ${lote.booked?.cliObservaciones ?: "-"}",
+                modifier = Modifier.padding(8.dp)
+            )
+        }
     }
 }
 

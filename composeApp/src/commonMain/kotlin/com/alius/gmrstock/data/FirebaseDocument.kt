@@ -6,6 +6,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import com.alius.gmrstock.domain.model.BigBags
+import com.alius.gmrstock.domain.model.Cliente
 import kotlinx.datetime.Instant
 
 @Serializable
@@ -20,16 +21,14 @@ data class FirebaseDocument(
         fun parseTimestampToMillis(key: String): Long? {
             val timestampStr = f[key]?.jsonObject?.get("timestampValue")?.jsonPrimitive?.content
             return try {
-                timestampStr?.let {
-                    Instant.parse(it).toEpochMilliseconds()
-                }
+                timestampStr?.let { Instant.parse(it).toEpochMilliseconds() }
             } catch (e: Exception) {
                 println("⚠️ Error al parsear timestamp '$key': ${e.message}")
                 null
             }
         }
 
-        // Parsear la lista de BigBags del campo "bigBag"
+        // Parsear la lista de BigBags
         val bigBagList = f["bigBag"]
             ?.jsonObject
             ?.get("arrayValue")
@@ -51,10 +50,20 @@ data class FirebaseDocument(
                 )
             } ?: emptyList()
 
-        // Parsear el campo booked si existe
-        val bookedEmail = f["booked"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content
+        // Parsear booked como Cliente
+        val bookedCliente = f["booked"]?.jsonObject
+            ?.get("mapValue")
+            ?.jsonObject
+            ?.get("fields")
+            ?.jsonObject
+            ?.let { bf ->
+                Cliente(
+                    cliNombre = bf["cliNombre"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                    cliObservaciones = bf["cliObservaciones"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
+                )
+            }
 
-        // Finalmente crear el DTO completo
+        // Crear el DTO completo
         return LoteDto(
             id = name.substringAfterLast("/"),
             number = f["number"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
@@ -67,13 +76,10 @@ data class FirebaseDocument(
             totalWeight = f["totalWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             qrCode = f["qrCode"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content,
             bigBag = bigBagList,
-            booked = bookedEmail,
+            booked = bookedCliente,
             dateBooked = parseTimestampToMillis("dateBooked"),
             remark = f["remark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-            createdAt = parseTimestampToMillis("createdAt") // ⬅ nuevo campo mapeado
+            createdAt = parseTimestampToMillis("createdAt")
         )
     }
-
 }
-
-
