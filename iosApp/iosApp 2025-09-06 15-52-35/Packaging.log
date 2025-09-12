@@ -1,0 +1,945 @@
+2025-09-06 13:51:01 +0000  Initial pipeline context: <IDEDistributionProcessingPipelineContext: 0x137834ce0; archive(resolved)="<IDEArchive: 0x60008b9fe680>", distributionTask(resolved)="2", distributionDestination(resolved)="2", distributionMethod(resolved)="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team(resolved)="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	Chain (17, self inclusive):
+	<IDEDistributionProcessingPipelineContext: 0x137834ce0; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionProcessingPipelineContext: 0x37abd3160; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x13777da80; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x37c076ec0; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x37c06a1e0; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x134042c60; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x37c00cc70; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x336130ab0; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x378d8eb10; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x37c068150; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x37c047240; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x378d44b00; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x60002085c400; teamID='2JHGW35MW8', teamName='OSCAR ALEJANDRO BENTOS', teamType='Individual', username='aliusdevteam@gmail.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x378d43290; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="(null)">
+	<IDEDistributionContext: 0x37abb3f00; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="<IDEDistributionMethodiOSAppStoreDistribution: 0x6000110082f0>", team="(null)">
+	<IDEDistributionContext: 0x37abb3af0; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="(null)", team="(null)">
+	<IDEDistributionContext: 0x37abfb0c0; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="(null)", team="(null)">
+	<IDEDistributionContext: 0x37ab4d800; archive = "<IDEArchive: 0x60008b9fe680>", distributionMethod="(null)", team="(null)">
+</IDEDistributionProcessingPipelineContext: 0x137834ce0>
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionCreateDestRootStep
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionCopyItemStep
+2025-09-06 13:51:01 +0000  Running /usr/bin/ditto '-V' '/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app'
+2025-09-06 13:51:01 +0000  >>> Copying /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app 
+2025-09-06 13:51:01 +0000  copying file ./_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  28371 bytes for ./_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseCore.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  855 bytes for ./Firebase_FirebaseCore.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseCore.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  692 bytes for ./Firebase_FirebaseCore.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./gRPC_grpcppWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./gRPC_grpcppWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./gRPC_grpcppWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  685 bytes for ./gRPC_grpcppWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GTMSessionFetcher_GTMSessionFetcherCore.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  598 bytes for ./GTMSessionFetcher_GTMSessionFetcherCore.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GTMSessionFetcher_GTMSessionFetcherCore.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  722 bytes for ./GTMSessionFetcher_GTMSessionFetcherCore.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./leveldb_leveldb.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  856 bytes for ./leveldb_leveldb.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./leveldb_leveldb.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  672 bytes for ./leveldb_leveldb.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./nanopb_nanopb.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  374 bytes for ./nanopb_nanopb.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./nanopb_nanopb.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  666 bytes for ./nanopb_nanopb.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./AppIcon60x60@2x.png ... 
+2025-09-06 13:51:01 +0000  10164 bytes for ./AppIcon60x60@2x.png
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  744 bytes for ./GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-NSData.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./GoogleUtilities_GoogleUtilities-NSData.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-NSData.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  718 bytes for ./GoogleUtilities_GoogleUtilities-NSData.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseInstallations.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  1105 bytes for ./Firebase_FirebaseInstallations.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseInstallations.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  710 bytes for ./Firebase_FirebaseInstallations.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./gRPC_grpcWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./gRPC_grpcWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./gRPC_grpcWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  681 bytes for ./gRPC_grpcWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseCoreInternal.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  855 bytes for ./Firebase_FirebaseCoreInternal.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseCoreInternal.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  708 bytes for ./Firebase_FirebaseCoreInternal.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseAuth.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  2102 bytes for ./Firebase_FirebaseAuth.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseAuth.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  692 bytes for ./Firebase_FirebaseAuth.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Logger.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./GoogleUtilities_GoogleUtilities-Logger.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Logger.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  718 bytes for ./GoogleUtilities_GoogleUtilities-Logger.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Reachability.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./GoogleUtilities_GoogleUtilities-Reachability.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Reachability.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  730 bytes for ./GoogleUtilities_GoogleUtilities-Reachability.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseFirestore.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  1105 bytes for ./Firebase_FirebaseFirestore.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseFirestore.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  702 bytes for ./Firebase_FirebaseFirestore.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GoogleService-Info.plist ... 
+2025-09-06 13:51:01 +0000  510 bytes for ./GoogleService-Info.plist
+2025-09-06 13:51:01 +0000  copying file ./gRPC_opensslWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./gRPC_opensslWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./gRPC_opensslWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  687 bytes for ./gRPC_opensslWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Promises_FBLPromises.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  373 bytes for ./Promises_FBLPromises.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Promises_FBLPromises.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  682 bytes for ./Promises_FBLPromises.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Network.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  856 bytes for ./GoogleUtilities_GoogleUtilities-Network.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Network.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  720 bytes for ./GoogleUtilities_GoogleUtilities-Network.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Assets.car ... 
+2025-09-06 13:51:01 +0000  2283167 bytes for ./Assets.car
+2025-09-06 13:51:01 +0000  copying file ./AppIcon76x76@2x~ipad.png ... 
+2025-09-06 13:51:01 +0000  14577 bytes for ./AppIcon76x76@2x~ipad.png
+2025-09-06 13:51:01 +0000  copying file ./GmrStock ... 
+2025-09-06 13:51:01 +0000  43716032 bytes for ./GmrStock
+2025-09-06 13:51:01 +0000  copying file ./Firebase_FirebaseCoreExtension.bundle/PrivacyInfo.xcprivacy ... 
+478 bytes for ./Firebase_FirebaseCoreExtension.bundle/PrivacyInfo.xcprivacy
+copying file ./Firebase_FirebaseCoreExtension.bundle/Info.plist ... 
+710 bytes for ./Firebase_FirebaseCoreExtension.bundle/Info.plist
+copying file ./GoogleUtilities_GoogleUtilities-UserDefaults.bundle/PrivacyInfo.xcprivacy ... 
+911 bytes for ./GoogleUtilities_GoogleUtilities-UserDefaults.bundle/PrivacyInfo.xcprivacy
+copying file ./GoogleUtilities_GoogleUtilities-UserDefaults.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  730 bytes for ./GoogleUtilities_GoogleUtilities-UserDefaults.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./compose-resources/composeResources/gmrstock.composeapp.generated.resources/drawable/compose-multiplatform.xml ... 
+2025-09-06 13:51:01 +0000  1493 bytes for ./compose-resources/composeResources/gmrstock.composeapp.generated.resources/drawable/compose-multiplatform.xml
+2025-09-06 13:51:01 +0000  copying file ./compose-resources/gmr_stock_p08.png ... 
+2025-09-06 13:51:01 +0000  53794 bytes for ./compose-resources/gmr_stock_p08.png
+2025-09-06 13:51:01 +0000  copying file ./compose-resources/gmr_stock_p07.png ... 
+2025-09-06 13:51:01 +0000  53619 bytes for ./compose-resources/gmr_stock_p07.png
+2025-09-06 13:51:01 +0000  copying file ./compose-resources/logo.png ... 
+2025-09-06 13:51:01 +0000  20861 bytes for ./compose-resources/logo.png
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Environment.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  855 bytes for ./GoogleUtilities_GoogleUtilities-Environment.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-Environment.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  728 bytes for ./GoogleUtilities_GoogleUtilities-Environment.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpcpp.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  2296 bytes for ./Frameworks/grpcpp.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpcpp.framework/grpcpp ... 
+2025-09-06 13:51:01 +0000  51472 bytes for ./Frameworks/grpcpp.framework/grpcpp
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpcpp.framework/grpcpp.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  599 bytes for ./Frameworks/grpcpp.framework/grpcpp.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpcpp.framework/grpcpp.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  759 bytes for ./Frameworks/grpcpp.framework/grpcpp.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpcpp.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1509 bytes for ./Frameworks/grpcpp.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAppMeasurement.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  1798 bytes for ./Frameworks/GoogleAppMeasurement.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement ... 
+2025-09-06 13:51:01 +0000  51504 bytes for ./Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAppMeasurement.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1553 bytes for ./Frameworks/GoogleAppMeasurement.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseAnalytics.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  1798 bytes for ./Frameworks/FirebaseAnalytics.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics ... 
+2025-09-06 13:51:01 +0000  51488 bytes for ./Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseAnalytics.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1544 bytes for ./Frameworks/FirebaseAnalytics.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAdsOnDeviceConversion.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  1798 bytes for ./Frameworks/GoogleAdsOnDeviceConversion.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion ... 
+2025-09-06 13:51:01 +0000  51520 bytes for ./Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAdsOnDeviceConversion.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  793 bytes for ./Frameworks/GoogleAdsOnDeviceConversion.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseFirestoreInternal.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  2404 bytes for ./Frameworks/FirebaseFirestoreInternal.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal ... 
+2025-09-06 13:51:01 +0000  51504 bytes for ./Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  1105 bytes for ./Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/FirebaseFirestoreInternal.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1569 bytes for ./Frameworks/FirebaseFirestoreInternal.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpc.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  2288 bytes for ./Frameworks/grpc.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpc.framework/grpc ... 
+2025-09-06 13:51:01 +0000  51472 bytes for ./Frameworks/grpc.framework/grpc
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpc.framework/grpc.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  599 bytes for ./Frameworks/grpc.framework/grpc.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpc.framework/grpc.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  755 bytes for ./Frameworks/grpc.framework/grpc.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/grpc.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1503 bytes for ./Frameworks/grpc.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/openssl_grpc.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  2320 bytes for ./Frameworks/openssl_grpc.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/openssl_grpc.framework/openssl_grpc ... 
+2025-09-06 13:51:01 +0000  51488 bytes for ./Frameworks/openssl_grpc.framework/openssl_grpc
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/openssl_grpc.framework/openssl_grpc.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  599 bytes for ./Frameworks/openssl_grpc.framework/openssl_grpc.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/openssl_grpc.framework/openssl_grpc.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  771 bytes for ./Frameworks/openssl_grpc.framework/openssl_grpc.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/openssl_grpc.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1527 bytes for ./Frameworks/openssl_grpc.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/absl.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  2308 bytes for ./Frameworks/absl.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/absl.framework/absl ... 
+2025-09-06 13:51:01 +0000  51472 bytes for ./Frameworks/absl.framework/absl
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/absl.framework/xcprivacy.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  381 bytes for ./Frameworks/absl.framework/xcprivacy.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/absl.framework/xcprivacy.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  770 bytes for ./Frameworks/absl.framework/xcprivacy.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/absl.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1509 bytes for ./Frameworks/absl.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAppMeasurementIdentitySupport.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  1798 bytes for ./Frameworks/GoogleAppMeasurementIdentitySupport.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport ... 
+2025-09-06 13:51:01 +0000  51536 bytes for ./Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport
+2025-09-06 13:51:01 +0000  copying file ./Frameworks/GoogleAppMeasurementIdentitySupport.framework/Info.plist ... 
+2025-09-06 13:51:01 +0000  1598 bytes for ./Frameworks/GoogleAppMeasurementIdentitySupport.framework/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  734 bytes for ./GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./embedded.mobileprovision ... 
+2025-09-06 13:51:01 +0000  12164 bytes for ./embedded.mobileprovision
+2025-09-06 13:51:01 +0000  copying file ./Info.plist ... 
+2025-09-06 13:51:01 +0000  1473 bytes for ./Info.plist
+2025-09-06 13:51:01 +0000  copying file ./abseil_abslWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  380 bytes for ./abseil_abslWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./abseil_abslWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  689 bytes for ./abseil_abslWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./PkgInfo ... 
+2025-09-06 13:51:01 +0000  8 bytes for ./PkgInfo
+2025-09-06 13:51:01 +0000  /usr/bin/ditto exited with 0
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionEmbedProfileStep
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d7cc0; bundleID='org.cocoapods.FirebaseAnalytics', path='<DVTFilePath:0x60008b9f49a0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b02a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseAnalytics', executablePath='<DVTFilePath:0x60008b9f7950:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877b00c0; bundleID='org.cocoapods.FirebaseFirestoreInternal', path='<DVTFilePath:0x600013c27700:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3cc0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseFirestoreInternal', executablePath='<DVTFilePath:0x60008b9f5110:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d7b40; bundleID='com.google.ads.GoogleAdsOnDeviceConversion', path='<DVTFilePath:0x600013c27800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b39c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='com.google.ads.GoogleAdsOnDeviceConversion', executablePath='<DVTFilePath:0x60008b9f7bf0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d42a0; bundleID='org.cocoapods.GoogleAppMeasurement', path='<DVTFilePath:0x60008b9f6a00:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3a80; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurement', executablePath='<DVTFilePath:0x60008b9f7e90:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d5560; bundleID='org.cocoapods.GoogleAppMeasurementIdentitySupport', path='<DVTFilePath:0x600013c27880:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b0300; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurementIdentitySupport', executablePath='<DVTFilePath:0x600013c27900:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d73c0; bundleID='org.cocoapods.absl', path='<DVTFilePath:0x6000877f6b80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b05a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.absl', executablePath='<DVTFilePath:0x6000877f7180:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework/absl'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877b37e0; bundleID='org.cocoapods.grpc', path='<DVTFilePath:0x6000877e5500:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877d8de0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpc', executablePath='<DVTFilePath:0x6000877e5800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework/grpc'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d90e0; bundleID='org.cocoapods.grpcpp', path='<DVTFilePath:0x60008b9f7d40:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3540; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpcpp', executablePath='<DVTFilePath:0x6000877e5f80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework/grpcpp'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Skipping profile for item: <IDEDistributionItem: 0x6000877d9440; bundleID='org.cocoapods.openssl-grpc', path='<DVTFilePath:0x60008b9f5570:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b34e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.openssl-grpc', executablePath='<DVTFilePath:0x6000877e6820:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc'>', hardenedRuntime='0'>'>
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionInfoPlistStep
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d7cc0; bundleID='org.cocoapods.FirebaseAnalytics', path='<DVTFilePath:0x60008b9f49a0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b02a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseAnalytics', executablePath='<DVTFilePath:0x60008b9f7950:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877b00c0; bundleID='org.cocoapods.FirebaseFirestoreInternal', path='<DVTFilePath:0x600013c27700:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3cc0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseFirestoreInternal', executablePath='<DVTFilePath:0x60008b9f5110:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d7b40; bundleID='com.google.ads.GoogleAdsOnDeviceConversion', path='<DVTFilePath:0x600013c27800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b39c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='com.google.ads.GoogleAdsOnDeviceConversion', executablePath='<DVTFilePath:0x60008b9f7bf0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d42a0; bundleID='org.cocoapods.GoogleAppMeasurement', path='<DVTFilePath:0x60008b9f6a00:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3a80; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurement', executablePath='<DVTFilePath:0x60008b9f7e90:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d5560; bundleID='org.cocoapods.GoogleAppMeasurementIdentitySupport', path='<DVTFilePath:0x600013c27880:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b0300; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000a874300; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurementIdentitySupport', executablePath='<DVTFilePath:0x600013c27900:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d73c0; bundleID='org.cocoapods.absl', path='<DVTFilePath:0x6000877f6b80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b05a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.absl', executablePath='<DVTFilePath:0x6000877f7180:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework/absl'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877b37e0; bundleID='org.cocoapods.grpc', path='<DVTFilePath:0x6000877e5500:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877d8de0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8f3e40; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpc', executablePath='<DVTFilePath:0x6000877e5800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework/grpc'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d90e0; bundleID='org.cocoapods.grpcpp', path='<DVTFilePath:0x60008b9f7d40:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3540; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpcpp', executablePath='<DVTFilePath:0x6000877e5f80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework/grpcpp'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping Info.plist step because item: <IDEDistributionItem: 0x6000877d9440; bundleID='org.cocoapods.openssl-grpc', path='<DVTFilePath:0x60008b9f5570:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b34e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8f3e40; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.openssl-grpc', executablePath='<DVTFilePath:0x6000877e6820:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc'>', hardenedRuntime='0'>'> is a framework or embedded in a framework.
+2025-09-06 13:51:01 +0000  Skipping setting DTXcodeBuildDistribution because toolsBuildVersionName was nil.
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionItemRemovalStep
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionAppThinningPlistStep
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionAppThinningPlistStep because it said so
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionSymbolsStep
+2025-09-06 13:51:01 +0000  Writing /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Symbols/2CB6FB51-3FF7-35EC-974C-7F9E73AF6485.symbols
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Upload Symbols Failed
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionCopyAppleProvidedContentStep
+2025-09-06 13:51:01 +0000  Running /usr/bin/ditto '-V' '/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Signatures' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Signatures'
+2025-09-06 13:51:01 +0000  >>> Copying /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Signatures 
+2025-09-06 13:51:01 +0000  copying file ./openssl_grpc.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6207 bytes for ./openssl_grpc.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./FirebaseFirestoreInternal.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6233 bytes for ./FirebaseFirestoreInternal.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./GoogleAppMeasurementIdentitySupport.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6253 bytes for ./GoogleAppMeasurementIdentitySupport.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./grpcpp.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6195 bytes for ./grpcpp.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./GoogleAppMeasurement.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6223 bytes for ./GoogleAppMeasurement.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./absl.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6191 bytes for ./absl.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./GoogleAdsOnDeviceConversion.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6237 bytes for ./GoogleAdsOnDeviceConversion.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./FirebaseAnalytics.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6217 bytes for ./FirebaseAnalytics.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./grpc.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6191 bytes for ./grpc.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  /usr/bin/ditto exited with 0
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionAppThinningStep
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionAppThinningStep because it said so
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionArchThinningStep
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "FirebaseAnalytics" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "FirebaseFirestoreInternal" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "GoogleAdsOnDeviceConversion" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "GoogleAppMeasurement" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "GoogleAppMeasurementIdentitySupport" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/absl.framework/absl' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "absl" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpc.framework/grpc' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "grpc" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "grpcpp" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "openssl_grpc" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app doesn't have the entitlement com.apple.developer.web-browser-engine.host enabled, returning ["arm64e"]
+2025-09-06 13:51:01 +0000  Archs to thin for item /Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app are ["arm64e"]
+2025-09-06 13:51:01 +0000  Running /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/GmrStock' '-verify_arch' 'arm64e'
+2025-09-06 13:51:01 +0000  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo exited with 1
+2025-09-06 13:51:01 +0000  Skipping architecture thinning for item "GmrStock" because arch "arm64e" wasn't found
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionODRStep
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionStripXattrsStep
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionCodesignStep
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d7cc0; bundleID='org.cocoapods.FirebaseAnalytics', path='<DVTFilePath:0x60008b9f49a0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b02a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseAnalytics', executablePath='<DVTFilePath:0x60008b9f7950:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d7cc0; bundleID='org.cocoapods.FirebaseAnalytics', path='<DVTFilePath:0x60008b9f49a0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b02a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseAnalytics', executablePath='<DVTFilePath:0x60008b9f7950:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d7cc0; bundleID='org.cocoapods.FirebaseAnalytics', path='<DVTFilePath:0x60008b9f49a0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b02a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseAnalytics', executablePath='<DVTFilePath:0x60008b9f7950:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~12KOcV
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002747eee0; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~12KOcV",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.FirebaseAnalytics]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877b00c0; bundleID='org.cocoapods.FirebaseFirestoreInternal', path='<DVTFilePath:0x600013c27700:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3cc0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseFirestoreInternal', executablePath='<DVTFilePath:0x60008b9f5110:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877b00c0; bundleID='org.cocoapods.FirebaseFirestoreInternal', path='<DVTFilePath:0x600013c27700:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3cc0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseFirestoreInternal', executablePath='<DVTFilePath:0x60008b9f5110:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877b00c0; bundleID='org.cocoapods.FirebaseFirestoreInternal', path='<DVTFilePath:0x600013c27700:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3cc0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.FirebaseFirestoreInternal', executablePath='<DVTFilePath:0x60008b9f5110:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~bmhVDv
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002746f070; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~bmhVDv",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.FirebaseFirestoreInternal]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d7b40; bundleID='com.google.ads.GoogleAdsOnDeviceConversion', path='<DVTFilePath:0x600013c27800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b39c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='com.google.ads.GoogleAdsOnDeviceConversion', executablePath='<DVTFilePath:0x60008b9f7bf0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d7b40; bundleID='com.google.ads.GoogleAdsOnDeviceConversion', path='<DVTFilePath:0x600013c27800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b39c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='com.google.ads.GoogleAdsOnDeviceConversion', executablePath='<DVTFilePath:0x60008b9f7bf0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d7b40; bundleID='com.google.ads.GoogleAdsOnDeviceConversion', path='<DVTFilePath:0x600013c27800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b39c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='com.google.ads.GoogleAdsOnDeviceConversion', executablePath='<DVTFilePath:0x60008b9f7bf0:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~hAppi5
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002747fcf0; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~hAppi5",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework: signed bundle with Mach-O universal (arm64) [com.google.ads.GoogleAdsOnDeviceConversion]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d42a0; bundleID='org.cocoapods.GoogleAppMeasurement', path='<DVTFilePath:0x60008b9f6a00:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3a80; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurement', executablePath='<DVTFilePath:0x60008b9f7e90:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d42a0; bundleID='org.cocoapods.GoogleAppMeasurement', path='<DVTFilePath:0x60008b9f6a00:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3a80; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurement', executablePath='<DVTFilePath:0x60008b9f7e90:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d42a0; bundleID='org.cocoapods.GoogleAppMeasurement', path='<DVTFilePath:0x60008b9f6a00:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3a80; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurement', executablePath='<DVTFilePath:0x60008b9f7e90:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~S88CbO
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002747ef30; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~S88CbO",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.GoogleAppMeasurement]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d5560; bundleID='org.cocoapods.GoogleAppMeasurementIdentitySupport', path='<DVTFilePath:0x600013c27880:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b0300; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurementIdentitySupport', executablePath='<DVTFilePath:0x600013c27900:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d5560; bundleID='org.cocoapods.GoogleAppMeasurementIdentitySupport', path='<DVTFilePath:0x600013c27880:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b0300; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurementIdentitySupport', executablePath='<DVTFilePath:0x600013c27900:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d5560; bundleID='org.cocoapods.GoogleAppMeasurementIdentitySupport', path='<DVTFilePath:0x600013c27880:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b0300; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.GoogleAppMeasurementIdentitySupport', executablePath='<DVTFilePath:0x600013c27900:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~qey9Fq
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002746f2f0; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~qey9Fq",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.GoogleAppMeasurementIdentitySupport]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d73c0; bundleID='org.cocoapods.absl', path='<DVTFilePath:0x6000877f6b80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b05a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.absl', executablePath='<DVTFilePath:0x6000877f7180:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework/absl'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d73c0; bundleID='org.cocoapods.absl', path='<DVTFilePath:0x6000877f6b80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b05a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.absl', executablePath='<DVTFilePath:0x6000877f7180:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework/absl'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d73c0; bundleID='org.cocoapods.absl', path='<DVTFilePath:0x6000877f6b80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b05a0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.absl', executablePath='<DVTFilePath:0x6000877f7180:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/absl.framework/absl'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~cwombY
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002747ef80; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~cwombY",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/absl.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/absl.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/absl.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.absl]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877b37e0; bundleID='org.cocoapods.grpc', path='<DVTFilePath:0x6000877e5500:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877d8de0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpc', executablePath='<DVTFilePath:0x6000877e5800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework/grpc'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877b37e0; bundleID='org.cocoapods.grpc', path='<DVTFilePath:0x6000877e5500:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877d8de0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpc', executablePath='<DVTFilePath:0x6000877e5800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework/grpc'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877b37e0; bundleID='org.cocoapods.grpc', path='<DVTFilePath:0x6000877e5500:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877d8de0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpc', executablePath='<DVTFilePath:0x6000877e5800:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpc.framework/grpc'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~C11w9r
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002747ef30; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~C11w9r",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpc.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpc.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpc.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.grpc]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d90e0; bundleID='org.cocoapods.grpcpp', path='<DVTFilePath:0x60008b9f7d40:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3540; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpcpp', executablePath='<DVTFilePath:0x6000877e5f80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework/grpcpp'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d90e0; bundleID='org.cocoapods.grpcpp', path='<DVTFilePath:0x60008b9f7d40:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3540; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpcpp', executablePath='<DVTFilePath:0x6000877e5f80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework/grpcpp'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d90e0; bundleID='org.cocoapods.grpcpp', path='<DVTFilePath:0x60008b9f7d40:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b3540; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc000; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.grpcpp', executablePath='<DVTFilePath:0x6000877e5f80:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/grpcpp.framework/grpcpp'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~1s1TVM
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002746dcc0; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~1s1TVM",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpcpp.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpcpp.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpcpp.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.grpcpp]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d9440; bundleID='org.cocoapods.openssl-grpc', path='<DVTFilePath:0x60008b9f5570:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b34e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.openssl-grpc', executablePath='<DVTFilePath:0x6000877e6820:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc'>', hardenedRuntime='0'>'>: {
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x6000877d9440; bundleID='org.cocoapods.openssl-grpc', path='<DVTFilePath:0x60008b9f5570:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b34e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.openssl-grpc', executablePath='<DVTFilePath:0x6000877e6820:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc'>', hardenedRuntime='0'>'> are: {
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x6000877d9440; bundleID='org.cocoapods.openssl-grpc', path='<DVTFilePath:0x60008b9f5570:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b34e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='(null)', teamID='2JHGW35MW8', identifier='org.cocoapods.openssl-grpc', executablePath='<DVTFilePath:0x6000877e6820:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~f6Gvpu
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002747fac0; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~f6Gvpu",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/openssl_grpc.framework"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/openssl_grpc.framework: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/openssl_grpc.framework: signed bundle with Mach-O universal (arm64) [org.cocoapods.openssl-grpc]
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x600087609920; bundleID='com.alius.gmrstock', path='<DVTFilePath:0x60008761a760:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b07e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e8fc0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='{
+    "application-identifier" = "2JHGW35MW8.com.alius.gmrstock";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = 2JHGW35MW8;
+    "get-task-allow" = 0;
+}', teamID='2JHGW35MW8', identifier='com.alius.gmrstock', executablePath='<DVTFilePath:0x6000877d7300:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/GmrStock'>', hardenedRuntime='0'>'>: {
+    "application-identifier" = "2JHGW35MW8.com.alius.gmrstock";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = 2JHGW35MW8;
+    "get-task-allow" = 0;
+}
+2025-09-06 13:51:01 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-09-06 13:51:01 +0000  Entitlements for <IDEDistributionItem: 0x600087609920; bundleID='com.alius.gmrstock', path='<DVTFilePath:0x60008761a760:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b07e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='{
+    "application-identifier" = "2JHGW35MW8.com.alius.gmrstock";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = 2JHGW35MW8;
+    "get-task-allow" = 0;
+}', teamID='2JHGW35MW8', identifier='com.alius.gmrstock', executablePath='<DVTFilePath:0x6000877d7300:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/GmrStock'>', hardenedRuntime='0'>'> are: {
+    "application-identifier" = "2JHGW35MW8.com.alius.gmrstock";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = 2JHGW35MW8;
+    "get-task-allow" = 0;
+}
+2025-09-06 13:51:01 +0000  Writing entitlements for <IDEDistributionItem: 0x600087609920; bundleID='com.alius.gmrstock', path='<DVTFilePath:0x60008761a760:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x6000877b07e0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60000e89c0c0; name='Apple Distribution: OSCAR ALEJANDRO BENTOS (2JHGW35MW8)', hash='C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C', serialNumber='7F4D775A6A201FABAF20A6C4DC058DF6', certificateKinds='(
+    "1.2.840.113635.100.6.1.7",
+    "1.2.840.113635.100.6.1.4"
+), issueDate='2025-09-06 10:23:44 +0000''>', entitlements='{
+    "application-identifier" = "2JHGW35MW8.com.alius.gmrstock";
+    "beta-reports-active" = 1;
+    "com.apple.developer.team-identifier" = 2JHGW35MW8;
+    "get-task-allow" = 0;
+}', teamID='2JHGW35MW8', identifier='com.alius.gmrstock', executablePath='<DVTFilePath:0x6000877d7300:'/Users/alius/Library/Developer/Xcode/Archives/2025-09-06/iosApp 6-9-25, 15.50.xcarchive/Products/Applications/GmrStock.app/GmrStock'>', hardenedRuntime='0'>'> to: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~D29ZvW
+2025-09-06 13:51:01 +0000  invoking codesign: <NSConcreteTask: 0x60002746f520; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C8B25F2BBF4389BFA01EC6B03911A37005DAAA6C,
+    "--entitlements",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/entitlements~~~D29ZvW",
+    "--preserve-metadata=identifier,flags,runtime",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app"
+)'>
+2025-09-06 13:51:01 +0000  codesign output: /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app: replacing existing signature
+/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app: signed app bundle with Mach-O thin (arm64) [com.alius.gmrstock]
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionZipODRItemStep
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-09-06 13:51:01 +0000  Processing step: IDEDistributionCreateIPAStep
+2025-09-06 13:51:01 +0000  Running /usr/bin/rsync '-8aPhhE' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Symbols' '--link-dest' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root'
+2025-09-06 13:51:01 +0000  Symbols/
+Symbols/2CB6FB51-3FF7-35EC-974C-7F9E73AF6485.symbols
+2025-09-06 13:51:01 +0000  /usr/bin/rsync exited with 0
+2025-09-06 13:51:01 +0000  Running /usr/bin/ditto '-V' '-c' '-k' '--norsrc' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root' '/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Packages/GmrStock.ipa'
+2025-09-06 13:51:01 +0000  >>> Copying /var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root 
+2025-09-06 13:51:01 +0000  copying file ./Signatures/openssl_grpc.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6207 bytes for ./Signatures/openssl_grpc.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/FirebaseFirestoreInternal.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6233 bytes for ./Signatures/FirebaseFirestoreInternal.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/GoogleAppMeasurementIdentitySupport.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6253 bytes for ./Signatures/GoogleAppMeasurementIdentitySupport.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/grpcpp.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6195 bytes for ./Signatures/grpcpp.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/GoogleAppMeasurement.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6223 bytes for ./Signatures/GoogleAppMeasurement.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/absl.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6191 bytes for ./Signatures/absl.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/GoogleAdsOnDeviceConversion.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6237 bytes for ./Signatures/GoogleAdsOnDeviceConversion.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/FirebaseAnalytics.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6217 bytes for ./Signatures/FirebaseAnalytics.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Signatures/grpc.xcframework-ios.signature ... 
+2025-09-06 13:51:01 +0000  6191 bytes for ./Signatures/grpc.xcframework-ios.signature
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:01 +0000  28371 bytes for ./Payload/GmrStock.app/_CodeSignature/CodeResources
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseCore.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  855 bytes for ./Payload/GmrStock.app/Firebase_FirebaseCore.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseCore.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  692 bytes for ./Payload/GmrStock.app/Firebase_FirebaseCore.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/gRPC_grpcppWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./Payload/GmrStock.app/gRPC_grpcppWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/gRPC_grpcppWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  685 bytes for ./Payload/GmrStock.app/gRPC_grpcppWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GTMSessionFetcher_GTMSessionFetcherCore.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  598 bytes for ./Payload/GmrStock.app/GTMSessionFetcher_GTMSessionFetcherCore.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GTMSessionFetcher_GTMSessionFetcherCore.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  722 bytes for ./Payload/GmrStock.app/GTMSessionFetcher_GTMSessionFetcherCore.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/leveldb_leveldb.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  856 bytes for ./Payload/GmrStock.app/leveldb_leveldb.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/leveldb_leveldb.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  672 bytes for ./Payload/GmrStock.app/leveldb_leveldb.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/nanopb_nanopb.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  374 bytes for ./Payload/GmrStock.app/nanopb_nanopb.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/nanopb_nanopb.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  666 bytes for ./Payload/GmrStock.app/nanopb_nanopb.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/AppIcon60x60@2x.png ... 
+2025-09-06 13:51:01 +0000  10164 bytes for ./Payload/GmrStock.app/AppIcon60x60@2x.png
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  744 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-AppDelegateSwizzler.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-NSData.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-NSData.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-NSData.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  718 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-NSData.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseInstallations.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  1105 bytes for ./Payload/GmrStock.app/Firebase_FirebaseInstallations.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseInstallations.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  710 bytes for ./Payload/GmrStock.app/Firebase_FirebaseInstallations.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/gRPC_grpcWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./Payload/GmrStock.app/gRPC_grpcWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/gRPC_grpcWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  681 bytes for ./Payload/GmrStock.app/gRPC_grpcWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseCoreInternal.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  855 bytes for ./Payload/GmrStock.app/Firebase_FirebaseCoreInternal.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseCoreInternal.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  708 bytes for ./Payload/GmrStock.app/Firebase_FirebaseCoreInternal.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseAuth.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  2102 bytes for ./Payload/GmrStock.app/Firebase_FirebaseAuth.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseAuth.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  692 bytes for ./Payload/GmrStock.app/Firebase_FirebaseAuth.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Logger.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Logger.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Logger.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  718 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Logger.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Reachability.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  478 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Reachability.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Reachability.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  730 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Reachability.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseFirestore.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  1105 bytes for ./Payload/GmrStock.app/Firebase_FirebaseFirestore.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseFirestore.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  702 bytes for ./Payload/GmrStock.app/Firebase_FirebaseFirestore.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleService-Info.plist ... 
+2025-09-06 13:51:01 +0000  510 bytes for ./Payload/GmrStock.app/GoogleService-Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/gRPC_opensslWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  817 bytes for ./Payload/GmrStock.app/gRPC_opensslWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/gRPC_opensslWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  687 bytes for ./Payload/GmrStock.app/gRPC_opensslWrapper.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Promises_FBLPromises.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  373 bytes for ./Payload/GmrStock.app/Promises_FBLPromises.bundle/PrivacyInfo.xcprivacy
+copying file ./Payload/GmrStock.app/Promises_FBLPromises.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  682 bytes for ./Payload/GmrStock.app/Promises_FBLPromises.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Network.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:01 +0000  856 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Network.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Network.bundle/Info.plist ... 
+2025-09-06 13:51:01 +0000  720 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Network.bundle/Info.plist
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/Assets.car ... 
+2025-09-06 13:51:01 +0000  2283167 bytes for ./Payload/GmrStock.app/Assets.car
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/AppIcon76x76@2x~ipad.png ... 
+2025-09-06 13:51:01 +0000  14577 bytes for ./Payload/GmrStock.app/AppIcon76x76@2x~ipad.png
+2025-09-06 13:51:01 +0000  copying file ./Payload/GmrStock.app/GmrStock ... 
+2025-09-06 13:51:02 +0000  43716032 bytes for ./Payload/GmrStock.app/GmrStock
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Firebase_FirebaseCoreExtension.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  478 bytes for ./Payload/GmrStock.app/Firebase_FirebaseCoreExtension.bundle/PrivacyInfo.xcprivacy
+copying file ./Payload/GmrStock.app/Firebase_FirebaseCoreExtension.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  710 bytes for ./Payload/GmrStock.app/Firebase_FirebaseCoreExtension.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-UserDefaults.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  911 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-UserDefaults.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-UserDefaults.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  730 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-UserDefaults.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/compose-resources/composeResources/gmrstock.composeapp.generated.resources/drawable/compose-multiplatform.xml ... 
+2025-09-06 13:51:02 +0000  1493 bytes for ./Payload/GmrStock.app/compose-resources/composeResources/gmrstock.composeapp.generated.resources/drawable/compose-multiplatform.xml
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/compose-resources/gmr_stock_p08.png ... 
+2025-09-06 13:51:02 +0000  53794 bytes for ./Payload/GmrStock.app/compose-resources/gmr_stock_p08.png
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/compose-resources/gmr_stock_p07.png ... 
+2025-09-06 13:51:02 +0000  53619 bytes for ./Payload/GmrStock.app/compose-resources/gmr_stock_p07.png
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/compose-resources/logo.png ... 
+2025-09-06 13:51:02 +0000  20861 bytes for ./Payload/GmrStock.app/compose-resources/logo.png
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Environment.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  855 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Environment.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Environment.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  728 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-Environment.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpcpp.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  2296 bytes for ./Payload/GmrStock.app/Frameworks/grpcpp.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp ... 
+2025-09-06 13:51:02 +0000  51472 bytes for ./Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  599 bytes for ./Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  759 bytes for ./Payload/GmrStock.app/Frameworks/grpcpp.framework/grpcpp.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpcpp.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1509 bytes for ./Payload/GmrStock.app/Frameworks/grpcpp.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  1798 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement ... 
+2025-09-06 13:51:02 +0000  51504 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/GoogleAppMeasurement
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1553 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  1798 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics ... 
+2025-09-06 13:51:02 +0000  51488 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/FirebaseAnalytics
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1544 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  1798 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion ... 
+2025-09-06 13:51:02 +0000  51520 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/GoogleAdsOnDeviceConversion
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  793 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  2404 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal ... 
+2025-09-06 13:51:02 +0000  51504 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  1105 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  817 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal_Privacy.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1569 bytes for ./Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpc.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  2288 bytes for ./Payload/GmrStock.app/Frameworks/grpc.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpc.framework/grpc ... 
+2025-09-06 13:51:02 +0000  51472 bytes for ./Payload/GmrStock.app/Frameworks/grpc.framework/grpc
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpc.framework/grpc.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  599 bytes for ./Payload/GmrStock.app/Frameworks/grpc.framework/grpc.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpc.framework/grpc.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  755 bytes for ./Payload/GmrStock.app/Frameworks/grpc.framework/grpc.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/grpc.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1503 bytes for ./Payload/GmrStock.app/Frameworks/grpc.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  2320 bytes for ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc ... 
+2025-09-06 13:51:02 +0000  51488 bytes for ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  599 bytes for ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  771 bytes for ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/openssl_grpc.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1527 bytes for ./Payload/GmrStock.app/Frameworks/openssl_grpc.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/absl.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  2308 bytes for ./Payload/GmrStock.app/Frameworks/absl.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/absl.framework/absl ... 
+2025-09-06 13:51:02 +0000  51472 bytes for ./Payload/GmrStock.app/Frameworks/absl.framework/absl
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/absl.framework/xcprivacy.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  381 bytes for ./Payload/GmrStock.app/Frameworks/absl.framework/xcprivacy.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/absl.framework/xcprivacy.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  770 bytes for ./Payload/GmrStock.app/Frameworks/absl.framework/xcprivacy.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/absl.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1509 bytes for ./Payload/GmrStock.app/Frameworks/absl.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/_CodeSignature/CodeResources ... 
+2025-09-06 13:51:02 +0000  1798 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/_CodeSignature/CodeResources
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport ... 
+2025-09-06 13:51:02 +0000  51536 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/GoogleAppMeasurementIdentitySupport
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/Info.plist ... 
+2025-09-06 13:51:02 +0000  1598 bytes for ./Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  478 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  734 bytes for ./Payload/GmrStock.app/GoogleUtilities_GoogleUtilities-MethodSwizzler.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/embedded.mobileprovision ... 
+2025-09-06 13:51:02 +0000  14341 bytes for ./Payload/GmrStock.app/embedded.mobileprovision
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/Info.plist ... 
+2025-09-06 13:51:02 +0000  1473 bytes for ./Payload/GmrStock.app/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/abseil_abslWrapper.bundle/PrivacyInfo.xcprivacy ... 
+2025-09-06 13:51:02 +0000  380 bytes for ./Payload/GmrStock.app/abseil_abslWrapper.bundle/PrivacyInfo.xcprivacy
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/abseil_abslWrapper.bundle/Info.plist ... 
+2025-09-06 13:51:02 +0000  689 bytes for ./Payload/GmrStock.app/abseil_abslWrapper.bundle/Info.plist
+2025-09-06 13:51:02 +0000  copying file ./Payload/GmrStock.app/PkgInfo ... 
+2025-09-06 13:51:02 +0000  8 bytes for ./Payload/GmrStock.app/PkgInfo
+2025-09-06 13:51:02 +0000  copying file ./Symbols/2CB6FB51-3FF7-35EC-974C-7F9E73AF6485.symbols ... 
+2025-09-06 13:51:03 +0000  51982580 bytes for ./Symbols/2CB6FB51-3FF7-35EC-974C-7F9E73AF6485.symbols
+2025-09-06 13:51:03 +0000  /usr/bin/ditto exited with 0
+2025-09-06 13:51:03 +0000  Processing step: IDEDistributionAppStoreInformationStep
+2025-09-06 13:51:03 +0000  Skipping step: IDEDistributionAppStoreInformationStep because it said so
+2025-09-06 13:51:03 +0000  Processing step: IDEDistributionGenerateProcessedDistributionItems
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x60008b9d6290:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/openssl_grpc.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x60008b9d7a30:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseAnalytics.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x6000877ca8e0:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/absl.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x600013deae80:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurementIdentitySupport.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x60008b9d6300:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpcpp.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x600013de9980:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/FirebaseFirestoreInternal.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x60008b9d5490:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAppMeasurement.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x6000877ca7c0:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/grpc.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x600013de9f80:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app/Frameworks/GoogleAdsOnDeviceConversion.framework'>
+2025-09-06 13:51:03 +0000  IDEDistributionItem init <DVTFilePath:0x60008770cd20:'/var/folders/51/gzh9w_79415fm3ykg66sdf_h0000gn/T/XcodeDistPipeline.~~~aZ3au7/Root/Payload/GmrStock.app'>
+2025-09-06 13:51:03 +0000  Processing step: IDEDistributionCreateManifestStep
+2025-09-06 13:51:03 +0000  Skipping step: IDEDistributionCreateManifestStep because it said so

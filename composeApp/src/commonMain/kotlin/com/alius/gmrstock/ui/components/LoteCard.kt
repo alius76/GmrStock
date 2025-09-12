@@ -22,6 +22,7 @@ import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.ui.theme.ReservedColor
 
 @Composable
 fun LoteCard(
@@ -52,7 +53,7 @@ fun LoteCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Lote: ${lote.number}",
+                    text = lote.number,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = PrimaryColor,
@@ -101,9 +102,9 @@ fun LoteCard(
             DetailRow("Material:", lote.description)
             DetailRow("Fecha:", formatInstant(lote.date))
             DetailRow("Ubicación:", lote.location)
-            DetailRow("Observación:", lote.remark)
             DetailRow("BigBags:", lote.count)
             DetailRow("Peso total:", "${lote.totalWeight} Kg", PrimaryColor)
+            DetailRow("Observación:", lote.remark)
         }
     }
 
@@ -140,7 +141,7 @@ fun BookedTooltipIcon(lote: LoteModel) {
         Icon(
             imageVector = Icons.Default.VpnKey,
             contentDescription = "Lote reservado",
-            tint = PrimaryColor,
+            tint = ReservedColor,
             modifier = Modifier
                 .size(24.dp)
                 .combinedClickable(

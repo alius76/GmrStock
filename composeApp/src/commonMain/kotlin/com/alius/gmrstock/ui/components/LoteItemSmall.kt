@@ -43,7 +43,7 @@ fun LoteItemSmall(lote: LoteModel) {
         ) {
             // Bloque 1: Número del lote
             Text(
-                text = "Lote: ${lote.number}",
+                text = lote.number,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor,

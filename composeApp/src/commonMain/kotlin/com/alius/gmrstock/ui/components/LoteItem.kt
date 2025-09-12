@@ -50,7 +50,7 @@ fun LoteItem(lote: LoteModel) {
             ) {
                 // Texto Lote
                 Text(
-                    text = "Lote: ${lote.number}",
+                    text = lote.number,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryColor,
