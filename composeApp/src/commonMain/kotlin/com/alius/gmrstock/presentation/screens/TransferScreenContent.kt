@@ -21,8 +21,11 @@ import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getVentaRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.domain.model.Venta
+import com.alius.gmrstock.ui.components.VentaChartCard
+import com.alius.gmrstock.ui.components.VentaData
 import com.alius.gmrstock.ui.components.VentaItem
 import com.alius.gmrstock.ui.components.VentaItemSmall
+import com.alius.gmrstock.ui.components.generateVentaDataFromCollection
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -30,8 +33,11 @@ import kotlinx.coroutines.launch
 fun TransferScreenContent(user: User, databaseUrl: String) {
     val ventaRepository = remember(databaseUrl) { getVentaRepository(databaseUrl) }
 
+    // Estados para las ventas
     var ventasHoy by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ultimasVentas by remember { mutableStateOf<List<Venta>>(emptyList()) }
+    var ventasDelMes by remember { mutableStateOf<List<Venta>>(emptyList()) }
+    var ventaDataList by remember { mutableStateOf<List<VentaData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
     val scope = rememberCoroutineScope()
@@ -39,10 +45,17 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
 
     LaunchedEffect(databaseUrl) {
         loading = true
-        ventasHoy = ventaRepository.mostrarLasVentasDeHoy()
-        ultimasVentas = ventaRepository.mostrarLasUltimasVentas()
-        println("✅ Cantidad de ultimasVentas obtenidas: ${ultimasVentas.size}")
-        loading = false
+        scope.launch {
+            ventasHoy = ventaRepository.mostrarLasVentasDeHoy()
+            ultimasVentas = ventaRepository.mostrarLasUltimasVentas()
+            ventasDelMes = ventaRepository.mostrarVentasDelMes()
+            ventaDataList = generateVentaDataFromCollection(ventasDelMes)
+
+            println("✅ Cantidad de ultimasVentas obtenidas: ${ultimasVentas.size}")
+            println("✅ Días con ventas este mes: ${ventaDataList.size}")
+
+            loading = false
+        }
     }
 
     if (loading) {
@@ -56,9 +69,9 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Sección Ventas de Hoy
+            // 1️⃣ Sección Ventas de Hoy
             item {
-                Spacer(modifier = Modifier.height(20.dp)) // espacio específico arriba del título
+                Spacer(modifier = Modifier.height(20.dp))
                 Text(
                     text = "Ventas de hoy",
                     style = MaterialTheme.typography.titleLarge.copy(
@@ -70,7 +83,6 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 )
 
                 if (ventasHoy.isEmpty()) {
-                    // Card profesional "Sin ventas hoy"
                     Box(
                         modifier = Modifier
                             .height(160.dp)
@@ -119,7 +131,28 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // Sección Últimas Ventas (siempre visible)
+            // 2️⃣ Gráfico mensual de ventas
+            item {
+                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = "Ventas del mes",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                VentaChartCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    ventaDataList = ventaDataList
+                )
+            }
+
+            // 3️⃣ Sección Últimas Ventas
             item {
                 Text(
                     text = "Últimas ventas",
@@ -130,7 +163,6 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
-
             }
 
             items(ultimasVentas) { venta ->
