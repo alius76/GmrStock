@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.Process
 import com.alius.gmrstock.core.utils.formatInstant
 import com.alius.gmrstock.ui.theme.PrimaryColor
@@ -44,7 +45,7 @@ fun ProcessItem(proceso: Process, modifier: Modifier = Modifier) {
             // Número de proceso
             Text(
                 text = proceso.number,
-                style = MaterialTheme.typography.titleLarge,
+                fontSize = 19.sp,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor
             )

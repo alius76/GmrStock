@@ -27,6 +27,7 @@ actual fun loadPlatformImage(fileName: String): Any? {
  * Composable que muestra UIImage dentro de Compose.
  * Se desactiva la interacción para que los clicks se detecten en Compose.
  */
+
 @OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun PlatformImageComposable(image: Any?, modifier: Modifier) {

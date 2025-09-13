@@ -2,6 +2,8 @@ package com.alius.gmrstock.presentation.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +25,7 @@ class DatabaseSelectionScreen(
     override fun Content() {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+            color = Color.White // 🔹 Fondo fijo blanco
         ) {
             Column(
                 modifier = Modifier
@@ -38,15 +40,16 @@ class DatabaseSelectionScreen(
                     PlatformImageComposable(
                         image = logoImage,
                         modifier = Modifier
-                            .fillMaxWidth(0.95f)
-                            .height(220.dp)
+                            .fillMaxWidth(0.85f)
+                            .height(250.dp)
                     )
                 } else {
                     Text("LOGO", color = MaterialTheme.colorScheme.onBackground)
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(36.dp))
 
+                // 🔹 Texto central destacado
                 Text(
                     text = "Seleccione base de datos",
                     style = MaterialTheme.typography.titleLarge.copy(
@@ -56,65 +59,21 @@ class DatabaseSelectionScreen(
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                // 🔹 Botones con imágenes
+                // 🔹 Botones estilizados
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // Botón para DB1
-                    val db1Image = loadPlatformImage("gmr_stock_p07.png")
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        DatabaseLogoButton(
-                            image = db1Image,
-                            label = "DB1",
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) },
-                            // Aplica estilos directamente en el botón para mejor coherencia
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(
-                                "Seleccionar",
-                                // Aumenta el tamaño de la fuente para mejor visibilidad
-                                fontSize = 22.sp,
-                                // Usa negrita (bold)
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryColor
-                            )
-                        }
-                    }
-
-                    // Botón para DB2
-                    val db2Image = loadPlatformImage("gmr_stock_p08.png")
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        DatabaseLogoButton(
-                            image = db2Image,
-                            label = "DB2",
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) },
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            )
-                        ) {
-                            Text(
-                                "Seleccionar",
-                                fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryColor
-                            )
-                        }
-                    }
+                    DatabaseCard(
+                        label = "Planta 7",
+                        onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
+                    )
+                    DatabaseCard(
+                        label = "Planta 8",
+                        onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
+                    )
                 }
             }
         }
@@ -122,33 +81,42 @@ class DatabaseSelectionScreen(
 }
 
 @Composable
-fun DatabaseLogoButton(
-    image: Any?,
-    label: String
+fun DatabaseCard(
+    label: String,
+    onClick: () -> Unit
 ) {
     ElevatedCard(
-        modifier = Modifier.size(160.dp),
-        shape = MaterialTheme.shapes.medium,
+        onClick = onClick,
+        modifier = Modifier
+            .size(width = 160.dp, height = 200.dp),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.elevatedCardColors(
-            containerColor = Color.White
+            containerColor = Color.White // 🔹 Botón con fondo blanco
         ),
-        elevation = CardDefaults.elevatedCardElevation(8.dp),
+        elevation = CardDefaults.elevatedCardElevation(12.dp),
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (image != null) {
-                PlatformImageComposable(
-                    image = image,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Text(
-                    text = label,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            // 🔹 Icono de base de datos
+            Icon(
+                imageVector = Icons.Filled.Storage,
+                contentDescription = null,
+                tint = PrimaryColor,
+                modifier = Modifier.size(72.dp) // icono grande
+            )
+
+            // 🔹 Texto de la planta
+            Text(
+                text = label,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryColor
+            )
         }
     }
 }
