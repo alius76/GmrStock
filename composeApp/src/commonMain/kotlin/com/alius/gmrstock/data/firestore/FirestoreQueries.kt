@@ -355,3 +355,20 @@ fun buildQueryRatiosDelMesActual(): String {
     """.trimIndent()
 }
 
+fun buildQueryCertificadoPorNumero(number: String): String {
+    return """
+    {
+        "structuredQuery": {
+            "from": [{"collectionId": "certificados"}],
+            "where": {
+                "fieldFilter": {
+                    "field": {"fieldPath": "loteNumber"},
+                    "op": "EQUAL",
+                    "value": {"stringValue": "$number"}
+                }
+            },
+            "limit": 1
+        }
+    }
+    """.trimIndent()
+}

@@ -177,9 +177,6 @@ class HomeScreenContent(
                         }
                     },
                     snackbarHostState = snackbarHostState,
-                    onGeneratePdf = { lote ->
-                        println("Generando PDF para lote ${lote.number}")
-                    },
                     onViewBigBags = { bigBagsList: List<BigBags> ->
                         println("Mostrando ${bigBagsList.size} BigBags")
                     },

@@ -14,10 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.alius.gmrstock.data.getLoteRepository
+import com.alius.gmrstock.data.getCertificadoRepository
 import com.alius.gmrstock.domain.model.BigBags
+import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,23 +29,30 @@ fun GroupMaterialBottomSheetContent(
     onLoteClick: (LoteModel) -> Unit,
     onDismissRequest: () -> Unit,
     snackbarHostState: SnackbarHostState,
-    onGeneratePdf: suspend (LoteModel) -> Unit,
     onViewBigBags: (List<BigBags>) -> Unit,
     databaseUrl: String
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val loteRepository = remember { getLoteRepository(databaseUrl) }
+    val certificadoRepository = remember { getCertificadoRepository(databaseUrl) }
 
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
+    var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Cargar LoteModel a partir de los números
+    // 🔹 Precarga de lotes + certificados
     LaunchedEffect(loteNumbers) {
-        coroutineScope.launch {
+        scope.launch {
             val loadedLotes = loteNumbers.mapNotNull { number ->
                 loteRepository.getLoteByNumber(number)
             }
             lotes = loadedLotes
+
+            val certs = loadedLotes.associate { lote ->
+                lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
+            }
+            certificados = certs
+
             isLoading = false
         }
     }
@@ -54,7 +64,7 @@ fun GroupMaterialBottomSheetContent(
             .padding(vertical = 24.dp)
             .navigationBarsPadding()
     ) {
-        // --- Header con título y botón de cierre ---
+        // --- Header ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,19 +91,13 @@ fun GroupMaterialBottomSheetContent(
 
         when {
             isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
             lotes.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         text = "No hay lotes disponibles para este material.",
                         style = MaterialTheme.typography.bodyLarge,
@@ -111,15 +115,24 @@ fun GroupMaterialBottomSheetContent(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(lotes) { lote ->
+                        val cert = certificados[lote.number]
+                        val certColor = when {
+                            cert == null -> MaterialTheme.colorScheme.onSurfaceVariant // gris
+                            cert.status == "w" -> MaterialTheme.colorScheme.error       // rojo
+                            else -> PrimaryColor                                       // correcto
+                        }
+
                         LoteCard(
                             lote = lote,
+                            certificado = cert,
+                            certificadoIconColor = certColor,
                             modifier = Modifier
                                 .width(300.dp)
                                 .clickable { onLoteClick(lote) },
-                            scope = coroutineScope,
+                            scope = scope,
                             snackbarHostState = snackbarHostState,
-                            onGeneratePdf = onGeneratePdf,
-                            onViewBigBags = onViewBigBags
+                            onViewBigBags = onViewBigBags,
+                            databaseUrl = databaseUrl
                         )
                     }
                 }

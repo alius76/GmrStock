@@ -1,39 +1,49 @@
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.VpnKey
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.alius.gmrstock.domain.model.BigBags
+import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.components.BigBagsDialogContent
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.ReservedColor
+import com.alius.gmrstock.core.utils.formatInstant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import com.alius.gmrstock.core.utils.formatInstant
-import com.alius.gmrstock.ui.theme.ReservedColor
 
 @Composable
 fun LoteCard(
     lote: LoteModel,
+    certificado: Certificado?,
+    certificadoIconColor: Color,
     modifier: Modifier = Modifier,
     scope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
-    onGeneratePdf: suspend (LoteModel) -> Unit,
-    onViewBigBags: (List<BigBags>) -> Unit
+    onViewBigBags: (List<BigBags>) -> Unit,
+    databaseUrl: String
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
+    var showCertificadoDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
@@ -63,32 +73,27 @@ fun LoteCard(
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Tooltip para cliente reservado
                     if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
                         BookedTooltipIcon(lote = lote)
                         Spacer(modifier = Modifier.width(8.dp))
                     }
 
-                    // Botón para generar PDF
                     IconButton(
                         onClick = {
-                            scope.launch {
-                                try {
-                                    onGeneratePdf(lote)
-                                    snackbarHostState.showSnackbar(
-                                        "PDF generado correctamente para el lote ${lote.number}"
-                                    )
-                                } catch (e: Exception) {
-                                    snackbarHostState.showSnackbar("Error al generar PDF: ${e.message}")
+                            if (certificado != null) {
+                                showCertificadoDialog = true
+                            } else {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("No se encontró certificado para el lote ${lote.number}")
                                 }
                             }
                         },
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
-                            Icons.Default.PictureAsPdf,
-                            contentDescription = "Generar PDF",
-                            tint = PrimaryColor
+                            Icons.Default.Description,
+                            contentDescription = "Ver certificado",
+                            tint = certificadoIconColor
                         )
                     }
                 }
@@ -108,7 +113,7 @@ fun LoteCard(
         }
     }
 
-    // Dialog para BigBags
+    // --- Diálogo BigBags ---
     if (showBigBagsDialog) {
         AlertDialog(
             onDismissRequest = { showBigBagsDialog = false },
@@ -117,21 +122,154 @@ fun LoteCard(
                     Text("Cerrar", color = PrimaryColor)
                 }
             },
-            title = {
-                Text(
-                    text = "Lista de BigBags",
-                    color = PrimaryColor,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
-            },
-            text = {
-                BigBagsDialogContent(bigBags = lote.bigBag)
-            }
+            title = { Text("Lista de BigBags", color = PrimaryColor, fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+            text = { BigBagsDialogContent(bigBags = lote.bigBag) }
         )
+    }
+
+    // --- Diálogo Certificado ---
+    if (showCertificadoDialog && certificado != null) {
+        Dialog(onDismissRequest = { showCertificadoDialog = false }) {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // --- Icono de estado grande ---
+                    val (icon, estadoText, estadoColor) = when (certificado.status) {
+                        "w" -> Triple(
+                            Icons.Default.Warning,
+                            "Advertencia",
+                            MaterialTheme.colorScheme.error
+                        )
+                        "c" -> Triple(
+                            Icons.Default.CheckCircle,
+                            "Correcto",
+                            PrimaryColor
+                        )
+                        else -> Triple(
+                            Icons.Default.Description,
+                            "Desconocido",
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = estadoText,
+                        tint = estadoColor,
+                        modifier = Modifier.size(48.dp)
+                    )
+
+                    // --- Título ---
+                    Text(
+                        text = "Certificado de ${lote.number}",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 22.sp,
+                        textAlign = TextAlign.Center
+                    )
+
+                    // --- Estado ---
+                  //  Text(
+                  //      text = "Estado: $estadoText",
+                  //      color = estadoColor,
+                  //      fontWeight = FontWeight.Bold,
+                  //      fontSize = 18.sp,
+                  //      textAlign = TextAlign.Center
+                  //  )
+
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                    // --- Encabezados ---
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Propiedades",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = PrimaryColor,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Valores",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = PrimaryColor,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    // --- Lista propiedades ---
+                    certificado.propiedades.forEach { prop ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = prop.nombre,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1, // ⬅️ Solo una línea
+                                overflow = TextOverflow.Ellipsis, // ⬅️ Si es muy largo, muestra "..."
+                                modifier = Modifier
+                                    .widthIn(max = 220.dp) // ⬅️ Limita ancho máximo
+                                    .padding(end = 8.dp)
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.End,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                if (prop.warning) {
+                                    Icon(
+                                        Icons.Default.Warning,
+                                        contentDescription = "Advertencia",
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = prop.valor,
+                                    color = if (prop.warning) MaterialTheme.colorScheme.error
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- Botón cerrar ---
+                    Button(
+                        onClick = { showCertificadoDialog = false },
+                        modifier = Modifier.align(Alignment.End),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                    ) {
+                        Text("Cerrar", color = Color.White)
+                    }
+                }
+            }
+        }
     }
 }
 
+// -------------------------
+// BookedTooltipIcon
+// -------------------------
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookedTooltipIcon(lote: LoteModel) {
@@ -145,8 +283,8 @@ fun BookedTooltipIcon(lote: LoteModel) {
             modifier = Modifier
                 .size(24.dp)
                 .combinedClickable(
-                    onClick = { /* no hacemos nada al click normal */ },
-                    onLongClick = { showTooltip = true } // muestra tooltip al mantener presionado
+                    onClick = { },
+                    onLongClick = { showTooltip = true }
                 )
         )
 
@@ -167,8 +305,11 @@ fun BookedTooltipIcon(lote: LoteModel) {
     }
 }
 
+// -------------------------
+// DetailRow
+// -------------------------
 @Composable
-fun DetailRow(label: String, value: String, valueColor: androidx.compose.ui.graphics.Color? = null) {
+fun DetailRow(label: String, value: String, valueColor: Color? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
