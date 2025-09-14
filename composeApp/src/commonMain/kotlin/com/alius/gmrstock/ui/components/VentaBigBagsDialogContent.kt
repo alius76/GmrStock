@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,23 +23,51 @@ fun VentaBigBagsDialogContent(bigBags: List<VentaBigbag>) {
 
     Column(modifier = Modifier.fillMaxWidth()) {
         if (bigBags.isEmpty()) {
-            Text("No hay big bags para esta venta.")
+            Text(
+                text = "No hay BigBags para esta venta.",
+                modifier = Modifier.padding(16.dp),
+                fontWeight = FontWeight.Medium,
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
         } else {
+            // --- Header ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.5f)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                colors = CardDefaults.cardColors(containerColor = primaryColor.copy(alpha = 0.1f)),
+                shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Número", fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("Peso (Kg)", fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(
+                        text = "Número",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = primaryColor,
+                        modifier = Modifier.weight(0.3f)
+                    )
+                    Text(
+                        text = "Peso (Kg)",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = primaryColor,
+                        modifier = Modifier.weight(0.3f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End
+                    )
+                    Text(
+                        text = "Estado",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = primaryColor,
+                        modifier = Modifier.weight(0.4f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
                 }
             }
 
@@ -68,27 +98,60 @@ fun VentaBigBagListItem(bigBag: VentaBigbag, primaryColor: Color) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Número
             Text(
                 text = bigBag.ventaBbNumber,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = primaryColor,
-                modifier = Modifier.weight(0.5f),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1
+                modifier = Modifier.weight(0.3f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = "${bigBag.ventaBbWeight} Kg",
-                fontSize = 14.sp,
-                color = Color.DarkGray,
-                modifier = Modifier.weight(0.5f),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1
-            )
+
+            // Peso
+            Box(modifier = Modifier.weight(0.3f), contentAlignment = Alignment.CenterEnd) {
+                Text(
+                    text = "${bigBag.ventaBbWeight} Kg",
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            // Estado con ícono
+            Box(
+                modifier = Modifier.weight(0.4f),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    val statusText = "Entregado"
+                    val statusColor = Color(0xFF388E3C) // verde
+                    val statusIcon = Icons.Default.CheckCircle
+
+                    Icon(
+                        imageVector = statusIcon,
+                        contentDescription = statusText,
+                        tint = statusColor,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = statusText,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = statusColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
     }
 }

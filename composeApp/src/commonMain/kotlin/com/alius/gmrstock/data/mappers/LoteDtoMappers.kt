@@ -22,7 +22,8 @@ object LoteDtoMapper {
             booked = dto.booked,
             dateBooked = dto.dateBooked?.let { Instant.fromEpochMilliseconds(it) },
             remark = dto.remark,
-            createdAt = dto.createdAt?.let { Instant.fromEpochMilliseconds(it) } // ⬅ mapeo
+            createdAt = dto.createdAt?.let { Instant.fromEpochMilliseconds(it) },
+            certificateOk = dto.certificateOk
         )
     }
 
@@ -42,7 +43,8 @@ object LoteDtoMapper {
             booked = model.booked,
             dateBooked = model.dateBooked?.toEpochMilliseconds(),
             remark = model.remark,
-            createdAt = model.createdAt?.toEpochMilliseconds() // ⬅ mapeo
+            createdAt = model.createdAt?.toEpochMilliseconds(),
+            certificateOk = model.certificateOk
         )
     }
 }

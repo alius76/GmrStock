@@ -79,7 +79,8 @@ data class FirebaseDocument(
             booked = bookedCliente,
             dateBooked = parseTimestampToMillis("dateBooked"),
             remark = f["remark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
-            createdAt = parseTimestampToMillis("createdAt")
+            createdAt = parseTimestampToMillis("createdAt"),
+            certificateOk = f["certificateOk"]?.jsonObject?.get("booleanValue")?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
         )
     }
 }

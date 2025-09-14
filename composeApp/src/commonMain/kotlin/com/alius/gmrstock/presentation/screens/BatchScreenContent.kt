@@ -2,15 +2,7 @@ package com.alius.gmrstock.presentation.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -18,19 +10,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +23,7 @@ import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.LoteItem
 import com.alius.gmrstock.ui.components.LoteItemSmall
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -51,15 +33,16 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
     var ultimosLotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    val scope = rememberCoroutineScope()
     val hoyListState = rememberLazyListState()
-
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(databaseUrl) {
         loading = true
-        lotesHoy = loteRepository.listarLotesCreadosHoy()
-        ultimosLotes = loteRepository.listarUltimosLotes(5)
-        loading = false
+        scope.launch {
+            lotesHoy = loteRepository.listarLotesCreadosHoy()
+            ultimosLotes = loteRepository.listarUltimosLotes(5)
+            loading = false
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -71,24 +54,36 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp), // mantengo padding vertical
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // --- Sección Lotes creados hoy ---
                 item {
-                    Spacer(modifier = Modifier.height(20.dp)) // espacio específico arriba del título
-                    Text(
-                        text = "Lotes creados hoy",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-                    )
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.height(50.dp))
+
+                        Text(
+                            text = "Lotes creados hoy",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Número de lotes: ${lotesHoy.size}",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                    }
 
                     if (lotesHoy.isEmpty()) {
-                        // Card de "Sin lotes"
                         Box(
                             modifier = Modifier
                                 .height(160.dp)
@@ -139,21 +134,34 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
 
                 // --- Sección Últimos lotes ---
                 item {
-                    Text(
-                        text = "Últimos lotes",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.height(16.dp)) // MÁS grande para bajar título
+
+                        Text(
+                            text = "Últimos lotes",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Número de registros: ${ultimosLotes.size}",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                    }
                 }
 
                 items(ultimosLotes) { lote ->
                     LoteItem(lote)
                 }
-
             }
         }
     }

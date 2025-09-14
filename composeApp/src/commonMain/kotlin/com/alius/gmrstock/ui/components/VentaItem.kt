@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
 import com.alius.gmrstock.ui.theme.BadgeTextColor
@@ -28,29 +29,34 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 6.dp, horizontal = 12.dp)
             .clickable { showDialog = true },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-
-            // Fila superior: Nombre cliente + Badge
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Fila superior: cliente + badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = venta.ventaCliente,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = PrimaryColor
+                    color = PrimaryColor,
+                    maxLines = 1
                 )
 
                 Box(
                     modifier = Modifier
-                        .background(SecondaryColor, RoundedCornerShape(12.dp))
+                        .background(SecondaryColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -63,34 +69,33 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de información del lote con icono
+            // Fila de información adicional con fondo gris claro
             Row(
-                verticalAlignment = Alignment.Top
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF7F7F7), RoundedCornerShape(12.dp))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Filled.EuroSymbol,
-                    contentDescription = "Lote",
+                    contentDescription = "Venta",
                     tint = PrimaryColor,
                     modifier = Modifier.size(36.dp)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column {
-                    Text(text = "Lote: ${venta.ventaLote}", color = TextPrimary)
-                    Text(text = "Material: ${venta.ventaMaterial}", color = TextPrimary)
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(text = "Lote: ${venta.ventaLote}", color = TextPrimary, maxLines = 1)
+                    Text(text = "Material: ${venta.ventaMaterial}", color = TextPrimary, maxLines = 1)
                     Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}", color = TextPrimary)
 
-                    // NUEVO: Peso total
                     val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "$it Kg" }
                         ?: "No disponible"
-
-                    Text(
-                        text = "Peso total: $pesoTexto",
-                        color = TextPrimary,
-                    )
+                    Text(text = "Peso total: $pesoTexto", color = TextPrimary)
                 }
             }
         }
@@ -105,11 +110,14 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                 }
             },
             title = {
-                Text(
-                    text = "BigBags vendidos",
-                    color = PrimaryColor,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Lista de BigBags",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                }
             },
             text = {
                 VentaBigBagsDialogContent(venta.ventaBigbags)

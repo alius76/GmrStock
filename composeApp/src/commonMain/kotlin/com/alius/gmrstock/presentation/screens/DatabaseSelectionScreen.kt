@@ -1,19 +1,26 @@
 package com.alius.gmrstock.presentation.screens
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import com.alius.gmrstock.data.loadPlatformImage
 import com.alius.gmrstock.data.PlatformImageComposable
+import com.alius.gmrstock.data.loadPlatformImage
 import com.alius.gmrstock.data.FirestoreUrls
 import com.alius.gmrstock.ui.theme.PrimaryColor
 
@@ -23,9 +30,10 @@ class DatabaseSelectionScreen(
 
     @Composable
     override fun Content() {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color.White // 🔹 Fondo fijo blanco
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background) // fondo consistente con otras pantallas
         ) {
             Column(
                 modifier = Modifier
@@ -44,34 +52,49 @@ class DatabaseSelectionScreen(
                             .height(250.dp)
                     )
                 } else {
-                    Text("LOGO", color = MaterialTheme.colorScheme.onBackground)
+                    Text(
+                        "LOGO",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 32.sp
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
-                // 🔹 Texto central destacado
-                Text(
-                    text = "Seleccione base de datos",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                // 🔹 Texto central destacado + subtítulo
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Seleccione base de datos",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = PrimaryColor
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Conéctese a la planta deseada",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = PrimaryColor.copy(alpha = 0.7f)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // 🔹 Botones estilizados
+                // 🔹 Botones estilizados en fila y centrados
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    DatabaseCard(
-                        label = "Planta 7",
+                    DatabaseCardWithProcessStyle(
+                        label = "P07",
+                        progress = 0.7f,
                         onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
                     )
-                    DatabaseCard(
-                        label = "Planta 8",
+                    Spacer(modifier = Modifier.width(24.dp))
+                    DatabaseCardWithProcessStyle(
+                        label = "P08",
+                        progress = 0.45f,
                         onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
                     )
                 }
@@ -81,42 +104,61 @@ class DatabaseSelectionScreen(
 }
 
 @Composable
-fun DatabaseCard(
+fun DatabaseCardWithProcessStyle(
     label: String,
+    progress: Float,
     onClick: () -> Unit
 ) {
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier
-            .size(width = 160.dp, height = 200.dp),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = Color.White // 🔹 Botón con fondo blanco
-        ),
-        elevation = CardDefaults.elevatedCardElevation(12.dp),
+            .size(width = 160.dp, height = 200.dp)
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.elevatedCardElevation(12.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color(0xFF029083), Color(0xFF00BFA5))
+                    )
+                )
+                .padding(16.dp)
         ) {
-            // 🔹 Icono de base de datos
-            Icon(
-                imageVector = Icons.Filled.Storage,
-                contentDescription = null,
-                tint = PrimaryColor,
-                modifier = Modifier.size(72.dp) // icono grande
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .animateContentSize(tween(300)),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Storage,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(72.dp)
+                )
 
-            // 🔹 Texto de la planta
-            Text(
-                text = label,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryColor
-            )
+                Text(
+                    text = label,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    color = Color.Yellow,
+                    trackColor = Color(0x33FFFFFF)
+                )
+            }
         }
     }
 }

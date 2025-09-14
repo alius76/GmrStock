@@ -21,6 +21,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -78,22 +79,37 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // --- Título y subtítulo ---
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = "Top clientes en $currentMonth",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.height(50.dp))
+
+                        Text(
+                            text = "Top clientes en $currentMonth",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Número de clientes: ${grouped.size}",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                    }
                 }
 
+                // --- Cards de clientes ---
                 items(grouped) { group ->
                     ClientGroupSellCard(group = group.first) { clickedGroup ->
                         selectedClientGroup = clickedGroup
@@ -107,7 +123,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // Protección: solo mostrar BottomSheet si selectedClientGroup no es null
+            // --- BottomSheet con detalle ---
             selectedClientGroup?.let { clientGroup ->
                 ModalBottomSheet(
                     onDismissRequest = {

@@ -19,5 +19,6 @@ data class LoteModel(
     val booked: Cliente? = null,
     val dateBooked: Instant?,
     val remark: String,
+    val certificateOk: Boolean = false,
     val createdAt: Instant?
 )

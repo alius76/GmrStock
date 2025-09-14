@@ -47,10 +47,8 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
         loading = true
         scope.launch {
             procesos = processRepository.listarProcesos()
-            println("✅ Total de procesos obtenidos: ${procesos.size}")
             ratios = ratioRepository.listarRatiosDelMes()
             ratioDataList = generateRatioDataFromCollection(ratios)
-            println("✅ Total de ratios del mes: ${ratioDataList.size}")
             loading = false
         }
     }
@@ -63,24 +61,38 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Título procesos
+            // --- Bloque superior: título y subtítulo procesos ---
             item {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Lotes en progreso",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(50.dp))
+
+                    Text(
+                        text = "Lotes en progreso",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Número de procesos: ${procesos.size}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
 
-            // Lista de procesos
+            // --- Lista de procesos ---
             item {
                 if (procesos.isEmpty()) {
                     Box(
@@ -129,21 +141,35 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // Título gráfica
+            // --- Bloque producción del mes ---
             item {
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = "Producción del mes",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Producción del mes",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Total ratios: ${ratioDataList.size}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
 
-            // Gráfica
+            // --- Gráfica ratios ---
             item {
                 RatioProductionCard(
                     modifier = Modifier

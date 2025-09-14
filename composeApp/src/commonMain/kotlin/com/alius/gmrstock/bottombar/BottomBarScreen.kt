@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -45,8 +46,8 @@ class BottomBarScreen(
         val databaseUrl = LocalDatabaseUrl.current
 
         val identificadorFabrica = when (databaseUrl) {
-            FirestoreUrls.DB1_URL -> "Planta 07"
-            FirestoreUrls.DB2_URL -> "Planta 08"
+            FirestoreUrls.DB1_URL -> "P07"
+            FirestoreUrls.DB2_URL -> "P08"
             else -> "Desconocida"
         }
 
@@ -88,35 +89,56 @@ class BottomBarScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("GMR Stock - $identificadorFabrica") },
-                        backgroundColor = Color(0xFF029083),
-                        contentColor = Color.White,
-                        modifier = Modifier.statusBarsPadding(),
-                        actions = {
-                            // Solo mostrar botones en HomeTab
-                            if (tabNavigator.current.key.startsWith(homeTab.key)) {
-                                // Botón Swap con texto
-                                Row(
-                                    modifier = Modifier
-                                        .clickable { onChangeDatabase() }
-                                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "SWAP",
-                                        color = Color.White,
-                                        fontSize = 14.sp
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.SwapHoriz,
-                                        contentDescription = "Swap base de datos",
-                                        tint = Color.White
-                                    )
+                        backgroundColor = colors.topBarBackground,
+                        contentColor = colors.topBarContent,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+                        title = {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.TopCenter // centra horizontalmente y fija la posición vertical
+                            ) {
+                                // Título siempre en el mismo lugar
+                                Text(
+                                    "GMR Stock - $identificadorFabrica",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(top = 20.dp) // ajusta la altura fija
+                                )
+
+                                // SWAP debajo, pero no afecta la posición del título
+                                if (tabNavigator.current.key.startsWith(homeTab.key)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .offset(y = (30).dp)
+                                    ) {
+                                        Text(
+                                            "SWAP",
+                                            fontSize = 16.sp,
+                                            color = Color.White,
+                                            modifier = Modifier.clickable { onChangeDatabase() }
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.SwapHoriz,
+                                            contentDescription = "Swap",
+                                            tint = Color.White,
+                                            modifier = Modifier.clickable { onChangeDatabase() }
+                                        )
+                                    }
                                 }
                             }
-                        }
+                        },
+                        actions = { /* Para poner iconos o lo que sea a la derecha del título */ }
                     )
+
+
+
                 },
                 bottomBar = {
                     BottomNavigation(

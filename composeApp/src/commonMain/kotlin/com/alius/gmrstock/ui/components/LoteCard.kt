@@ -1,14 +1,10 @@
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.VpnKey
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -44,19 +39,24 @@ fun LoteCard(
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
     var showCertificadoDialog by remember { mutableStateOf(false) }
+    var showReservedDialog by remember { mutableStateOf(false) }
+    var showRemarkDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .clickable { showBigBagsDialog = true },
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-        )
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(20.dp)
+                .animateContentSize()
+        ) {
+            // --- Header: Lote + Certificado + Observación + Ver BigBags ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -64,20 +64,16 @@ fun LoteCard(
             ) {
                 Text(
                     text = lote.number,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = PrimaryColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
+                    color = PrimaryColor
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
-                        BookedTooltipIcon(lote = lote)
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Ícono certificado
                     IconButton(
                         onClick = {
                             if (certificado != null) {
@@ -88,29 +84,85 @@ fun LoteCard(
                                 }
                             }
                         },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            Icons.Default.Description,
+                            Icons.Default.Assessment,
                             contentDescription = "Ver certificado",
-                            tint = certificadoIconColor
+                            tint = certificadoIconColor,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    // Ícono Observación
+                    if (lote.remark.isNotBlank()) {
+                        IconButton(
+                            onClick = { showRemarkDialog = true },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Description,
+                                contentDescription = "Ver observación",
+                                tint = PrimaryColor,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                    // Ícono Ver BigBags
+                    IconButton(
+                        onClick = { showBigBagsDialog = true },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.ViewList,
+                            contentDescription = "Ver BigBags",
+                            tint = PrimaryColor,
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
             }
 
-            Divider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
+            // --- Chip de reservado debajo ---
+            if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                AssistChip(
+                    onClick = { showReservedDialog = true },
+                    label = { Text("Reservado") },
+                    leadingIcon = { Icon(Icons.Default.VpnKey, contentDescription = null) },
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = ReservedColor.copy(alpha = 0.15f),
+                        labelColor = ReservedColor
+                    ),
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
 
-            DetailRow("Material:", lote.description)
-            DetailRow("Fecha:", formatInstant(lote.date))
-            DetailRow("Ubicación:", lote.location)
-            DetailRow("BigBags:", lote.count)
-            DetailRow("Peso total:", "${lote.totalWeight} Kg", PrimaryColor)
-            DetailRow("Observación:", lote.remark)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // --- Detalles ---
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                DetailRow("Material", lote.description)
+                DetailRow("Fecha", formatInstant(lote.date))
+                DetailRow("Ubicación", lote.location)
+                DetailRow("BigBags", lote.count.toString())
+                DetailRow("Peso total", "${lote.totalWeight} Kg", PrimaryColor)
+            }
         }
+    }
+
+    // --- Diálogo Observación ---
+    if (showRemarkDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemarkDialog = false },
+            title = { Text("Observación", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            text = { Text(lote.remark) },
+            confirmButton = {
+                TextButton(onClick = { showRemarkDialog = false }) {
+                    Text("Cerrar", color = PrimaryColor)
+                }
+            }
+        )
     }
 
     // --- Diálogo BigBags ---
@@ -122,7 +174,16 @@ fun LoteCard(
                     Text("Cerrar", color = PrimaryColor)
                 }
             },
-            title = { Text("Lista de BigBags", color = PrimaryColor, fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+            title = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Lista de BigBags",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                }
+            },
             text = { BigBagsDialogContent(bigBags = lote.bigBag) }
         )
     }
@@ -144,23 +205,10 @@ fun LoteCard(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // --- Icono de estado grande ---
                     val (icon, estadoText, estadoColor) = when (certificado.status) {
-                        "w" -> Triple(
-                            Icons.Default.Warning,
-                            "Advertencia",
-                            MaterialTheme.colorScheme.error
-                        )
-                        "c" -> Triple(
-                            Icons.Default.CheckCircle,
-                            "Correcto",
-                            PrimaryColor
-                        )
-                        else -> Triple(
-                            Icons.Default.Description,
-                            "Desconocido",
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        "w" -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
+                        "c" -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
+                        else -> Triple(Icons.Default.Description, "Desconocido", MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
                     Icon(
@@ -170,7 +218,6 @@ fun LoteCard(
                         modifier = Modifier.size(48.dp)
                     )
 
-                    // --- Título ---
                     Text(
                         text = "Certificado de ${lote.number}",
                         color = PrimaryColor,
@@ -179,18 +226,8 @@ fun LoteCard(
                         textAlign = TextAlign.Center
                     )
 
-                    // --- Estado ---
-                  //  Text(
-                  //      text = "Estado: $estadoText",
-                  //      color = estadoColor,
-                  //      fontWeight = FontWeight.Bold,
-                  //      fontSize = 18.sp,
-                  //      textAlign = TextAlign.Center
-                  //  )
-
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                    // --- Encabezados ---
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -212,7 +249,6 @@ fun LoteCard(
                         )
                     }
 
-                    // --- Lista propiedades ---
                     certificado.propiedades.forEach { prop ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -221,11 +257,9 @@ fun LoteCard(
                             Text(
                                 text = prop.nombre,
                                 fontWeight = FontWeight.Bold,
-                                maxLines = 1, // ⬅️ Solo una línea
-                                overflow = TextOverflow.Ellipsis, // ⬅️ Si es muy largo, muestra "..."
-                                modifier = Modifier
-                                    .widthIn(max = 220.dp) // ⬅️ Limita ancho máximo
-                                    .padding(end = 8.dp)
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.widthIn(max = 220.dp).padding(end = 8.dp)
                             )
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -252,7 +286,6 @@ fun LoteCard(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // --- Botón cerrar ---
                     Button(
                         onClick = { showCertificadoDialog = false },
                         modifier = Modifier.align(Alignment.End),
@@ -265,43 +298,25 @@ fun LoteCard(
             }
         }
     }
-}
 
-// -------------------------
-// BookedTooltipIcon
-// -------------------------
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun BookedTooltipIcon(lote: LoteModel) {
-    var showTooltip by remember { mutableStateOf(false) }
-
-    Box {
-        Icon(
-            imageVector = Icons.Default.VpnKey,
-            contentDescription = "Lote reservado",
-            tint = ReservedColor,
-            modifier = Modifier
-                .size(24.dp)
-                .combinedClickable(
-                    onClick = { },
-                    onLongClick = { showTooltip = true }
-                )
+    // --- Diálogo Reservado ---
+    if (showReservedDialog) {
+        AlertDialog(
+            onDismissRequest = { showReservedDialog = false },
+            title = { Text("Reservado", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            text = {
+                Column {
+                    Text("Nombre: ${lote.booked?.cliNombre}")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Observaciones: ${lote.booked?.cliObservaciones ?: "-"}")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showReservedDialog = false }) {
+                    Text("Cerrar", color = PrimaryColor)
+                }
+            }
         )
-
-        DropdownMenu(
-            expanded = showTooltip,
-            onDismissRequest = { showTooltip = false },
-            offset = DpOffset(x = 0.dp, y = 8.dp)
-        ) {
-            Text(
-                text = "Nombre: ${lote.booked?.cliNombre}",
-                modifier = Modifier.padding(8.dp)
-            )
-            Text(
-                text = "Observaciones: ${lote.booked?.cliObservaciones ?: "-"}",
-                modifier = Modifier.padding(8.dp)
-            )
-        }
     }
 }
 

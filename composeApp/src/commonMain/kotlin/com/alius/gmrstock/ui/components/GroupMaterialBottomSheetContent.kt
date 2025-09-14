@@ -5,22 +5,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.data.getCertificadoRepository
+import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
-import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,9 +40,7 @@ fun GroupMaterialBottomSheetContent(
     // 🔹 Precarga de lotes + certificados
     LaunchedEffect(loteNumbers) {
         scope.launch {
-            val loadedLotes = loteNumbers.mapNotNull { number ->
-                loteRepository.getLoteByNumber(number)
-            }
+            val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
             lotes = loadedLotes
 
             val certs = loadedLotes.associate { lote ->
@@ -60,31 +55,23 @@ fun GroupMaterialBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
-            .padding(vertical = 24.dp)
+            .height(520.dp)
+            .padding(vertical = 14.dp)
             .navigationBarsPadding()
     ) {
-        // --- Header ---
-        Row(
+        // --- Header centrado ---
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Lotes Disponibles",
+                text = "Lotes disponibles",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor
             )
-            IconButton(onClick = onDismissRequest) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Cerrar",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -117,9 +104,9 @@ fun GroupMaterialBottomSheetContent(
                     items(lotes) { lote ->
                         val cert = certificados[lote.number]
                         val certColor = when {
-                            cert == null -> MaterialTheme.colorScheme.onSurfaceVariant // gris
-                            cert.status == "w" -> MaterialTheme.colorScheme.error       // rojo
-                            else -> PrimaryColor                                       // correcto
+                            cert == null -> MaterialTheme.colorScheme.onSurfaceVariant
+                            cert.status == "w" -> MaterialTheme.colorScheme.error
+                            else -> PrimaryColor
                         }
 
                         LoteCard(

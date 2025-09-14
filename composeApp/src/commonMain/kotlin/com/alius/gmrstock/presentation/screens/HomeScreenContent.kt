@@ -3,6 +3,8 @@ package com.alius.gmrstock.presentation.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -10,8 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PowerSettingsNew
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.agruparPorMaterial
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 class HomeScreenContent(
     private val user: User,
     private val onChangeDatabase: () -> Unit,
-    private val onLogoutClick: () -> Unit = {} // ✅ agregado
+    private val onLogoutClick: () -> Unit = {}
 ) : Screen {
 
     @Composable
@@ -67,84 +67,99 @@ class HomeScreenContent(
         }
 
         Scaffold(
-            topBar = {
-                // AppBar personalizada con icono + email
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            bottomBar = {
+                BottomAppBar(
+                    modifier = Modifier.height(48.dp) // altura más compacta
                 ) {
-                    // Primero el email
+                    Spacer(modifier = Modifier.weight(1f))
                     Text(
                         text = user.email,
+                        color = TextSecondary,
                         fontSize = 14.sp,
-                        color = TextSecondary
+                        maxLines = 1
                     )
-
-                    Spacer(modifier = Modifier.width(0.dp)) // Pequeño espacio entre email y icono
-
-                    // Luego el icono de logout
-                    IconButton(onClick = { onLogoutClick() }) {
+                    Spacer(modifier = Modifier.width(4.dp)) // menos separación
+                    IconButton(
+                        onClick = { onLogoutClick() },
+                        modifier = Modifier.size(32.dp) // icono más pequeño
+                    ) {
                         Icon(
                             imageVector = Icons.Default.PowerSettingsNew,
                             contentDescription = "Cerrar sesión",
-                            tint = PrimaryColor
+                            tint = PrimaryColor,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
-            },
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+            }
         ) { paddingValues ->
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
                     .padding(paddingValues)
             ) {
-                Spacer(Modifier.height(4.dp))
-
                 when {
                     isLoading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
                     }
                     errorMessage != null -> {
                         Text(
                             text = "Error: $errorMessage",
                             color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            modifier = Modifier.align(Alignment.Center)
                         )
                     }
                     materialGroups.isEmpty() -> {
                         Text(
                             text = "No se encontraron materiales.",
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            modifier = Modifier.align(Alignment.Center)
                         )
                     }
                     else -> {
-                        Column {
-                            Text(
-                                text = "Materiales en stock",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.padding(top = 0.dp, bottom = 18.dp)
-                            )
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            // BLOQUE SUPERIOR: título y subtítulo
+                            item {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Spacer(modifier = Modifier.height(2.dp)) // casi pegado arriba
 
-                            LazyColumn {
-                                items(materialGroups) { group ->
-                                    MaterialGroupCard(group = group) { clickedGroup ->
-                                        selectedGroupForSheet = clickedGroup
-                                        showGroupMaterialBottomSheet = true
-                                        coroutineScope.launch {
-                                            sheetStateGroup.show()
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Materiales en stock",
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            fontSize = 26.sp,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+
+                                    Spacer(modifier = Modifier.height(2.dp))
+
+                                    Text(
+                                        text = "Número de materiales: ${materialGroups.size}",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Medium
+                                        ),
+                                        color = TextSecondary,
+                                        modifier = Modifier.padding(bottom = 12.dp)
+                                    )
                                 }
+                            }
+
+                            items(materialGroups) { group ->
+                                MaterialGroupCard(group = group) { clickedGroup ->
+                                    selectedGroupForSheet = clickedGroup
+                                    showGroupMaterialBottomSheet = true
+                                    coroutineScope.launch { sheetStateGroup.show() }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }
@@ -166,9 +181,7 @@ class HomeScreenContent(
             ) {
                 GroupMaterialBottomSheetContent(
                     loteNumbers = selectedGroupForSheet!!.loteNumbers,
-                    onLoteClick = { lote ->
-                        println("Lote clickeado: ${lote.number}")
-                    },
+                    onLoteClick = { lote -> println("Lote clickeado: ${lote.number}") },
                     onDismissRequest = {
                         coroutineScope.launch {
                             sheetStateGroup.hide()

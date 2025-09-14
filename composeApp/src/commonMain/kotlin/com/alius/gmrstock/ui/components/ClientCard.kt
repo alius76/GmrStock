@@ -1,12 +1,16 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -14,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.core.utils.formatInstant
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.Venta
+import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.ui.theme.PrimaryColor
 
 @Composable
@@ -33,11 +38,17 @@ fun ClientCard(
                 }
             },
             title = {
-                Text(
-                    text = "BigBags vendidos",
-                    color = PrimaryColor,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Lista de BigBags",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                }
             },
             text = {
                 VentaBigBagsDialogContent(bigBags = venta.ventaBigbags)
@@ -45,54 +56,70 @@ fun ClientCard(
         )
     }
 
-    // Calcular cantidad de BigBags y peso total
     val cantidadBigBags = venta.ventaBigbags.size
     val pesoTotal = venta.ventaBigbags.sumOf { it.ventaBbWeight.toIntOrNull() ?: 0 }
 
     Card(
         modifier = modifier
             .width(300.dp)
-            .wrapContentHeight()
-            .clickable { showBigBagsDialog = true }, // abrir diálogo al hacer click
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-        )
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Nombre del lote (anteriormente estaba usando venta.ventaLote)
-            Text(
-                text = "Lote: ${venta.ventaLote}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = PrimaryColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+        Column(
+            modifier = Modifier
+                .padding(20.dp)
+                .animateContentSize()
+        ) {
+            // --- Header: Lote + ViewList icon ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = venta.ventaLote,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
-            Divider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
+                IconButton(
+                    onClick = { showBigBagsDialog = true },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ViewList,
+                        contentDescription = "Ver BigBags",
+                        tint = PrimaryColor,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
 
-            // Datos de la venta
-            DetailRow("Material:", venta.ventaMaterial ?: "Sin material")
-            DetailRow("Fecha:", formatInstant(venta.ventaFecha))
-            DetailRow("BigBags:", cantidadBigBags.toString())
-            DetailRow("Peso total:", "${pesoTotal.toString()} Kg", PrimaryColor)
+            Spacer(modifier = Modifier.height(12.dp))
 
+            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // --- Detalles ---
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                DetailRow("Material", venta.ventaMaterial ?: "Sin material")
+                DetailRow("Fecha", formatInstant(venta.ventaFecha))
+                DetailRow("BigBags", cantidadBigBags.toString())
+                DetailRow("Peso total", "${pesoTotal} Kg", PrimaryColor)
+            }
         }
     }
 }
 
-
 @Composable
-fun DetailRow(
-    label: String,
-    value: String,
-    valueColor: androidx.compose.ui.graphics.Color? = null
-) {
+fun DetailRow(label: String, value: String, valueColor: Color? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -101,7 +128,7 @@ fun DetailRow(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.widthIn(min = 70.dp)
+            modifier = Modifier.widthIn(min = 100.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(

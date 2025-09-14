@@ -21,6 +21,7 @@ data class LoteDto(
     val booked: Cliente? = null,
     val dateBooked: Long? = null,
     val remark: String = "",
-    val createdAt: Long? = null
+    val createdAt: Long? = null,
+    val certificateOk: Boolean = false
 )
 

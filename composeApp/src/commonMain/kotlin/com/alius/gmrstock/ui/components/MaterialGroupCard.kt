@@ -27,13 +27,18 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(vertical = 6.dp, horizontal = 12.dp)
             .clickable { onClick(group) },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+        ) {
 
-            // Fila superior: descripción y badge de lotes con icono
+            // Fila superior: descripción y badge de lotes
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -41,7 +46,7 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
             ) {
                 Text(
                     text = group.description,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryColor,
                     maxLines = 1,
@@ -53,7 +58,7 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
 
                 Box(
                     modifier = Modifier
-                        .background(SecondaryColor, RoundedCornerShape(12.dp))
+                        .background(SecondaryColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -78,26 +83,33 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de información adicional
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Fila de información adicional con separador sutil
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFF7F7F7), RoundedCornerShape(12.dp))
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "BigBags: ${group.totalBigBags}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
-                )
-                Text(
-                    text = "Peso Total: ${group.totalWeight} Kg",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "BigBags: ${group.totalBigBags}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "Peso Total: ${group.totalWeight} Kg",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
+                    )
+                }
             }
         }
     }

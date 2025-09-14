@@ -17,13 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.BadgeTextColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.TextPrimary
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import com.alius.gmrstock.core.utils.formatInstant
 
 @Composable
@@ -33,49 +32,54 @@ fun LoteItem(lote: LoteModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { showBigBagsDialog = true }, // 👈 ahora abre el diálogo
+            .padding(vertical = 6.dp, horizontal = 12.dp)
+            .clickable { showBigBagsDialog = true },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Fila superior: número de lote y badge
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Texto Lote
                 Text(
                     text = lote.number,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryColor,
                     maxLines = 1
                 )
 
-                // Badge de cantidad
                 Box(
                     modifier = Modifier
-                        .background(SecondaryColor, RoundedCornerShape(12.dp))
+                        .background(SecondaryColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "BigBags ${lote.count}",
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = BadgeTextColor
                     )
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Fila de información adicional con fondo gris claro
             Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 16.dp, top = 50.dp, end = 16.dp, bottom = 16.dp),
+                    .fillMaxWidth()
+                    .background(Color(0xFFF7F7F7), RoundedCornerShape(12.dp))
+                    .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -87,7 +91,7 @@ fun LoteItem(lote: LoteModel) {
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = "Material: ${lote.description}",
                         style = MaterialTheme.typography.bodyMedium,
@@ -115,6 +119,7 @@ fun LoteItem(lote: LoteModel) {
         }
     }
 
+    // Diálogo de BigBags
     if (showBigBagsDialog) {
         AlertDialog(
             onDismissRequest = { showBigBagsDialog = false },
@@ -124,11 +129,14 @@ fun LoteItem(lote: LoteModel) {
                 }
             },
             title = {
-                Text(
-                    text = "Lista de BigBags",
-                    color = PrimaryColor,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Lista de BigBags",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                }
             },
             text = {
                 BigBagsDialogContent(bigBags = lote.bigBag)

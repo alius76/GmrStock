@@ -2,7 +2,7 @@ package com.alius.gmrstock.presentation.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,18 +16,20 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alius.gmrstock.bottombar.BottomBarColors
-import com.alius.gmrstock.bottombar.BottomBarScreen
 import com.alius.gmrstock.data.AuthRepository
 import com.alius.gmrstock.presentation.screens.logic.LoginScreenLogic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 class LoginScreen(
     private val authRepository: AuthRepository,
-    private val colors: BottomBarColors = BottomBarColors() // Recibe los colores para consistencia
+    private val colors: BottomBarColors = BottomBarColors()
 ) : Screen {
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val logic = remember { LoginScreenLogic(authRepository) }
@@ -39,41 +41,41 @@ class LoginScreen(
         val errorMessage by logic.errorMessage.collectAsState()
         val user by logic.user.collectAsState()
 
-
         LaunchedEffect(user) {
-            user?.let {
-                navigator.replace(RootScreen())
-            }
+            user?.let { navigator.replace(RootScreen()) }
         }
 
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = colors.topBarBackground.copy(alpha = 0.1f) // Un fondo suave relacionado con el topBar
+            color = MaterialTheme.colorScheme.background // fondo consistente con otras pantallas
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(32.dp),
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                // Título principal
                 Text(
                     text = "GMR Stock",
                     fontSize = 48.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF029083),
+                    color = PrimaryColor,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Subtítulo
                 Text(
                     "Iniciar Sesión / Registro",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = colors.topBarBackground,
-                    modifier = Modifier.padding(bottom = 24.dp),
-                    textAlign = TextAlign.Center
+                    color = TextSecondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 24.dp)
                 )
 
+                // Campos de email y contraseña
                 OutlinedTextField(
                     value = email,
                     onValueChange = logic::updateEmail,
@@ -81,8 +83,8 @@ class LoginScreen(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = colors.topBarBackground,
-                        focusedLabelColor = colors.topBarBackground
+                        focusedBorderColor = PrimaryColor,
+                        focusedLabelColor = PrimaryColor
                     )
                 )
 
@@ -96,15 +98,15 @@ class LoginScreen(
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = colors.topBarBackground,
-                        focusedLabelColor = colors.topBarBackground
+                        focusedBorderColor = PrimaryColor,
+                        focusedLabelColor = PrimaryColor
                     )
                 )
 
                 if (errorMessage != null) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        errorMessage!!,
+                        text = errorMessage!!,
                         color = Color.Red,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
@@ -113,22 +115,19 @@ class LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                // Botones estilizados como ProcessItem
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(
-                        onClick = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                logic.login()
-                            }
-                        },
+                        onClick = { CoroutineScope(Dispatchers.Main).launch { logic.login() } },
                         enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = colors.topBarBackground),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                         else Text("Iniciar sesión", fontSize = 16.sp, color = Color.White)
@@ -137,29 +136,25 @@ class LoginScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Button(
-                        onClick = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                logic.register()
-                            }
-                        },
+                        onClick = { CoroutineScope(Dispatchers.Main).launch { logic.register() } },
                         enabled = !isLoading,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = colors.topBarBackground.copy(alpha = 0.7f)),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor.copy(alpha = 0.7f)),
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                         else Text("Registrar", fontSize = 16.sp, color = Color.White)
                     }
                 }
+
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
                     text = "Version: 1.0.0",
                     fontSize = 14.sp,
-                    color = Color.DarkGray
+                    color = TextSecondary
                 )
-
             }
         }
     }

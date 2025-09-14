@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
 fun TransferScreenContent(user: User, databaseUrl: String) {
     val ventaRepository = remember(databaseUrl) { getVentaRepository(databaseUrl) }
 
-    // Estados para las ventas
+    // Estados
     var ventasHoy by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ultimasVentas by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ventasDelMes by remember { mutableStateOf<List<Venta>>(emptyList()) }
@@ -50,10 +50,6 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
             ultimasVentas = ventaRepository.mostrarLasUltimasVentas()
             ventasDelMes = ventaRepository.mostrarVentasDelMes()
             ventaDataList = generateVentaDataFromCollection(ventasDelMes)
-
-            println("✅ Cantidad de ultimasVentas obtenidas: ${ultimasVentas.size}")
-            println("✅ Días con ventas este mes: ${ventaDataList.size}")
-
             loading = false
         }
     }
@@ -66,21 +62,35 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1️⃣ Sección Ventas de Hoy
+            // --- Ventas de Hoy ---
             item {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Ventas de hoy",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(50.dp))
+
+                    Text(
+                        text = "Ventas de hoy",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Número de ventas: ${ventasHoy.size}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
 
                 if (ventasHoy.isEmpty()) {
                     Box(
@@ -131,18 +141,31 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // 2️⃣ Gráfico mensual de ventas
+            // --- Ventas del Mes ---
             item {
-                Spacer(modifier = Modifier.height(20.dp))
-                Text(
-                    text = "Ventas del mes",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Ventas del mes",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+
+                    Text(
+                        text = "Días con ventas: ${ventaDataList.size}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
 
                 VentaChartCard(
                     modifier = Modifier
@@ -152,17 +175,32 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 )
             }
 
-            // 3️⃣ Sección Últimas Ventas
+            // --- Últimas Ventas ---
             item {
-                Text(
-                    text = "Últimas ventas",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Últimas ventas",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Total: ${ultimasVentas.size}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
 
             items(ultimasVentas) { venta ->
