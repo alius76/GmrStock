@@ -1,19 +1,16 @@
 package com.alius.gmrstock.bottombar
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -40,9 +37,7 @@ class BottomBarScreen(
     override fun Content() {
         val parentNavigator = LocalNavigator.currentOrThrow
         val coroutineScope = rememberCoroutineScope()
-
         var homeRefreshKey by remember { mutableStateOf(0) }
-
         val databaseUrl = LocalDatabaseUrl.current
 
         val identificadorFabrica = when (databaseUrl) {
@@ -51,7 +46,7 @@ class BottomBarScreen(
             else -> "Desconocida"
         }
 
-        // Ahora pasamos también el callback de logout al HomeTab
+        // Tabs
         val homeTab = remember {
             HomeTab(
                 user = user,
@@ -64,7 +59,6 @@ class BottomBarScreen(
                 }
             )
         }
-
         val clientTab = remember { ClientTab(user, databaseUrl) }
         val batchTab = remember { BatchTab(user, databaseUrl) }
         val processTab = remember { ProcessTab(user, databaseUrl) }
@@ -75,13 +69,7 @@ class BottomBarScreen(
             tabDisposable = {
                 TabDisposable(
                     it,
-                    listOf(
-                        homeTab,
-                        clientTab,
-                        batchTab,
-                        processTab,
-                        transferTab
-                    )
+                    listOf(homeTab, clientTab, batchTab, processTab, transferTab)
                 )
             }
         ) { tabNavigator ->
@@ -93,51 +81,23 @@ class BottomBarScreen(
                         contentColor = colors.topBarContent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+                            .height(56.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
                         title = {
                             Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.TopCenter // centra horizontalmente y fija la posición vertical
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp), // margen superior para bajar el título
+                                contentAlignment = Alignment.Center
                             ) {
-                                // Título siempre en el mismo lugar
                                 Text(
-                                    "GMR Stock - $identificadorFabrica",
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(top = 20.dp) // ajusta la altura fija
+                                    text = "GMR Stock - $identificadorFabrica",
+                                    fontSize = 28.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = colors.topBarContent
                                 )
-
-                                // SWAP debajo, pero no afecta la posición del título
-                                if (tabNavigator.current.key.startsWith(homeTab.key)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier
-                                            .align(Alignment.BottomCenter)
-                                            .offset(y = (30).dp)
-                                    ) {
-                                        Text(
-                                            "SWAP",
-                                            fontSize = 16.sp,
-                                            color = Color.White,
-                                            modifier = Modifier.clickable { onChangeDatabase() }
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Icon(
-                                            imageVector = Icons.Default.SwapHoriz,
-                                            contentDescription = "Swap",
-                                            tint = Color.White,
-                                            modifier = Modifier.clickable { onChangeDatabase() }
-                                        )
-                                    }
-                                }
                             }
-                        },
-                        actions = { /* Para poner iconos o lo que sea a la derecha del título */ }
+                        }
                     )
-
-
 
                 },
                 bottomBar = {
@@ -157,28 +117,24 @@ class BottomBarScreen(
                             icon = { Icon(Icons.Filled.Dashboard, contentDescription = null) },
                             label = { Text(homeTab.options.title) }
                         )
-
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == processTab.key,
                             onClick = { tabNavigator.current = processTab },
-                            icon = { Icon(Icons.Default.Autorenew, contentDescription = null) },
+                            icon = { Icon(Icons.Filled.Autorenew, contentDescription = null) },
                             label = { Text(processTab.options.title) }
                         )
-
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == batchTab.key,
                             onClick = { tabNavigator.current = batchTab },
                             icon = { Icon(Icons.Outlined.ShoppingBag, contentDescription = null) },
                             label = { Text(batchTab.options.title) }
                         )
-
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == transferTab.key,
                             onClick = { tabNavigator.current = transferTab },
                             icon = { Icon(Icons.Filled.EuroSymbol, contentDescription = null) },
                             label = { Text(transferTab.options.title) }
                         )
-
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == clientTab.key,
                             onClick = { tabNavigator.current = clientTab },

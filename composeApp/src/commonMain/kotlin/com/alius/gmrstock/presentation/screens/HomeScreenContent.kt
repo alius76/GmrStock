@@ -3,12 +3,14 @@ package com.alius.gmrstock.presentation.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +52,6 @@ class HomeScreenContent(
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        // Cargar datos cada vez que cambie databaseUrl
         LaunchedEffect(databaseUrl) {
             isLoading = true
             errorMessage = null
@@ -66,104 +67,110 @@ class HomeScreenContent(
             }
         }
 
-        Scaffold(
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-            bottomBar = {
-                BottomAppBar(
-                    modifier = Modifier.height(48.dp) // altura más compacta
+        @Composable
+        fun ActionButton(
+            modifier: Modifier = Modifier,
+            icon: androidx.compose.ui.graphics.vector.ImageVector,
+            label: String,
+            backgroundColor: Color,
+            onClick: () -> Unit
+        ) {
+            ElevatedButton(
+                onClick = onClick,
+                modifier = modifier,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.elevatedButtonColors(containerColor = backgroundColor),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(icon, contentDescription = label, tint = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = user.email,
-                        color = TextSecondary,
-                        fontSize = 14.sp,
+                        text = label,
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
                         maxLines = 1
                     )
-                    Spacer(modifier = Modifier.width(4.dp)) // menos separación
-                    IconButton(
-                        onClick = { onLogoutClick() },
-                        modifier = Modifier.size(32.dp) // icono más pequeño
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PowerSettingsNew,
-                            contentDescription = "Cerrar sesión",
-                            tint = PrimaryColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                 }
             }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                when {
-                    isLoading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    errorMessage != null -> {
-                        Text(
-                            text = "Error: $errorMessage",
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    materialGroups.isEmpty() -> {
-                        Text(
-                            text = "No se encontraron materiales.",
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    else -> {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                        ) {
-                            // BLOQUE SUPERIOR: título y subtítulo
-                            item {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Spacer(modifier = Modifier.height(2.dp)) // casi pegado arriba
+        }
 
-                                    Text(
-                                        text = "Materiales en stock",
-                                        style = MaterialTheme.typography.titleLarge.copy(
-                                            fontSize = 26.sp,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
-
-                                    Spacer(modifier = Modifier.height(2.dp))
-
-                                    Text(
-                                        text = "Número de materiales: ${materialGroups.size}",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        color = TextSecondary,
-                                        modifier = Modifier.padding(bottom = 12.dp)
-                                    )
-                                }
-                            }
-
-                            items(materialGroups) { group ->
-                                MaterialGroupCard(group = group) { clickedGroup ->
-                                    selectedGroupForSheet = clickedGroup
-                                    showGroupMaterialBottomSheet = true
-                                    coroutineScope.launch { sheetStateGroup.show() }
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
-                    }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            // BLOQUE DE BOTONES
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ActionButton(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.SwapHoriz,
+                        label = "SWAP",
+                        backgroundColor = PrimaryColor,
+                        onClick = onChangeDatabase
+                    )
+                    ActionButton(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Bookmark,
+                        label = "Reservar",
+                        backgroundColor = PrimaryColor.copy(alpha = 0.85f),
+                        onClick = { /* Acción reservar */ }
+                    )
+                    ActionButton(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Search,
+                        label = "Consultas",
+                        backgroundColor = PrimaryColor.copy(alpha = 0.7f),
+                        onClick = { /* Acción consultas */ }
+                    )
+                    ActionButton(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.Person,
+                        label = "Usuario",
+                        backgroundColor = Color.Red,
+                        onClick = onLogoutClick
+                    )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // BLOQUE DE MATERIAL
+            item {
+                Text(
+                    text = "Materiales en stock",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Número de materiales: ${materialGroups.size}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = TextSecondary,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
+            items(materialGroups) { group ->
+                MaterialGroupCard(group = group) { clickedGroup ->
+                    selectedGroupForSheet = clickedGroup
+                    showGroupMaterialBottomSheet = true
+                    coroutineScope.launch { sheetStateGroup.show() }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
 

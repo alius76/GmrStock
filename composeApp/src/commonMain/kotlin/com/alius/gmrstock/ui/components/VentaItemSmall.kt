@@ -45,16 +45,7 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
             .height(260.dp)
             .padding(6.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        pressed = true
-                        tryAwaitRelease()
-                        pressed = false
-                        showDialog = true
-                    }
-                )
-            },
+            .clickable { showDialog = true },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
