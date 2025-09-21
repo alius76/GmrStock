@@ -4,6 +4,7 @@ package com.alius.gmrstock.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Colores principales de la app
+
 val PrimaryColor = Color(0xFF029083)
 val SecondaryColor = Color(0xFFE0F7F4)
 val TextPrimary = Color(0xFF333333)

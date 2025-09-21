@@ -14,13 +14,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alius.gmrstock.data.PlatformImageComposable
+import com.alius.gmrstock.data.loadPlatformImage
 import kotlinx.coroutines.delay
 
 private val PrimaryColor = Color(0xFF029083)
 
 @Composable
-fun SplashScreen(durationMillis: Int = 3000) {
+fun SplashScreen(durationMillis: Int = 4000) {
     println("📌 [SplashScreen] Comenzando splash screen")
+
+    val logoImage = loadPlatformImage("logo.png")
 
     // Animaciones fade-in y slide-up
     val alphaAnim = remember { Animatable(0f) }
@@ -51,8 +55,22 @@ fun SplashScreen(durationMillis: Int = 3000) {
         // Contenido central animado
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.offset(y = offsetY.value.dp)
+
+            modifier = Modifier
+                .offset(y = offsetY.value.dp)
+                .padding(bottom = 140.dp)
         ) {
+            // Logo
+            if (logoImage != null) {
+                PlatformImageComposable(
+                    image = logoImage,
+                    modifier = Modifier
+                        .fillMaxWidth(0.65f)
+                        .background(Color.Transparent)
+                        .height(250.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "GMR Stock",
                 fontSize = 48.sp,
@@ -62,7 +80,7 @@ fun SplashScreen(durationMillis: Int = 3000) {
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Gestión de Inventario",
+                text = "La inteligencia de tu almacén",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,

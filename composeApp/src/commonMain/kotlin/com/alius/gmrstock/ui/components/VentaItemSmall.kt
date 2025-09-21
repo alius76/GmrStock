@@ -45,7 +45,19 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
             .height(260.dp)
             .padding(6.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clickable { showDialog = true },
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        pressed = true
+                        try {
+                            awaitRelease()
+                        } finally {
+                            pressed = false
+                        }
+                    },
+                    onTap = { showDialog = true }
+                )
+            },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -69,13 +81,14 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                 // Cliente
                 Text(
                     text = venta.ventaCliente,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
                     color = Color.White,
-                    fontSize = 16.sp,
                     maxLines = 1
                 )
 
-                // Icono central Euro
+                // Icono central
                 Icon(
                     imageVector = Icons.Filled.EuroSymbol,
                     contentDescription = "Euro Icon",
@@ -83,7 +96,7 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                     modifier = Modifier.size(48.dp)
                 )
 
-                // Bloque de información: lote, material, fecha
+                // Bloque de información: lote, material, fecha, peso
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -91,15 +104,22 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                     Text(
                         text = "Lote: ${venta.ventaLote}",
                         color = Color(0xCCFFFFFF),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
                     )
                     Text(
-                        text = venta.ventaMaterial,
+                        text = "Material: ${venta.ventaMaterial}",
                         color = Color(0xAAFFFFFF),
                         maxLines = 1
                     )
                     Text(
-                        text = formatInstant(venta.ventaFecha),
+                        text = "Fecha: ${formatInstant(venta.ventaFecha)}",
+                        color = Color(0xAAFFFFFF)
+                    )
+                    val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "Peso: $it Kg" }
+                        ?: "Peso: No disponible"
+                    Text(
+                        text = pesoTexto,
                         color = Color(0xAAFFFFFF)
                     )
                 }

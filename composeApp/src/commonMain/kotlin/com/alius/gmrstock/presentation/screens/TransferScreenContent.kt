@@ -1,6 +1,7 @@
 package com.alius.gmrstock.presentation.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,10 +11,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.outlined.MoneyOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -79,51 +82,52 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                         color = MaterialTheme.colorScheme.secondary
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Número de ventas: ${ventasHoy.size}",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = Color.Gray
-                    )
-
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 if (ventasHoy.isEmpty()) {
+                    // --- Diseño de la Card de "Sin Ventas" basado en ProcessItem ---
                     Box(
                         modifier = Modifier
-                            .height(160.dp)
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .height(180.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Card(
                             modifier = Modifier
-                                .fillMaxWidth(0.9f)
-                                .height(120.dp),
+                                .fillMaxWidth()
+                                .height(160.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                             shape = RoundedCornerShape(16.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE0F7F4))
+                            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(Color(0xFF029083), Color(0xFF00BFA5))
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Event,
-                                    contentDescription = "Sin ventas",
-                                    tint = Color(0xFF2E2E2E),
-                                    modifier = Modifier.size(36.dp)
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "Sin ventas hoy",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF2E2E2E)
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.MoneyOff,
+                                        contentDescription = "Sin ventas",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(60.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Sin ventas hoy",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
                     }
@@ -155,16 +159,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                         color = MaterialTheme.colorScheme.secondary
                     )
 
-
-                    Text(
-                        text = "Días con ventas: ${ventaDataList.size}",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = Color.Gray
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(28.dp))
                 }
 
                 VentaChartCard(
@@ -189,15 +184,6 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                         color = MaterialTheme.colorScheme.secondary
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Total: ${ultimasVentas.size}",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = Color.Gray
-                    )
 
                     Spacer(modifier = Modifier.height(12.dp))
                 }

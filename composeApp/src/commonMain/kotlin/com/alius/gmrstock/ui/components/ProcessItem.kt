@@ -21,9 +21,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import com.alius.gmrstock.domain.model.Process
-import com.alius.gmrstock.core.utils.formatInstant
-import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.TextPrimary
+import com.alius.gmrstock.core.utils.formatInstant import kotlinx.datetime.Clock
+import kotlin.time.Duration.Companion.hours
+
 
 @Composable
 fun ProcessItem(
@@ -38,11 +38,40 @@ fun ProcessItem(
         animationSpec = spring()
     )
 
-    // Ficticio: porcentaje de avance del lote (0-100)
-    val progress = remember { (30..90).random() / 100f }
+    // Declara las variables con 'var' para poder reasignarles un valor
+    var progress by remember { mutableStateOf(0f) }
+    var estimatedTime by remember { mutableStateOf("N/A") }
 
-    // Ficticio: tiempo estimado restante
-    val estimatedTime = remember { "${(1..4).random()}h ${(0..59).random()}m" }
+    // --- LÓGICA DE CÁLCULO DE TIEMPO REAL ---
+    LaunchedEffect(proceso) { // Usa LaunchedEffect para ejecutar el cálculo una vez que el 'proceso' cambie
+        proceso.date?.let { startDate ->
+            val now = Clock.System.now()
+            val totalDurationHours = 2.hours
+            val endTime = startDate.plus(totalDurationHours)
+
+            // Calcula el progreso
+            val totalTimeMillis = totalDurationHours.inWholeMilliseconds.toFloat()
+            val elapsedTimeMillis = (now - startDate).inWholeMilliseconds.toFloat()
+
+            progress = (elapsedTimeMillis / totalTimeMillis).coerceIn(0f, 1f)
+
+            // Calcula el tiempo restante y lo formatea
+            val remainingTime = endTime - now
+            estimatedTime = when {
+                remainingTime.isNegative() -> "Finalizado"
+                else -> {
+                    val hours = remainingTime.inWholeHours
+                    val minutes = remainingTime.inWholeMinutes % 60
+                    "${hours}h ${minutes}m"
+                }
+            }
+        } ?: run {
+            // En caso de que la fecha sea nula, mostramos valores por defecto
+            progress = 0f
+            estimatedTime = "N/A"
+        }
+    }
+
 
     Card(
         modifier = modifier

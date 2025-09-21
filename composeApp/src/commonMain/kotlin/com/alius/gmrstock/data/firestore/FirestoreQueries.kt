@@ -2,10 +2,12 @@ package com.alius.gmrstock.data.firestore
 
 import kotlinx.datetime.Instant
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.plus
 
 
 fun buildQueryVentasDeHoy(inicio: Instant, fin: Instant): String {
@@ -342,6 +344,50 @@ fun buildQueryRatiosDelMesActual(): String {
                                 "field": { "fieldPath": "ratioDate" },
                                 "op": "LESS_THAN",
                                 "value": { "timestampValue": "$finDelMes" }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "ratioDate" }, "direction": "ASCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
+}
+
+
+fun buildQueryRatiosDelDia(): String {
+    val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+
+    // Inicio de hoy (medianoche)
+    val inicioDelDia = LocalDateTime(hoy.year, hoy.month, hoy.dayOfMonth, 0, 0, 0)
+        .toInstant(TimeZone.currentSystemDefault())
+
+    // Inicio de mañana (medianoche del día siguiente)
+    val finDelDia = inicioDelDia.plus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "ratio" }],
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "GREATER_THAN_OR_EQUAL",
+                                "value": { "timestampValue": "$inicioDelDia" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "LESS_THAN",
+                                "value": { "timestampValue": "$finDelDia" }
                             }
                         }
                     ]

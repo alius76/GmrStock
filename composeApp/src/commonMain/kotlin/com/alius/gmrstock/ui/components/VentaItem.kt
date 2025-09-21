@@ -21,6 +21,7 @@ import com.alius.gmrstock.ui.theme.BadgeTextColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.TextPrimary
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
@@ -71,11 +72,10 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de información adicional con fondo gris claro
+            // Fila de información adicional sin el fondo gris
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF7F7F7), RoundedCornerShape(12.dp))
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -89,13 +89,35 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = "Lote: ${venta.ventaLote}", color = TextPrimary, maxLines = 1)
-                    Text(text = "Material: ${venta.ventaMaterial}", color = TextPrimary, maxLines = 1)
-                    Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}", color = TextPrimary)
+                    Text(text = "Lote: ${venta.ventaLote}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextSecondary,
+                        maxLines = 1
+                        )
+
+                    Text(text = "Material: ${venta.ventaMaterial}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary,
+                        maxLines = 1
+                        )
+
+                    Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
+                        )
+
 
                     val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "$it Kg" }
                         ?: "No disponible"
-                    Text(text = "Peso total: $pesoTexto", color = TextPrimary)
+                    Text(text = "Peso total: $pesoTexto",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
+                        )
+
                 }
             }
         }

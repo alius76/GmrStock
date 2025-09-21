@@ -1,6 +1,5 @@
 package com.alius.gmrstock.ui.components
 
-import LoteCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -15,8 +14,10 @@ import com.alius.gmrstock.data.getCertificadoRepository
 import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.Certificado
+import com.alius.gmrstock.domain.model.CertificadoStatus
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,13 +41,19 @@ fun GroupMaterialBottomSheetContent(
     // 🔹 Precarga de lotes + certificados
     LaunchedEffect(loteNumbers) {
         scope.launch {
+            Napier.i(message = "▶️ [BottomSheet] Iniciando carga para lotes: $loteNumbers")
             val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
             lotes = loadedLotes
+            Napier.i(message = "✅ [BottomSheet] Lotes cargados. Total: ${lotes.size}")
 
             val certs = loadedLotes.associate { lote ->
-                lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
+                Napier.i(message = "🔍 [BottomSheet] Buscando certificado para lote: ${lote.number}")
+                val cert = certificadoRepository.getCertificadoByLoteNumber(lote.number)
+                Napier.i(message = "🔗 [BottomSheet] Certificado para ${lote.number} encontrado: ${cert?.loteNumber ?: "null"}")
+                lote.number to cert
             }
             certificados = certs
+            Napier.i(message = "📈 [BottomSheet] Mapa de certificados cargado. Total: ${certificados.size}")
 
             isLoading = false
         }
@@ -103,10 +110,11 @@ fun GroupMaterialBottomSheetContent(
                 ) {
                     items(lotes) { lote ->
                         val cert = certificados[lote.number]
-                        val certColor = when {
-                            cert == null -> MaterialTheme.colorScheme.onSurfaceVariant
-                            cert.status == "w" -> MaterialTheme.colorScheme.error
-                            else -> PrimaryColor
+
+                        val certColor = when (cert?.status) {
+                            CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                            CertificadoStatus.CORRECTO -> PrimaryColor
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
 
                         LoteCard(

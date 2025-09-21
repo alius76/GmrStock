@@ -2,19 +2,19 @@ package com.alius.gmrstock.domain.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
+import kotlinx.serialization.SerialName
 
 @Serializable
-data class Propiedad(
-    val nombre: String = "",
-    val valor: String = "",
-    val warning: Boolean = false
-)
+enum class CertificadoStatus {
+    @SerialName("CORRECTO") CORRECTO,
+    @SerialName("ADVERTENCIA") ADVERTENCIA,
+    @SerialName("SIN_DATOS") SIN_DATOS
+}
 
 @Serializable
 data class Certificado(
-    val loteNumber: String = "",
-    val fecha: Instant? = null,
-    val status: String = "c", // "c" = correct, "w" = warning
-    val propiedades: List<Propiedad> = emptyList()
+    @SerialName("loteNumber") val loteNumber: String = "",
+    @SerialName("fecha") val fecha: Instant? = null,
+    @SerialName("status") val status: CertificadoStatus = CertificadoStatus.SIN_DATOS,
+    @SerialName("parametros") val parametros: List<Parametro> = emptyList()
 )
-

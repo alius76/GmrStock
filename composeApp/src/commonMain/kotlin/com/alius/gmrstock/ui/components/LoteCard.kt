@@ -1,6 +1,9 @@
+package com.alius.gmrstock.ui.components
+
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,9 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.alius.gmrstock.domain.model.BigBags
-import com.alius.gmrstock.domain.model.Certificado
-import com.alius.gmrstock.domain.model.LoteModel
+import com.alius.gmrstock.domain.model.*
 import com.alius.gmrstock.ui.components.BigBagsDialogContent
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.ReservedColor
@@ -124,20 +125,6 @@ fun LoteCard(
                 }
             }
 
-            // --- Chip de reservado debajo ---
-            if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
-                AssistChip(
-                    onClick = { showReservedDialog = true },
-                    label = { Text("Reservado") },
-                    leadingIcon = { Icon(Icons.Default.VpnKey, contentDescription = null) },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = ReservedColor.copy(alpha = 0.15f),
-                        labelColor = ReservedColor
-                    ),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-
             Spacer(modifier = Modifier.height(12.dp))
 
             // --- Detalles ---
@@ -146,7 +133,55 @@ fun LoteCard(
                 DetailRow("Fecha", formatInstant(lote.date))
                 DetailRow("Ubicación", lote.location)
                 DetailRow("BigBags", lote.count.toString())
-                DetailRow("Peso total", "${lote.totalWeight} Kg", PrimaryColor)
+
+                // Nuevo Row para el peso y el chip de reservado
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Texto del peso total
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Peso total",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "${lote.totalWeight} Kg",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = PrimaryColor
+                        )
+                    }
+
+                    // Chip de reservado personalizado
+                    if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                        Box(
+                            modifier = Modifier
+                                .background(ReservedColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                                .clickable { showReservedDialog = true }
+                                .padding(horizontal = 8.dp, vertical = 2.dp), // Ajustamos el padding para reducir altura
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = ReservedColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Reservado",
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = ReservedColor,
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -195,7 +230,7 @@ fun LoteCard(
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.95f)
                     .padding(16.dp)
             ) {
                 Column(
@@ -206,9 +241,9 @@ fun LoteCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val (icon, estadoText, estadoColor) = when (certificado.status) {
-                        "w" -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
-                        "c" -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
-                        else -> Triple(Icons.Default.Description, "Desconocido", MaterialTheme.colorScheme.onSurfaceVariant)
+                        CertificadoStatus.ADVERTENCIA -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
+                        CertificadoStatus.CORRECTO -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
+                        else -> Triple(Icons.Default.Description, "Sin Datos", MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
                     Icon(
@@ -228,57 +263,63 @@ fun LoteCard(
 
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                    Row(
+                    // Iteramos sobre la lista de 'parametros'
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalArrangement = Arrangement.spacedBy(12.dp) // Aumentamos el espacio entre parámetros
                     ) {
-                        Text(
-                            text = "Propiedades",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = PrimaryColor,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "Valores",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = PrimaryColor,
-                            textAlign = TextAlign.End,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    certificado.propiedades.forEach { prop ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = prop.nombre,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.widthIn(max = 220.dp).padding(end = 8.dp)
-                            )
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                if (prop.warning) {
-                                    Icon(
-                                        Icons.Default.Warning,
-                                        contentDescription = "Advertencia",
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(18.dp)
+                        certificado.parametros.forEach { parametro ->
+                            // Contenedor principal para cada parámetro
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                // Fila 1: Descripción y valor (con advertencia)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = parametro.descripcion,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
-                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+                                        if (parametro.warning) {
+                                            Icon(
+                                                Icons.Default.Warning,
+                                                contentDescription = "Advertencia",
+                                                tint = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                        }
+                                        Text(
+                                            text = parametro.valor,
+                                            color = if (parametro.warning) MaterialTheme.colorScheme.error
+                                            else MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 14.sp
+                                        )
+                                    }
                                 }
+
+                                // Fila 2: Rango (debajo de la descripción)
+                                val rangoTexto = parametro.rango?.let { rango ->
+                                    if (rango.valorMin != null && rango.valorMax != null) {
+                                        "Rango: (${rango.valorMin} - ${rango.valorMax} ${parametro.unidad})"
+                                    } else {
+                                        "Rango: N/A"
+                                    }
+                                } ?: "Rango: N/A"
+
                                 Text(
-                                    text = prop.valor,
-                                    color = if (prop.warning) MaterialTheme.colorScheme.error
-                                    else MaterialTheme.colorScheme.onSurface
+                                    text = rangoTexto,
+                                    color = Color.Gray,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
                         }
@@ -286,13 +327,11 @@ fun LoteCard(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Button(
+                    TextButton(
                         onClick = { showCertificadoDialog = false },
                         modifier = Modifier.align(Alignment.End),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                     ) {
-                        Text("Cerrar", color = Color.White)
+                        Text("Cerrar", color = PrimaryColor)
                     }
                 }
             }
@@ -316,31 +355,6 @@ fun LoteCard(
                     Text("Cerrar", color = PrimaryColor)
                 }
             }
-        )
-    }
-}
-
-// -------------------------
-// DetailRow
-// -------------------------
-@Composable
-fun DetailRow(label: String, value: String, valueColor: Color? = null) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.widthIn(min = 100.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = valueColor ?: MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
         )
     }
 }

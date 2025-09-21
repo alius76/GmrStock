@@ -24,6 +24,7 @@ import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.TextPrimary
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun LoteItem(lote: LoteModel) {
@@ -51,7 +52,7 @@ fun LoteItem(lote: LoteModel) {
             ) {
                 Text(
                     text = lote.number,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryColor,
                     maxLines = 1
@@ -74,11 +75,10 @@ fun LoteItem(lote: LoteModel) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de información adicional con fondo gris claro
+            // Fila de información adicional sin el fondo gris claro
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF7F7F7), RoundedCornerShape(12.dp))
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -95,24 +95,28 @@ fun LoteItem(lote: LoteModel) {
                     Text(
                         text = "Material: ${lote.description}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        color = TextSecondary,
                         maxLines = 1
                     )
                     Text(
                         text = "Fecha: ${formatInstant(lote.date)}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
                     )
                     Text(
                         text = "Ubicación: ${lote.location}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary,
                         maxLines = 1
                     )
                     Text(
                         text = "Peso total: ${lote.totalWeight} Kg",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary
                     )
                 }
             }

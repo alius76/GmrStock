@@ -1,5 +1,6 @@
 package com.alius.gmrstock.presentation.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,7 +11,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +49,8 @@ class HomeScreenContent(
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
 
+        var showLogoutDialog by remember { mutableStateOf(false) }
+
         val sheetStateGroup = rememberModalBottomSheetState()
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
         var selectedGroupForSheet by remember { mutableStateOf<MaterialGroup?>(null) }
@@ -70,32 +75,70 @@ class HomeScreenContent(
         @Composable
         fun ActionButton(
             modifier: Modifier = Modifier,
-            icon: androidx.compose.ui.graphics.vector.ImageVector,
+            icon: ImageVector,
             label: String,
-            backgroundColor: Color,
             onClick: () -> Unit
         ) {
-            ElevatedButton(
+            ElevatedCard(
                 onClick = onClick,
-                modifier = modifier,
+                modifier = modifier
+                    .height(80.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.elevatedButtonColors(containerColor = backgroundColor),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                colors = CardDefaults.elevatedCardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color(0xFF029083), Color(0xFF00BFA5))
+                            )
+                        )
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(icon, contentDescription = label, tint = Color.White)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = label,
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(icon, contentDescription = label, tint = Color.White, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = label,
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
+        }
+
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text(text = "¿Cerrar sesión?", color = PrimaryColor) },
+                text = { Text(text = "¿Estás seguro de que quieres cerrar la sesión?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showLogoutDialog = false
+                            onLogoutClick()
+                        }
+                    ) {
+                        Text("Aceptar", color = PrimaryColor)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showLogoutDialog = false }
+                    ) {
+                        Text("Cancelar", color = PrimaryColor)
+                    }
+                }
+            )
         }
 
         LazyColumn(
@@ -103,7 +146,6 @@ class HomeScreenContent(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            // BLOQUE DE BOTONES
             item {
                 Row(
                     modifier = Modifier
@@ -115,35 +157,30 @@ class HomeScreenContent(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.SwapHoriz,
                         label = "SWAP",
-                        backgroundColor = PrimaryColor,
                         onClick = onChangeDatabase
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Bookmark,
                         label = "Reservar",
-                        backgroundColor = PrimaryColor.copy(alpha = 0.85f),
                         onClick = { /* Acción reservar */ }
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
                         icon = Icons.Default.Search,
                         label = "Consultas",
-                        backgroundColor = PrimaryColor.copy(alpha = 0.7f),
                         onClick = { /* Acción consultas */ }
                     )
                     ActionButton(
                         modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Person,
-                        label = "Usuario",
-                        backgroundColor = Color.Red,
-                        onClick = onLogoutClick
+                        icon = Icons.Default.PowerSettingsNew,
+                        label = user.email.substringBefore("@"),
+                        onClick = { showLogoutDialog = true }
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // BLOQUE DE MATERIAL
             item {
                 Text(
                     text = "Materiales en stock",

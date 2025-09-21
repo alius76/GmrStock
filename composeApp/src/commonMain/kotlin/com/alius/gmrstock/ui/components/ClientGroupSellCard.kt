@@ -85,14 +85,10 @@ fun ClientGroupSellCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fondo gris claro con ícono de kilos
+            // Fila de información adicional sin el fondo gris
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = Color(0xFFF7F7F7),
-                        shape = RoundedCornerShape(12.dp)
-                    )
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {

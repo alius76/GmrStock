@@ -9,9 +9,9 @@ import io.ktor.client.statement.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
+
+import io.github.aakira.napier.Napier
 
 class CertificadoRepositoryImpl(
     private val client: HttpClient,
@@ -21,11 +21,10 @@ class CertificadoRepositoryImpl(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun getCertificadoByLoteNumber(loteNumber: String): Certificado? = withContext(Dispatchers.IO) {
-        println("🌐 [CertificadoRepo] Buscando certificado para lote=$loteNumber en $databaseUrl")
-
+        Napier.i(message = "🌐 [CertificadoRepo] Buscando certificado para lote=$loteNumber en $databaseUrl")
         try {
             val query = buildQueryCertificadoPorNumero(loteNumber)
-            println("📤 [CertificadoRepo] Query:\n$query")
+            Napier.i(message = "📤 [CertificadoRepo] Query:\n$query")
 
             val response: HttpResponse = client.post(databaseUrl) {
                 headers { append("Content-Type", "application/json") }
@@ -33,28 +32,29 @@ class CertificadoRepositoryImpl(
             }
 
             val responseText = response.bodyAsText()
-            println("📥 [CertificadoRepo] Respuesta cruda (500 chars):\n${responseText.take(500)}")
+            Napier.i(message = "📥 [CertificadoRepo] Respuesta cruda:\n$responseText")
 
-            val rootArray = json.parseToJsonElement(responseText).jsonArray
+            // ⚠️ AQUÍ ESTÁ EL CAMBIO CLAVE
+            val documentsArray = json.parseToJsonElement(responseText).jsonArray
 
-            val firstDoc = rootArray.firstOrNull()
-                ?.jsonObject?.get("document")
-                ?.jsonObject?.get("fields")
-                ?.jsonObject
+            Napier.i(message = "🔍 [CertificadoRepo] Documentos encontrados: ${documentsArray.size}")
 
-            firstDoc?.let {
+            val firstDocFields = documentsArray.firstOrNull()?.jsonObject
+                ?.get("document")?.jsonObject
+                ?.get("fields")?.jsonObject
+
+            firstDocFields?.let {
+                Napier.i(message = "✅ [CertificadoRepo] Campos de certificado encontrados:\n${it.toString()}")
                 val certificado = CertificadoMapper.fromFirestore(it)
-                println("✅ [CertificadoRepo] Certificado encontrado: ${certificado.loteNumber}")
-                certificado
+                Napier.i(message = "🚀 [CertificadoRepo] Certificado mapeado: ${certificado?.loteNumber}")
+                return@withContext certificado
             }
-
+            return@withContext null
         } catch (e: Exception) {
-            println("❌ [CertificadoRepo] Error en getCertificadoByLoteNumber: ${e.message}")
-            null
+            Napier.e(message = "❌ [CertificadoRepo] Error en getCertificadoByLoteNumber: ${e.message}", throwable = e)
+            return@withContext null
         } finally {
-            println("⏹️ [CertificadoRepo] Fin de búsqueda")
+            Napier.i(message = "⏹️ [CertificadoRepo] Fin de búsqueda")
         }
     }
 }
-
-

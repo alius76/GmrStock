@@ -81,20 +81,27 @@ class BottomBarScreen(
                         contentColor = colors.topBarContent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+                            .height(56.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()), // un poco más alto
                         title = {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 12.dp), // margen superior para bajar el título
+                                    .padding(top = 16.dp), // margen superior para alinear
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "GMR Stock - $identificadorFabrica",
-                                    fontSize = 28.sp,
-                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                    color = colors.topBarContent
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "GMR Stock - $identificadorFabrica",
+                                        fontSize = 26.sp,
+                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                        color = colors.topBarContent
+                                    )
+                                    Text(
+                                        text = "Gestión de stock en tiempo real",
+                                        fontSize = 14.sp,
+                                        color = colors.topBarContent.copy(alpha = 0.8f)
+                                    )
+                                }
                             }
                         }
                     )

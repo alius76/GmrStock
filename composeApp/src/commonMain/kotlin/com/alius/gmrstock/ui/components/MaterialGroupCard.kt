@@ -85,11 +85,9 @@ fun MaterialGroupCard(group: MaterialGroup, onClick: (MaterialGroup) -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de información adicional con separador sutil
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF7F7F7), RoundedCornerShape(12.dp))
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {

@@ -118,24 +118,3 @@ fun ClientCard(
     }
 }
 
-@Composable
-fun DetailRow(label: String, value: String, valueColor: Color? = null) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.widthIn(min = 100.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = valueColor ?: MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
