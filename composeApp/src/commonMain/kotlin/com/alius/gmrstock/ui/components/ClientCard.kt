@@ -81,7 +81,7 @@ fun ClientCard(
             ) {
                 Text(
                     text = venta.ventaLote,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryColor,
                     maxLines = 1,
@@ -100,10 +100,6 @@ fun ClientCard(
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
             Spacer(modifier = Modifier.height(12.dp))
 

@@ -86,7 +86,7 @@ class BottomBarScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 16.dp), // margen superior para alinear
+                                    .padding(top = 36.dp), // margen superior para alinear
                                 contentAlignment = Alignment.Center
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {

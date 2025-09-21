@@ -58,16 +58,16 @@ fun SplashScreen(durationMillis: Int = 4000) {
 
             modifier = Modifier
                 .offset(y = offsetY.value.dp)
-                .padding(bottom = 140.dp)
+                .padding(bottom = 10.dp)
         ) {
             // Logo
             if (logoImage != null) {
                 PlatformImageComposable(
                     image = logoImage,
                     modifier = Modifier
-                        .fillMaxWidth(0.65f)
+                        .fillMaxWidth(0.45f)
                         .background(Color.Transparent)
-                        .height(250.dp)
+                        .height(46.dp)
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))

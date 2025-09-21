@@ -65,7 +65,7 @@ fun LoteCard(
             ) {
                 Text(
                     text = lote.number,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryColor
                 )

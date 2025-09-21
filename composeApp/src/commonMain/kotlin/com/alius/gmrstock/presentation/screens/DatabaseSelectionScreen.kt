@@ -100,14 +100,14 @@ class DatabaseSelectionScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "GMR Stock",
-                        fontSize = 32.sp,
+                        fontSize = 36.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = DarkGrayColor,
+                        color = PrimaryColor,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Gestión de stock en tiempo real.",
+                        text = "Gestión de stock en tiempo real",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = TextSecondary,
@@ -121,7 +121,7 @@ class DatabaseSelectionScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Seleccione base de datos",
-                        fontSize = 28.sp,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = DarkGrayColor
                     )
