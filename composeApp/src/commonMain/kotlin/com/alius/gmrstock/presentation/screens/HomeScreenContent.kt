@@ -44,7 +44,8 @@ class HomeScreenContent(
         val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
         val coroutineScope = rememberCoroutineScope()
 
-        var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
+        // ✅ Lista reactiva de lotes para detectar cambios individuales
+        val lotes = remember { mutableStateListOf<LoteModel>() }
         var materialGroups by remember { mutableStateOf<List<MaterialGroup>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -57,18 +58,19 @@ class HomeScreenContent(
 
         val snackbarHostState = remember { SnackbarHostState() }
 
+        // Carga inicial de lotes y agrupación por material
         LaunchedEffect(databaseUrl) {
             isLoading = true
             errorMessage = null
-            coroutineScope.launch {
-                try {
-                    lotes = loteRepository.listarLotes("")
-                    materialGroups = agruparPorMaterial(lotes)
-                } catch (e: Exception) {
-                    errorMessage = e.message ?: "Error desconocido"
-                } finally {
-                    isLoading = false
-                }
+            try {
+                val loadedLotes = loteRepository.listarLotes("")
+                lotes.clear()
+                lotes.addAll(loadedLotes)
+                materialGroups = agruparPorMaterial(loadedLotes)
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Error desconocido"
+            } finally {
+                isLoading = false
             }
         }
 
@@ -81,8 +83,7 @@ class HomeScreenContent(
         ) {
             ElevatedCard(
                 onClick = onClick,
-                modifier = modifier
-                    .height(80.dp),
+                modifier = modifier.height(80.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.elevatedCardColors(containerColor = Color.Transparent),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -116,129 +117,160 @@ class HomeScreenContent(
             }
         }
 
-        if (showLogoutDialog) {
-            AlertDialog(
-                onDismissRequest = { showLogoutDialog = false },
-                title = { Text(text = "¿Cerrar sesión?", color = PrimaryColor) },
-                text = { Text(text = "¿Estás seguro de que quieres cerrar la sesión?") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showLogoutDialog = false
-                            onLogoutClick()
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+
+                // Diálogo logout
+                if (showLogoutDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showLogoutDialog = false },
+                        title = { Text(text = "¿Cerrar sesión?", color = PrimaryColor) },
+                        text = { Text(text = "¿Estás seguro de que quieres cerrar la sesión?") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showLogoutDialog = false
+                                    onLogoutClick()
+                                }
+                            ) { Text("Aceptar", color = PrimaryColor) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showLogoutDialog = false }) {
+                                Text("Cancelar", color = PrimaryColor)
+                            }
                         }
+                    )
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("Aceptar", color = PrimaryColor)
+                        CircularProgressIndicator(color = PrimaryColor)
                     }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { showLogoutDialog = false }
+                } else if (errorMessage != null) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("Cancelar", color = PrimaryColor)
+                        Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
                     }
-                }
-            )
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ActionButton(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.SwapHoriz,
-                        label = "SWAP",
-                        onClick = onChangeDatabase
-                    )
-                    ActionButton(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Bookmark,
-                        label = "Reservar",
-                        onClick = { /* Acción reservar */ }
-                    )
-                    ActionButton(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.Search,
-                        label = "Consultas",
-                        onClick = { /* Acción consultas */ }
-                    )
-                    ActionButton(
-                        modifier = Modifier.weight(1f),
-                        icon = Icons.Default.PowerSettingsNew,
-                        label = user.email.substringBefore("@"),
-                        onClick = { showLogoutDialog = true }
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            item {
-                Text(
-                    text = "Materiales en stock",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Número de materiales: ${materialGroups.size}",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Medium
-                    ),
-                    color = TextSecondary,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-            }
-
-            items(materialGroups) { group ->
-                MaterialGroupCard(group = group) { clickedGroup ->
-                    selectedGroupForSheet = clickedGroup
-                    showGroupMaterialBottomSheet = true
-                    coroutineScope.launch { sheetStateGroup.show() }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-
-        if (showGroupMaterialBottomSheet && selectedGroupForSheet != null) {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    coroutineScope.launch {
-                        sheetStateGroup.hide()
-                        showGroupMaterialBottomSheet = false
-                        selectedGroupForSheet = null
-                    }
-                },
-                sheetState = sheetStateGroup,
-                modifier = Modifier.fillMaxHeight(0.5f)
-            ) {
-                GroupMaterialBottomSheetContent(
-                    loteNumbers = selectedGroupForSheet!!.loteNumbers,
-                    onLoteClick = { lote -> println("Lote clickeado: ${lote.number}") },
-                    onDismissRequest = {
-                        coroutineScope.launch {
-                            sheetStateGroup.hide()
-                            showGroupMaterialBottomSheet = false
-                            selectedGroupForSheet = null
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        // Botones de acción
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                ActionButton(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.SwapHoriz,
+                                    label = "SWAP",
+                                    onClick = onChangeDatabase
+                                )
+                                ActionButton(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.Bookmark,
+                                    label = "Reservar",
+                                    onClick = { /* Acción reservar */ }
+                                )
+                                ActionButton(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.Search,
+                                    label = "Consultas",
+                                    onClick = { /* Acción consultas */ }
+                                )
+                                ActionButton(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.PowerSettingsNew,
+                                    label = user.email.substringBefore("@"),
+                                    onClick = { showLogoutDialog = true }
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
-                    },
-                    snackbarHostState = snackbarHostState,
-                    onViewBigBags = { bigBagsList: List<BigBags> ->
-                        println("Mostrando ${bigBagsList.size} BigBags")
-                    },
-                    databaseUrl = databaseUrl
-                )
+
+                        // Materiales en stock
+                        item {
+                            Text(
+                                text = "Materiales en stock",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Número de materiales: ${materialGroups.size}",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                color = TextSecondary,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                        }
+
+                        items(materialGroups) { group ->
+                            MaterialGroupCard(group = group) { clickedGroup ->
+                                selectedGroupForSheet = clickedGroup
+                                showGroupMaterialBottomSheet = true
+                                coroutineScope.launch { sheetStateGroup.show() }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+
+                // BottomSheet de lotes por material
+                if (showGroupMaterialBottomSheet && selectedGroupForSheet != null) {
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            coroutineScope.launch {
+                                sheetStateGroup.hide()
+                                showGroupMaterialBottomSheet = false
+                                selectedGroupForSheet = null
+                            }
+                        },
+                        sheetState = sheetStateGroup,
+                        modifier = Modifier.fillMaxHeight(0.5f)
+                    ) {
+                        GroupMaterialBottomSheetContent(
+                            loteNumbers = selectedGroupForSheet!!.loteNumbers,
+                            onLoteClick = { lote -> println("Lote clickeado: ${lote.number}") },
+                            onDismissRequest = {
+                                coroutineScope.launch {
+                                    sheetStateGroup.hide()
+                                    showGroupMaterialBottomSheet = false
+                                    selectedGroupForSheet = null
+                                }
+                            },
+                            snackbarHostState = snackbarHostState,
+                            onViewBigBags = { bigBagsList: List<BigBags> ->
+                                println("Mostrando ${bigBagsList.size} BigBags")
+                            },
+                            databaseUrl = databaseUrl,
+                            onRemarkUpdated = { updatedLote ->
+                                // ✅ Reemplazamos solo el lote afectado para actualización reactiva
+                                val index = lotes.indexOfFirst { it.id == updatedLote.id }
+                                if (index >= 0) {
+                                    lotes[index] = updatedLote
+                                    materialGroups = agruparPorMaterial(lotes)
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
     }

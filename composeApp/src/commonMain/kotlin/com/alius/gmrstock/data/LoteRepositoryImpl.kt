@@ -1,11 +1,11 @@
 package com.alius.gmrstock.data
 
+import com.alius.gmrstock.data.firestore.buildPatchBodyForRemark
 import com.alius.gmrstock.data.firestore.buildQueryPorFecha
 import com.alius.gmrstock.data.firestore.buildQueryPorNumero
 import com.alius.gmrstock.data.firestore.buildQueryPorNumeroExacto
 import com.alius.gmrstock.data.firestore.buildQueryUltimosLotes
 import com.alius.gmrstock.data.firestore.parseRunQueryResponse
-import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.MaterialGroup
 import io.ktor.client.*
@@ -16,6 +16,10 @@ import kotlinx.coroutines.withContext
 import io.ktor.http.*
 import kotlinx.coroutines.IO
 import kotlinx.datetime.*
+// 🆕 Nuevos imports para construir el JSON de actualización
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 
 class LoteRepositoryImpl(
     private val client: HttpClient,
@@ -41,6 +45,13 @@ class LoteRepositoryImpl(
             println("❌ Error en ejecutarQuery: ${e.message}")
             emptyList()
         }
+    }
+
+    // 🆕 Función auxiliar para construir la URL base de documentos
+    private fun buildDocumentBaseUrl(): String {
+        // Asume que la URL de query es: .../documents:runQuery
+        // Y la URL base de documentos es: .../documents
+        return baseUrl.substringBeforeLast(":runQuery")
     }
 
     override suspend fun listarLotes(data: String): List<LoteModel> {
@@ -78,5 +89,43 @@ class LoteRepositoryImpl(
     override suspend fun listarUltimosLotes(cantidad: Int): List<LoteModel> {
         val query = buildQueryUltimosLotes(cantidad)
         return ejecutarQuery(query)
+    }
+
+    // =========================================================================
+    // 🆕 IMPLEMENTACIÓN DE ESCRITURA: UPDATE REMARK
+    // =========================================================================
+    override suspend fun updateLoteRemark(loteId: String, newRemark: String): Boolean = withContext(Dispatchers.IO) {
+        val docUrl = "${buildDocumentBaseUrl()}/lote/$loteId"
+
+        // 1. 🔄 Usamos la función centralizada para construir el cuerpo
+        val requestBody = buildPatchBodyForRemark(newRemark)
+
+        try {
+            println("🌐 PATCH $docUrl?updateMask.fieldPaths=remark")
+            println("📤 Body: $requestBody")
+
+            val response: HttpResponse = client.patch(docUrl) {
+                // 2. Parámetro updateMask sigue siendo crucial
+                url.parameters.append("updateMask.fieldPaths", "remark")
+
+                headers { append("Content-Type", "application/json") }
+                setBody(requestBody)
+            }
+
+            // ... (evaluación de la respuesta sin cambios) ...
+            if (response.status.isSuccess()) {
+                println("✅ [PATCH] Observación del lote $loteId actualizada correctamente.")
+                return@withContext true
+            } else {
+                // ... manejo de error ...
+                println("❌ [PATCH] Error al actualizar la observación del lote $loteId. Status: ${response.status}")
+                println("Response Body: ${response.bodyAsText()}")
+                return@withContext false
+            }
+
+        } catch (e: Exception) {
+            println("❌ Error en updateLoteRemark: ${e.message}")
+            return@withContext false
+        }
     }
 }

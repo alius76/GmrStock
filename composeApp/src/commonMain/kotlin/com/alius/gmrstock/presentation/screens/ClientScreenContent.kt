@@ -73,7 +73,9 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    color = com.alius.gmrstock.ui.theme.PrimaryColor
+                )
             }
         } else {
             LazyColumn(

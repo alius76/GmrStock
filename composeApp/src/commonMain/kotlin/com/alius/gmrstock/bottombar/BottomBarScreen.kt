@@ -81,7 +81,7 @@ class BottomBarScreen(
                         contentColor = colors.topBarContent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()), // un poco más alto
+                            .height(64.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()), // un poco más alto
                         title = {
                             Box(
                                 modifier = Modifier

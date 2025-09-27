@@ -51,7 +51,9 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
     Box(modifier = Modifier.fillMaxSize()) {
         if (loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    color = com.alius.gmrstock.ui.theme.PrimaryColor
+                )
             }
         } else {
             LazyColumn(

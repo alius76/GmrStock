@@ -28,7 +28,8 @@ fun GroupMaterialBottomSheetContent(
     onDismissRequest: () -> Unit,
     snackbarHostState: SnackbarHostState,
     onViewBigBags: (List<BigBags>) -> Unit,
-    databaseUrl: String
+    databaseUrl: String,
+    onRemarkUpdated: (LoteModel) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val loteRepository = remember { getLoteRepository(databaseUrl) }
@@ -38,25 +39,28 @@ fun GroupMaterialBottomSheetContent(
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // 🔹 Precarga de lotes + certificados
-    LaunchedEffect(loteNumbers) {
-        scope.launch {
-            Napier.i(message = "▶️ [BottomSheet] Iniciando carga para lotes: $loteNumbers")
+    val loadLotesAndCertificados: suspend () -> Unit = {
+        isLoading = true
+        try {
             val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
             lotes = loadedLotes
-            Napier.i(message = "✅ [BottomSheet] Lotes cargados. Total: ${lotes.size}")
 
             val certs = loadedLotes.associate { lote ->
-                Napier.i(message = "🔍 [BottomSheet] Buscando certificado para lote: ${lote.number}")
-                val cert = certificadoRepository.getCertificadoByLoteNumber(lote.number)
-                Napier.i(message = "🔗 [BottomSheet] Certificado para ${lote.number} encontrado: ${cert?.loteNumber ?: "null"}")
-                lote.number to cert
+                lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
             }
             certificados = certs
-            Napier.i(message = "📈 [BottomSheet] Mapa de certificados cargado. Total: ${certificados.size}")
-
+        } catch (e: Exception) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Error al recargar los detalles del lote: ${e.message}")
+            }
+        } finally {
             isLoading = false
         }
+    }
+
+    // Precarga inicial
+    LaunchedEffect(loteNumbers) {
+        loadLotesAndCertificados()
     }
 
     Column(
@@ -66,7 +70,6 @@ fun GroupMaterialBottomSheetContent(
             .padding(vertical = 14.dp)
             .navigationBarsPadding()
     ) {
-        // --- Header centrado ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -78,6 +81,7 @@ fun GroupMaterialBottomSheetContent(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor
+
             )
         }
 
@@ -108,7 +112,7 @@ fun GroupMaterialBottomSheetContent(
                     contentPadding = PaddingValues(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(lotes) { lote ->
+                    items(lotes, key = { it.id }) { lote ->
                         val cert = certificados[lote.number]
 
                         val certColor = when (cert?.status) {
@@ -127,7 +131,13 @@ fun GroupMaterialBottomSheetContent(
                             scope = scope,
                             snackbarHostState = snackbarHostState,
                             onViewBigBags = onViewBigBags,
-                            databaseUrl = databaseUrl
+                            databaseUrl = databaseUrl,
+                            onRemarkUpdated = { updatedLote ->
+                                // 🔑 Actualizamos solo el lote modificado en la lista
+                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                // Propagamos el lote actualizado hacia HomeScreen
+                                onRemarkUpdated(updatedLote)
+                            }
                         )
                     }
                 }

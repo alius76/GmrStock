@@ -58,7 +58,9 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
 
     if (loading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                color = com.alius.gmrstock.ui.theme.PrimaryColor
+            )
         }
     } else {
         LazyColumn(

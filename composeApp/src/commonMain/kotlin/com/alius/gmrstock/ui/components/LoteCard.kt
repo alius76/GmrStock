@@ -3,10 +3,11 @@ package com.alius.gmrstock.ui.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NoteAdd
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,9 +25,11 @@ import com.alius.gmrstock.ui.components.BigBagsDialogContent
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.ReservedColor
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.data.getLoteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoteCard(
     lote: LoteModel,
@@ -36,12 +39,22 @@ fun LoteCard(
     scope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
     onViewBigBags: (List<BigBags>) -> Unit,
-    databaseUrl: String
+    databaseUrl: String,
+    onRemarkUpdated: (LoteModel) -> Unit
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
     var showCertificadoDialog by remember { mutableStateOf(false) }
     var showReservedDialog by remember { mutableStateOf(false) }
     var showRemarkDialog by remember { mutableStateOf(false) }
+    var showAddRemarkDialog by remember { mutableStateOf(false) }
+
+    // Siempre usamos el valor actual del lote
+    var currentRemarkText by remember { mutableStateOf(lote.remark) }
+
+    val loteRepository = remember { getLoteRepository(databaseUrl) }
+
+    // ❌ NO usamos remember(lote), solo evaluamos el valor actual
+    val hasRemark = lote.remark.isNotBlank()
 
     Card(
         modifier = modifier
@@ -57,7 +70,6 @@ fun LoteCard(
                 .padding(20.dp)
                 .animateContentSize()
         ) {
-            // --- Header: Lote + Certificado + Observación + Ver BigBags ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -74,7 +86,36 @@ fun LoteCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // Ícono certificado
+                    if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                        IconButton(
+                            onClick = { showReservedDialog = true },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = "Ver reservado",
+                                tint = ReservedColor,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                    IconButton(
+                        onClick = {
+                            currentRemarkText = lote.remark
+                            if (hasRemark) showRemarkDialog = true
+                            else showAddRemarkDialog = true
+                        },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (hasRemark) Icons.Default.Description else Icons.AutoMirrored.Filled.NoteAdd,
+                            contentDescription = if (hasRemark) "Ver/Editar observación" else "Añadir observación",
+                            tint = if (hasRemark) PrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
                     IconButton(
                         onClick = {
                             if (certificado != null) {
@@ -95,28 +136,12 @@ fun LoteCard(
                         )
                     }
 
-                    // Ícono Observación
-                    if (lote.remark.isNotBlank()) {
-                        IconButton(
-                            onClick = { showRemarkDialog = true },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Description,
-                                contentDescription = "Ver observación",
-                                tint = PrimaryColor,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-
-                    // Ícono Ver BigBags
                     IconButton(
                         onClick = { showBigBagsDialog = true },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            Icons.Default.ViewList,
+                            Icons.AutoMirrored.Filled.ViewList,
                             contentDescription = "Ver BigBags",
                             tint = PrimaryColor,
                             modifier = Modifier.fillMaxSize()
@@ -127,79 +152,130 @@ fun LoteCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // --- Detalles ---
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 DetailRow("Material", lote.description)
                 DetailRow("Fecha", formatInstant(lote.date))
                 DetailRow("Ubicación", lote.location)
                 DetailRow("BigBags", lote.count.toString())
+                DetailRow("Peso total", "${lote.totalWeight} Kg", PrimaryColor)
+            }
+        }
+    }
 
-                // Nuevo Row para el peso y el chip de reservado
+    // --- Diálogos Observación ---
+    if (showRemarkDialog) {
+        val isChanged = currentRemarkText.trim() != lote.remark.trim()
+
+        AlertDialog(
+            onDismissRequest = { showRemarkDialog = false },
+            title = { Text("Observación del Lote ${lote.number}", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            text = {
+                OutlinedTextField(
+                    value = currentRemarkText,
+                    onValueChange = { currentRemarkText = it },
+                    label = { Text("Editar observación") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    singleLine = false,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = PrimaryColor,
+                        focusedLabelColor = PrimaryColor,
+                        cursorColor = PrimaryColor,
+                    )
+                )
+            },
+            confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Texto del peso total
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "Peso total",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "${lote.totalWeight} Kg",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = PrimaryColor
-                        )
-                    }
-
-                    // Chip de reservado personalizado
-                    if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
-                        Box(
-                            modifier = Modifier
-                                .background(ReservedColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                                .clickable { showReservedDialog = true }
-                                .padding(horizontal = 8.dp, vertical = 2.dp), // Ajustamos el padding para reducir altura
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.Lock,
-                                    contentDescription = null,
-                                    tint = ReservedColor,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Reservado",
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = ReservedColor,
-                                    fontSize = 14.sp
+                    TextButton(
+                        onClick = {
+                            showRemarkDialog = false
+                            scope.launch {
+                                val success = loteRepository.updateLoteRemark(lote.id, "")
+                                if (success) onRemarkUpdated(lote.copy(remark = ""))
+                                snackbarHostState.showSnackbar(
+                                    if (success) "Observación eliminada"
+                                    else "Error al eliminar la observación"
                                 )
                             }
-                        }
-                    }
-                }
-            }
-        }
-    }
+                        },
+                        enabled = lote.remark.isNotBlank()
+                    ) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
 
-    // --- Diálogo Observación ---
-    if (showRemarkDialog) {
-        AlertDialog(
-            onDismissRequest = { showRemarkDialog = false },
-            title = { Text("Observación", fontWeight = FontWeight.Bold, color = PrimaryColor) },
-            text = { Text(lote.remark) },
-            confirmButton = {
-                TextButton(onClick = { showRemarkDialog = false }) {
-                    Text("Cerrar", color = PrimaryColor)
+                    Row(horizontalArrangement = Arrangement.End) {
+                        TextButton(onClick = { showRemarkDialog = false }) {
+                            Text("Cerrar", color = PrimaryColor)
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        TextButton(
+                            onClick = {
+                                showRemarkDialog = false
+                                val remarkToSave = currentRemarkText.trim()
+                                scope.launch {
+                                    val success = loteRepository.updateLoteRemark(lote.id, remarkToSave)
+                                    if (success) onRemarkUpdated(lote.copy(remark = remarkToSave))
+                                    snackbarHostState.showSnackbar(
+                                        if (success) "Observación actualizada"
+                                        else "Error al actualizar la observación"
+                                    )
+                                }
+                            },
+                            enabled = isChanged && currentRemarkText.isNotBlank()
+                        ) { Text("Guardar", color = PrimaryColor) }
+                    }
                 }
             }
         )
     }
 
+    if (showAddRemarkDialog) {
+        AlertDialog(
+            onDismissRequest = { showAddRemarkDialog = false },
+            title = { Text("Añadir observación", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            text = {
+                OutlinedTextField(
+                    value = currentRemarkText,
+                    onValueChange = { currentRemarkText = it },
+                    label = { Text("Escribe tu observación") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
+                    singleLine = false,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = PrimaryColor,
+                        focusedLabelColor = PrimaryColor,
+                        cursorColor = PrimaryColor,
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showAddRemarkDialog = false
+                        val remarkToSave = currentRemarkText.trim()
+                        scope.launch {
+                            val success = loteRepository.updateLoteRemark(lote.id, remarkToSave)
+                            if (success) onRemarkUpdated(lote.copy(remark = remarkToSave))
+                            snackbarHostState.showSnackbar(
+                                if (success) "Observación guardada"
+                                else "Error al guardar la observación"
+                            )
+                        }
+                    },
+                    enabled = currentRemarkText.isNotBlank()
+                ) { Text("Guardar", color = PrimaryColor) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddRemarkDialog = false }) { Text("Cancelar", color = PrimaryColor) }
+            }
+        )
+    }
     // --- Diálogo BigBags ---
     if (showBigBagsDialog) {
         AlertDialog(
@@ -263,15 +339,12 @@ fun LoteCard(
 
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                    // Iteramos sobre la lista de 'parametros'
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp) // Aumentamos el espacio entre parámetros
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         certificado.parametros.forEach { parametro ->
-                            // Contenedor principal para cada parámetro
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                // Fila 1: Descripción y valor (con advertencia)
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -306,13 +379,10 @@ fun LoteCard(
                                     }
                                 }
 
-                                // Fila 2: Rango (debajo de la descripción)
                                 val rangoTexto = parametro.rango?.let { rango ->
                                     if (rango.valorMin != null && rango.valorMax != null) {
                                         "Rango: (${rango.valorMin} - ${rango.valorMax} ${parametro.unidad})"
-                                    } else {
-                                        "Rango: N/A"
-                                    }
+                                    } else "Rango: N/A"
                                 } ?: "Rango: N/A"
 
                                 Text(

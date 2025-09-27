@@ -1,9 +1,7 @@
 package com.alius.gmrstock.data
 
-import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.MaterialGroup
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 
 interface LoteRepository {
@@ -17,6 +15,7 @@ interface LoteRepository {
     suspend fun listarLotesCreadosHoy(): List<LoteModel>
     suspend fun listarLotesPorFecha(fecha: LocalDate): List<LoteModel>
     suspend fun listarUltimosLotes(cantidad: Int): List<LoteModel>
+    suspend fun updateLoteRemark(loteId: String, newRemark: String): Boolean
 }
 
 expect fun getLoteRepository(databaseUrl: String): LoteRepository

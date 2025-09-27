@@ -8,6 +8,9 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.plus
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonObject
 
 
 fun buildQueryVentasDeHoy(inicio: Instant, fin: Instant): String {
@@ -417,4 +420,19 @@ fun buildQueryCertificadoPorNumero(number: String): String {
         }
     }
     """.trimIndent()
+}
+
+/**
+ * Construye el cuerpo JSON necesario para actualizar un único campo ('remark')
+ * en Firestore usando el método PATCH.
+ */
+fun buildPatchBodyForRemark(newRemark: String): String {
+    return buildJsonObject {
+        putJsonObject("fields") {
+            putJsonObject("remark") {
+                // Firestore requiere que el valor de un String se envuelva en "stringValue"
+                put("stringValue", newRemark)
+            }
+        }
+    }.toString()
 }

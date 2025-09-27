@@ -1,13 +1,13 @@
 package com.alius.gmrstock.presentation.screens
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Factory
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,12 +24,13 @@ import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.data.FirestoreUrls
 import com.alius.gmrstock.data.RatioRepositoryImpl
 import com.alius.gmrstock.ui.theme.DarkGrayColor
-import com.alius.gmrstock.ui.theme.GrayColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
 import io.ktor.client.*
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 class DatabaseSelectionScreen(
     private val onDatabaseSelected: (String) -> Unit
 ) : Screen {
@@ -38,29 +39,27 @@ class DatabaseSelectionScreen(
 
     @Composable
     override fun Content() {
-        var progressDB1 by remember { mutableStateOf(0.15f) }
-        var progressDB2 by remember { mutableStateOf(0.15f) }
+        // Inicializamos en 0f para que la animación empiece desde el inicio
+        var progressDB1 by remember { mutableStateOf(0f) }
+        var progressDB2 by remember { mutableStateOf(0f) }
 
         val httpClient = remember { HttpClient() }
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(Unit) {
+            // Añadimos un pequeño retardo para asegurar que el estado inicial se renderice antes de la animación
+            delay(100)
+
             // Carga de ratios para la primera base de datos
             scope.launch {
                 Napier.d { "Iniciando carga de ratios para la base de datos P07" }
                 val ratioRepository1 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB1_URL)
                 val ratios1 = ratioRepository1.listarRatiosDelDia()
-
                 Napier.d { "P07 - Ratios obtenidos: ${ratios1.size}" }
-
-                val pesoTotalHoy1 = ratios1.map {
-                    it.ratioTotalWeight.toFloatOrNull() ?: 0f
-                }.sum()
-
+                val pesoTotalHoy1 = ratios1.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
                 Napier.d { "P07 - Peso total producido hoy: $pesoTotalHoy1 kg" }
-
+                // El valor final se asigna aquí, lo que dispara la animación
                 progressDB1 = (pesoTotalHoy1 / produccionObjetivoKg).coerceIn(0.15f, 1f)
-
                 Napier.d { "P07 - Progreso final de la barra: $progressDB1" }
             }
 
@@ -69,17 +68,11 @@ class DatabaseSelectionScreen(
                 Napier.d { "Iniciando carga de ratios para la base de datos P08" }
                 val ratioRepository2 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB2_URL)
                 val ratios2 = ratioRepository2.listarRatiosDelDia()
-
                 Napier.d { "P08 - Ratios obtenidos: ${ratios2.size}" }
-
-                val pesoTotalHoy2 = ratios2.map {
-                    it.ratioTotalWeight.toFloatOrNull() ?: 0f
-                }.sum()
-
+                val pesoTotalHoy2 = ratios2.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
                 Napier.d { "P08 - Peso total producido hoy: $pesoTotalHoy2 kg" }
-
+                // El valor final se asigna aquí, lo que dispara la animación
                 progressDB2 = (pesoTotalHoy2 / produccionObjetivoKg).coerceIn(0.15f, 1f)
-
                 Napier.d { "P08 - Progreso final de la barra: $progressDB2" }
             }
         }
@@ -100,7 +93,7 @@ class DatabaseSelectionScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "GMR Stock",
-                        fontSize = 36.sp,
+                        fontSize = 42.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = PrimaryColor,
                         textAlign = TextAlign.Center
@@ -162,6 +155,11 @@ class DatabaseSelectionScreen(
         progress: Float,
         onClick: () -> Unit
     ) {
+        val animatedProgress by animateFloatAsState(
+            targetValue = progress,
+            animationSpec = tween(durationMillis = 1000)
+        )
+
         ElevatedCard(
             onClick = onClick,
             modifier = Modifier
@@ -184,11 +182,10 @@ class DatabaseSelectionScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .animateContentSize(tween(300)),
+                        .animateContentSize(tween(800)),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Cambiar a Factory si tienes material-icons-extended
                     Icon(
                         imageVector = Icons.Filled.Factory,
                         contentDescription = "Icono Planta de Producción",
@@ -196,7 +193,6 @@ class DatabaseSelectionScreen(
                         modifier = Modifier.size(72.dp)
                     )
 
-                    // Texto centrado
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             text = label,
@@ -215,7 +211,7 @@ class DatabaseSelectionScreen(
                     }
 
                     LinearProgressIndicator(
-                        progress = progress,
+                        progress = animatedProgress,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
@@ -227,6 +223,4 @@ class DatabaseSelectionScreen(
             }
         }
     }
-
-
 }
