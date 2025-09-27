@@ -461,9 +461,13 @@ fun LoteCard(
                                     }
                                 }
 
+                                // 🔹 Mostrar rango exactamente como en la base de datos
                                 val rangoTexto = parametro.rango?.let { rango ->
                                     if (rango.valorMin != null && rango.valorMax != null) {
-                                        "Rango: (${rango.valorMin} - ${rango.valorMax} ${parametro.unidad})"
+                                        // Mostrar como Int si es entero, mantener Double si tiene decimales
+                                        val min = if (rango.valorMin % 1.0 == 0.0) rango.valorMin.toInt() else rango.valorMin
+                                        val max = if (rango.valorMax % 1.0 == 0.0) rango.valorMax.toInt() else rango.valorMax
+                                        "Rango: ($min - $max ${parametro.unidad})"
                                     } else "Rango: N/A"
                                 } ?: "Rango: N/A"
 
@@ -489,6 +493,7 @@ fun LoteCard(
             }
         }
     }
+
 
     // DIALOG DE RESERVAS
     if (showReservedDialog) {
