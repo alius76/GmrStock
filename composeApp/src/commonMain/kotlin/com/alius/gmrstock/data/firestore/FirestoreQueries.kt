@@ -1,5 +1,6 @@
 package com.alius.gmrstock.data.firestore
 
+import com.alius.gmrstock.domain.model.Cliente
 import kotlinx.datetime.Instant
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
@@ -433,6 +434,44 @@ fun buildPatchBodyForRemark(newRemark: String): String {
                 // Firestore requiere que el valor de un String se envuelva en "stringValue"
                 put("stringValue", newRemark)
             }
+        }
+    }.toString()
+}
+
+/**
+ * Construye el cuerpo JSON necesario para actualizar el campo `booked`
+ * en Firestore usando el método PATCH.
+ */
+fun buildPatchBodyForBooked(
+    cliente: Cliente?,
+    dateBooked: Instant?
+): String {
+    return buildJsonObject {
+        putJsonObject("fields") {
+            // booked (objeto Cliente)
+            if (cliente != null) {
+                putJsonObject("booked") {
+                    putJsonObject("mapValue") {
+                        putJsonObject("fields") {
+                            putJsonObject("cliNombre") {
+                                put("stringValue", cliente.cliNombre)
+                            }
+                            putJsonObject("cliObservaciones") {
+                                put("stringValue", cliente.cliObservaciones)
+                            }
+                        }
+                    }
+                }
+            }
+            // Si cliente es null, NO incluimos booked en 'fields' → Firestore eliminará si está en updateMask
+
+            // dateBooked (Instant -> timestampValue)
+            if (dateBooked != null) {
+                putJsonObject("dateBooked") {
+                    put("timestampValue", dateBooked.toString())
+                }
+            }
+            // Si dateBooked es null, NO lo incluimos → Firestore eliminará si está en updateMask
         }
     }.toString()
 }

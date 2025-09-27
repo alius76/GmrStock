@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getCertificadoRepository
 import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.BigBags
@@ -29,7 +30,8 @@ fun GroupMaterialBottomSheetContent(
     snackbarHostState: SnackbarHostState,
     onViewBigBags: (List<BigBags>) -> Unit,
     databaseUrl: String,
-    onRemarkUpdated: (LoteModel) -> Unit
+    onRemarkUpdated: (LoteModel) -> Unit,
+    clientRepository: ClientRepository
 ) {
     val scope = rememberCoroutineScope()
     val loteRepository = remember { getLoteRepository(databaseUrl) }
@@ -90,7 +92,7 @@ fun GroupMaterialBottomSheetContent(
         when {
             isLoading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = PrimaryColor)
                 }
             }
 
@@ -133,11 +135,10 @@ fun GroupMaterialBottomSheetContent(
                             onViewBigBags = onViewBigBags,
                             databaseUrl = databaseUrl,
                             onRemarkUpdated = { updatedLote ->
-                                // 🔑 Actualizamos solo el lote modificado en la lista
                                 lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                                // Propagamos el lote actualizado hacia HomeScreen
                                 onRemarkUpdated(updatedLote)
-                            }
+                            },
+                            clientRepository = clientRepository
                         )
                     }
                 }

@@ -1,9 +1,13 @@
 package com.alius.gmrstock.ui.components
 
+
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
@@ -21,13 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.alius.gmrstock.domain.model.*
-import com.alius.gmrstock.ui.components.BigBagsDialogContent
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.ReservedColor
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getLoteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +46,8 @@ fun LoteCard(
     snackbarHostState: SnackbarHostState,
     onViewBigBags: (List<BigBags>) -> Unit,
     databaseUrl: String,
-    onRemarkUpdated: (LoteModel) -> Unit
+    onRemarkUpdated: (LoteModel) -> Unit,
+    clientRepository: ClientRepository
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
     var showCertificadoDialog by remember { mutableStateOf(false) }
@@ -86,19 +93,19 @@ fun LoteCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
-                        IconButton(
-                            onClick = { showReservedDialog = true },
-                            modifier = Modifier.size(28.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = "Ver reservado",
-                                tint = ReservedColor,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
+                    // if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                    IconButton(
+                        onClick = { showReservedDialog = true },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = "Ver reservado",
+                            tint = PrimaryColor,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
+                    //  }
 
                     IconButton(
                         onClick = {
@@ -111,7 +118,9 @@ fun LoteCard(
                         Icon(
                             imageVector = if (hasRemark) Icons.Default.Description else Icons.AutoMirrored.Filled.NoteAdd,
                             contentDescription = if (hasRemark) "Ver/Editar observación" else "Añadir observación",
-                            tint = if (hasRemark) PrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            tint = if (hasRemark) PrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -152,13 +161,54 @@ fun LoteCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                DetailRow("Material", lote.description)
-                DetailRow("Fecha", formatInstant(lote.date))
-                DetailRow("Ubicación", lote.location)
-                DetailRow("BigBags", lote.count.toString())
-                DetailRow("Peso total", "${lote.totalWeight} Kg", PrimaryColor)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    DetailRow("Material", lote.description)
+                    DetailRow("Fecha", formatInstant(lote.date))
+                    DetailRow("Ubicación", lote.location)
+                    DetailRow("BigBags", lote.count.toString())
+                    DetailRow("Peso total", "${lote.totalWeight} Kg", PrimaryColor)
+                }
+
+                // Etiqueta reservado en la esquina inferior derecha en dos líneas
+                if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                    Surface(
+                        color = ReservedColor,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(start = 8.dp)
+                            .width(90.dp)
+                            .height(48.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "RESERVADO",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Clip
+                            )
+                            Text(
+                                text = lote.booked.cliNombre,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis, // ✅ acorta si no entra
+                            )
+                        }
+                    }
+                }
             }
+
         }
     }
 
@@ -168,7 +218,13 @@ fun LoteCard(
 
         AlertDialog(
             onDismissRequest = { showRemarkDialog = false },
-            title = { Text("Observación del Lote ${lote.number}", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            title = {
+                Text(
+                    "Observación del Lote ${lote.number}",
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryColor
+                )
+            },
             text = {
                 OutlinedTextField(
                     value = currentRemarkText,
@@ -217,7 +273,8 @@ fun LoteCard(
                                 showRemarkDialog = false
                                 val remarkToSave = currentRemarkText.trim()
                                 scope.launch {
-                                    val success = loteRepository.updateLoteRemark(lote.id, remarkToSave)
+                                    val success =
+                                        loteRepository.updateLoteRemark(lote.id, remarkToSave)
                                     if (success) onRemarkUpdated(lote.copy(remark = remarkToSave))
                                     snackbarHostState.showSnackbar(
                                         if (success) "Observación actualizada"
@@ -236,7 +293,13 @@ fun LoteCard(
     if (showAddRemarkDialog) {
         AlertDialog(
             onDismissRequest = { showAddRemarkDialog = false },
-            title = { Text("Añadir observación", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            title = {
+                Text(
+                    "Añadir observación",
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryColor
+                )
+            },
             text = {
                 OutlinedTextField(
                     value = currentRemarkText,
@@ -272,7 +335,12 @@ fun LoteCard(
                 ) { Text("Guardar", color = PrimaryColor) }
             },
             dismissButton = {
-                TextButton(onClick = { showAddRemarkDialog = false }) { Text("Cancelar", color = PrimaryColor) }
+                TextButton(onClick = { showAddRemarkDialog = false }) {
+                    Text(
+                        "Cancelar",
+                        color = PrimaryColor
+                    )
+                }
             }
         )
     }
@@ -317,9 +385,23 @@ fun LoteCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val (icon, estadoText, estadoColor) = when (certificado.status) {
-                        CertificadoStatus.ADVERTENCIA -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
-                        CertificadoStatus.CORRECTO -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
-                        else -> Triple(Icons.Default.Description, "Sin Datos", MaterialTheme.colorScheme.onSurfaceVariant)
+                        CertificadoStatus.ADVERTENCIA -> Triple(
+                            Icons.Default.Warning,
+                            "Advertencia",
+                            MaterialTheme.colorScheme.error
+                        )
+
+                        CertificadoStatus.CORRECTO -> Triple(
+                            Icons.Default.CheckCircle,
+                            "Correcto",
+                            PrimaryColor
+                        )
+
+                        else -> Triple(
+                            Icons.Default.Description,
+                            "Sin Datos",
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
                     Icon(
@@ -408,23 +490,203 @@ fun LoteCard(
         }
     }
 
-    // --- Diálogo Reservado ---
+    // DIALOG DE RESERVAS
     if (showReservedDialog) {
+        // Estado independiente para el cliente seleccionado
+        var selectedCliente by remember { mutableStateOf(lote.booked) }
+        val observaciones = selectedCliente?.cliObservaciones ?: ""
+        var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
+
+        // Fecha editable si no hay reserva
+        var fechaEditable by remember { mutableStateOf(lote.booked == null) }
+
+        var clientesList by remember { mutableStateOf<List<Cliente>>(emptyList()) }
+        LaunchedEffect(Unit) {
+            clientesList = clientRepository.getAllClientsOrderedByName()
+            println("NAPIER: clientes cargados: $clientesList")
+        }
+
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
-            title = { Text("Reservado", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            title = { Text("Reserva del Lote ${lote.number}", fontWeight = FontWeight.Bold, color = PrimaryColor) },
             text = {
-                Column {
-                    Text("Nombre: ${lote.booked?.cliNombre}")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Observaciones: ${lote.booked?.cliObservaciones ?: "-"}")
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                    // Cliente y observaciones solo lectura si hay reserva
+                    if (lote.booked != null) {
+                        OutlinedTextField(
+                            value = selectedCliente?.cliNombre ?: "",
+                            onValueChange = {},
+                            label = { Text("Cliente") },
+                            readOnly = true,
+                            enabled = false, // ❌ Deshabilitado visualmente
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        OutlinedTextField(
+                            value = observaciones,
+                            onValueChange = {},
+                            label = { Text("Observaciones") },
+                            readOnly = true,
+                            enabled = false, // ❌ Deshabilitado visualmente
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        // Nueva reserva → carrusel de clientes
+                        Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            items(clientesList) { cliente ->
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (selectedCliente == cliente) PrimaryColor else MaterialTheme.colorScheme.surface,
+                                    tonalElevation = if (selectedCliente == cliente) 4.dp else 0.dp,
+                                    modifier = Modifier.clickable { selectedCliente = cliente }
+                                ) {
+                                    Text(
+                                        text = cliente.cliNombre,
+                                        color = if (selectedCliente == cliente) MaterialTheme.colorScheme.onPrimary
+                                        else MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Fecha editable con icono de borrar
+                    OutlinedTextField(
+                        value = fecha,
+                        onValueChange = { input ->
+                            if (fechaEditable) {
+                                val filtered = input.filter { it.isDigit() || it == '-' }
+                                if (filtered.length <= 10) fecha = filtered
+                            }
+                        },
+                        label = {
+                            Text(
+                                "Fecha de reserva (DD-MM-YYYY)",
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        singleLine = true,
+                        readOnly = !fechaEditable,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        trailingIcon = {
+                            if (fecha.isNotBlank() || !fechaEditable) {
+                                IconButton(onClick = {
+                                    fecha = ""
+                                    fechaEditable = true
+                                }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Borrar fecha") // ✅ Icono más claro
+                                }
+                            }
+                        },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = PrimaryColor,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            cursorColor = PrimaryColor,
+                            focusedLabelColor = PrimaryColor,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    )
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showReservedDialog = false }) {
-                    Text("Cerrar", color = PrimaryColor)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Botón Eliminar a la izquierda
+                    if (lote.booked != null || lote.dateBooked != null) {
+                        TextButton(onClick = {
+                            showReservedDialog = false
+                            scope.launch {
+                                val success = loteRepository.updateLoteBooked(lote.id, null, null)
+                                if (success) onRemarkUpdated(lote.copy(booked = null, dateBooked = null))
+                                snackbarHostState.showSnackbar(
+                                    if (success) "Reserva eliminada" else "Error al eliminar la reserva"
+                                )
+                            }
+                        }) {
+                            Text("Anular", color = MaterialTheme.colorScheme.error)
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.width(1.dp)) // Mantener altura consistente si no hay botón eliminar
+                    }
+
+                    // Botones Cancelar y Guardar a la derecha
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { showReservedDialog = false }) {
+                            Text("Cancelar", color = PrimaryColor)
+                        }
+                        TextButton(
+                            onClick = {
+                                if (selectedCliente == null) {
+                                    scope.launch { snackbarHostState.showSnackbar("Debe seleccionar un cliente") }
+                                    return@TextButton
+                                }
+
+                                val parsedDate = try {
+                                    if (fecha.isNotBlank()) {
+                                        val parts = fecha.trim().split("-")
+                                        if (parts.size == 3) {
+                                            val day = parts[0].toInt()
+                                            val month = parts[1].toInt()
+                                            val year = parts[2].toInt()
+                                            if (day in 1..31 && month in 1..12 && year >= 1900) {
+                                                kotlinx.datetime.LocalDate(year, month, day)
+                                                    .atStartOfDayIn(TimeZone.currentSystemDefault())
+                                            } else null
+                                        } else null
+                                    } else null
+                                } catch (e: Exception) { null }
+
+                                if (fecha.isNotBlank() && parsedDate == null) {
+                                    scope.launch { snackbarHostState.showSnackbar("Formato o rango de fecha inválido. Use DD-MM-YYYY") }
+                                    return@TextButton
+                                }
+
+                                showReservedDialog = false
+                                val clienteToSave = selectedCliente?.copy(cliObservaciones = observaciones)
+                                scope.launch {
+                                    println("NAPIER: guardar reserva, cliente=$clienteToSave, fecha=$fecha")
+                                    val success = loteRepository.updateLoteBooked(lote.id, clienteToSave, parsedDate)
+                                    if (success) {
+                                        onRemarkUpdated(lote.copy(booked = clienteToSave, dateBooked = parsedDate))
+                                        snackbarHostState.showSnackbar("Reserva guardada")
+                                    } else {
+                                        snackbarHostState.showSnackbar("Error al guardar la reserva")
+                                    }
+                                }
+                            },
+                            enabled = true
+                        ) {
+                            Text("Guardar", color = PrimaryColor)
+                        }
+                    }
                 }
             }
         )
+
     }
+
 }

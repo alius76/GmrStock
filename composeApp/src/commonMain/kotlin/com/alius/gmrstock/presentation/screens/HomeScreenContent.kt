@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.agruparPorMaterial
+import com.alius.gmrstock.data.getClientRepository
 import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.LoteModel
@@ -42,14 +43,13 @@ class HomeScreenContent(
     override fun Content() {
         val databaseUrl = LocalDatabaseUrl.current
         val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
+        val clientRepository = remember(databaseUrl) { getClientRepository(databaseUrl) }
         val coroutineScope = rememberCoroutineScope()
 
-        // ✅ Lista reactiva de lotes para detectar cambios individuales
         val lotes = remember { mutableStateListOf<LoteModel>() }
         var materialGroups by remember { mutableStateOf<List<MaterialGroup>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
-
         var showLogoutDialog by remember { mutableStateOf(false) }
 
         val sheetStateGroup = rememberModalBottomSheetState()
@@ -58,7 +58,6 @@ class HomeScreenContent(
 
         val snackbarHostState = remember { SnackbarHostState() }
 
-        // Carga inicial de lotes y agrupación por material
         LaunchedEffect(databaseUrl) {
             isLoading = true
             errorMessage = null
@@ -120,7 +119,7 @@ class HomeScreenContent(
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
 
                 // Diálogo logout
                 if (showLogoutDialog) {
@@ -159,80 +158,84 @@ class HomeScreenContent(
                         Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
                     }
                 } else {
-                    LazyColumn(
+                    // 🔹 Column principal para botones + lista, pegado arriba
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .align(Alignment.TopStart)
+                            .padding(horizontal = 16.dp)
                     ) {
+
                         // Botones de acción
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                ActionButton(
-                                    modifier = Modifier.weight(1f),
-                                    icon = Icons.Default.SwapHoriz,
-                                    label = "SWAP",
-                                    onClick = onChangeDatabase
-                                )
-                                ActionButton(
-                                    modifier = Modifier.weight(1f),
-                                    icon = Icons.Default.Bookmark,
-                                    label = "Reservar",
-                                    onClick = { /* Acción reservar */ }
-                                )
-                                ActionButton(
-                                    modifier = Modifier.weight(1f),
-                                    icon = Icons.Default.Search,
-                                    label = "Consultas",
-                                    onClick = { /* Acción consultas */ }
-                                )
-                                ActionButton(
-                                    modifier = Modifier.weight(1f),
-                                    icon = Icons.Default.PowerSettingsNew,
-                                    label = user.email.substringBefore("@"),
-                                    onClick = { showLogoutDialog = true }
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-
-                        // Materiales en stock
-                        item {
-                            Text(
-                                text = "Materiales en stock",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = MaterialTheme.colorScheme.secondary
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            ActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.SwapHoriz,
+                                label = "SWAP",
+                                onClick = onChangeDatabase
                             )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "Número de materiales: ${materialGroups.size}",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                color = TextSecondary,
-                                modifier = Modifier.padding(bottom = 12.dp)
+                            ActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.Bookmark,
+                                label = "Reservar",
+                                onClick = { /* Acción reservar */ }
+                            )
+                            ActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.Search,
+                                label = "Consultas",
+                                onClick = { /* Acción consultas */ }
+                            )
+                            ActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.PowerSettingsNew,
+                                label = user.email.substringBefore("@"),
+                                onClick = { showLogoutDialog = true }
                             )
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                        items(materialGroups) { group ->
-                            MaterialGroupCard(group = group) { clickedGroup ->
-                                selectedGroupForSheet = clickedGroup
-                                showGroupMaterialBottomSheet = true
-                                coroutineScope.launch { sheetStateGroup.show() }
+                        // LazyColumn solo para materiales
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            item {
+                                Text(
+                                    text = "Materiales en stock",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontSize = 26.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Número de materiales: ${materialGroups.size}",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = TextSecondary,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+
+                            items(materialGroups) { group ->
+                                MaterialGroupCard(group = group) { clickedGroup ->
+                                    selectedGroupForSheet = clickedGroup
+                                    showGroupMaterialBottomSheet = true
+                                    coroutineScope.launch { sheetStateGroup.show() }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
                         }
                     }
                 }
 
-                // BottomSheet de lotes por material
+                // BottomSheet
                 if (showGroupMaterialBottomSheet && selectedGroupForSheet != null) {
                     ModalBottomSheet(
                         onDismissRequest = {
@@ -261,13 +264,13 @@ class HomeScreenContent(
                             },
                             databaseUrl = databaseUrl,
                             onRemarkUpdated = { updatedLote ->
-                                // ✅ Reemplazamos solo el lote afectado para actualización reactiva
                                 val index = lotes.indexOfFirst { it.id == updatedLote.id }
                                 if (index >= 0) {
                                     lotes[index] = updatedLote
                                     materialGroups = agruparPorMaterial(lotes)
                                 }
-                            }
+                            },
+                            clientRepository = clientRepository
                         )
                     }
                 }
