@@ -145,7 +145,7 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
                         Spacer(modifier = Modifier.height(16.dp)) // MÁS grande para bajar título
 
                         Text(
-                            text = "Últimos lotes",
+                            text = "Últimos lotes en stock",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold
