@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,6 +27,7 @@ import com.alius.gmrstock.ui.components.ProcessItem
 import com.alius.gmrstock.ui.components.RatioData
 import com.alius.gmrstock.ui.components.RatioProductionCard
 import com.alius.gmrstock.ui.components.generateRatioDataFromCollection
+import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -42,6 +42,14 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
     var ratios by remember { mutableStateOf<List<Ratio>>(emptyList()) }
     var ratioDataList by remember { mutableStateOf<List<RatioData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
+
+    // 🆕 Estado derivado para calcular el total de kilos del mes.
+    // Se recalcula automáticamente solo cuando 'ratioDataList' cambia.
+    val totalKilosMes by remember {
+        derivedStateOf {
+            ratioDataList.sumOf { it.totalWeight }
+        }
+    }
 
     val scope = rememberCoroutineScope()
 
@@ -69,7 +77,7 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- Bloque superior: título y subtítulo procesos ---
+            // --- Bloque superior: título y subtítulo procesos (sin cambios) ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(50.dp))
@@ -82,12 +90,10 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                         ),
                         color = MaterialTheme.colorScheme.secondary
                     )
-
-                   // Spacer(modifier = Modifier.height(6.dp))
                 }
             }
 
-            // --- Lista de procesos ---
+            // --- Lista de procesos (sin cambios) ---
             item {
                 if (procesos.isEmpty()) {
                     Box(
@@ -146,11 +152,12 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // --- Bloque producción del mes ---
+            // --- Bloque producción del mes (MODIFICADO) ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // Título Principal
                     Text(
                         text = "Producción del mes",
                         style = MaterialTheme.typography.titleLarge.copy(
@@ -160,11 +167,22 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                         color = MaterialTheme.colorScheme.secondary
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = "Total kilos: $totalKilosMes kg",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = TextSecondary
+                        //modifier = Modifier.padding(bottom = 6.dp)
+                    )
+
+                   // Spacer(modifier = Modifier.height(12.dp)) // Espacio antes del gráfico
                 }
             }
 
-            // --- Gráfica ratios ---
+            // --- Gráfica ratios (sin cambios) ---
             item {
                 RatioProductionCard(
                     modifier = Modifier

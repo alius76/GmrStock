@@ -181,7 +181,7 @@ class HomeScreenContent(
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Bookmark,
-                                label = "Reservar",
+                                label = "Mantenimientos",
                                 onClick = { /* Acción reservar */ }
                             )
                             ActionButton(

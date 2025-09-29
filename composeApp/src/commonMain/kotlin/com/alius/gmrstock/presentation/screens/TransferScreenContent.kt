@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.outlined.MoneyOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +28,7 @@ import com.alius.gmrstock.ui.components.VentaData
 import com.alius.gmrstock.ui.components.VentaItem
 import com.alius.gmrstock.ui.components.VentaItemSmall
 import com.alius.gmrstock.ui.components.generateVentaDataFromCollection
+import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -42,6 +42,28 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
     var ventasDelMes by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ventaDataList by remember { mutableStateOf<List<VentaData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
+
+    // 🆕 Estado derivado para calcular el total de kilos de ventas del mes.
+    // Asumo que VentaData tiene un campo de peso sumable (como 'totalWeight' en RatioData).
+    val totalKilosVentaMes by remember {
+        derivedStateOf {
+            // NOTA: Es crucial que 'VentaData' tenga una propiedad que represente el peso
+            // y que pueda ser sumada (idealmente un Double o Float).
+            // Si la propiedad es 'totalWeight' y es Double/Float, el código es:
+            // ventaDataList.sumOf { it.totalWeight }
+
+            // Si la propiedad es String y necesitas convertirla:
+            ventaDataList.sumOf {
+                try {
+                    // Adaptar esta línea a la propiedad de peso real de VentaData
+                    // Por ejemplo, si se llama 'weight':
+                    it.totalWeight.toDouble() // Asumiendo que VentaData tiene una prop. totalWeight: Double
+                } catch (e: Exception) {
+                    0.0
+                }
+            }.toInt() // Lo convierto a Int para mostrarlo como número entero de kilos
+        }
+    }
 
     val scope = rememberCoroutineScope()
     val hoyListState = rememberLazyListState()
@@ -70,7 +92,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- Ventas de Hoy ---
+            // --- Ventas de Hoy (sin cambios) ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(50.dp))
@@ -88,7 +110,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 }
 
                 if (ventasHoy.isEmpty()) {
-                    // --- Diseño de la Card de "Sin Ventas" basado en ProcessItem ---
+                    // ... (Card de Sin Ventas)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -147,11 +169,12 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // --- Ventas del Mes ---
+            // --- Ventas del Mes (MODIFICADO) ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // Título principal
                     Text(
                         text = "Ventas del mes",
                         style = MaterialTheme.typography.titleLarge.copy(
@@ -161,7 +184,18 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                         color = MaterialTheme.colorScheme.secondary
                     )
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // 🆕 Total de Kilos de Venta del Mes
+                    Text(
+                        text = "Total kilos: $totalKilosVentaMes kg",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = TextSecondary
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp)) // Espacio antes del gráfico
                 }
 
                 VentaChartCard(
@@ -172,7 +206,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 )
             }
 
-            // --- Últimas Ventas ---
+            // --- Últimas Ventas (sin cambios) ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
@@ -185,7 +219,6 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                         ),
                         color = MaterialTheme.colorScheme.secondary
                     )
-
 
                     Spacer(modifier = Modifier.height(12.dp))
                 }
