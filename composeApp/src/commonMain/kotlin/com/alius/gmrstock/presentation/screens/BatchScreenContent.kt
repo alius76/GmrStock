@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,19 +21,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.data.getLoteRepository
+import com.alius.gmrstock.data.getHistorialRepository
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.ui.components.LoteItem
 import com.alius.gmrstock.ui.components.LoteItemSmall
+import com.alius.gmrstock.ui.components.LoteHistorialItemSmall
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BatchScreenContent(user: User, databaseUrl: String) {
     val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
+    val historialRepository = remember(databaseUrl) { getHistorialRepository(databaseUrl) } // ⬅️ Inicialización
+
     var lotesHoy by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
+    var lotesHistorialHoy by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var ultimosLotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
+
+    // ⬅️ La lista combinada que alimenta el LazyRow: Lotes activos + Lotes vendidos
+    val combinedLotesHoy by remember(lotesHoy, lotesHistorialHoy) {
+        derivedStateOf {
+            lotesHoy + lotesHistorialHoy
+        }
+    }
 
     val hoyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -43,6 +54,7 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
         loading = true
         scope.launch {
             lotesHoy = loteRepository.listarLotesCreadosHoy()
+            lotesHistorialHoy = historialRepository.listarLotesHistorialDeHoy()
             ultimosLotes = loteRepository.listarUltimosLotes(5)
             loading = false
         }
@@ -59,10 +71,10 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 8.dp), // mantengo padding vertical
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // --- Sección Lotes creados hoy ---
+                // --- SECCIÓN UNIFICADA: Actividad de lotes de hoy ---
                 item {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Spacer(modifier = Modifier.height(50.dp))
@@ -77,10 +89,9 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
                         )
 
                         Spacer(modifier = Modifier.height(12.dp))
-
                     }
 
-                    if (lotesHoy.isEmpty()) {
+                    if (combinedLotesHoy.isEmpty()) { // ⬅️ Condición unificada
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -110,13 +121,13 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.EventBusy,
-                                            contentDescription = "Sin lotes",
+                                            contentDescription = "Sin actividad",
                                             tint = Color.White,
                                             modifier = Modifier.size(60.dp)
                                         )
                                         Spacer(modifier = Modifier.height(8.dp))
                                         Text(
-                                            text = "Sin lotes creados hoy",
+                                            text = "Sin lotes nuevos hoy",
                                             fontSize = 20.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color.White
@@ -132,17 +143,25 @@ fun BatchScreenContent(user: User, databaseUrl: String) {
                             flingBehavior = rememberSnapFlingBehavior(lazyListState = hoyListState),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(lotesHoy) { lote ->
-                                LoteItemSmall(lote)
+                            items(combinedLotesHoy, key = { it.id }) { lote -> // ⬅️ Iterar sobre la lista combinada
+                                // ⬅️ Lógica para diferenciar el componente:
+                                // Un lote está en historial si su ID no se encuentra en la lista de lotes activos de hoy.
+                                val isHistorial = lotesHistorialHoy.any { it.id == lote.id }
+
+                                if (isHistorial) {
+                                    LoteHistorialItemSmall(lote)
+                                } else {
+                                    LoteItemSmall(lote)
+                                }
                             }
                         }
                     }
                 }
 
-                // --- Sección Últimos lotes ---
+                // --- Sección Últimos lotes (sin cambios) ---
                 item {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        Spacer(modifier = Modifier.height(16.dp)) // MÁS grande para bajar título
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
                             text = "Últimos lotes en stock",

@@ -4,7 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,23 +15,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
-import com.alius.gmrstock.ui.theme.BadgeTextColor
+import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.SecondaryColor
-import com.alius.gmrstock.ui.theme.TextPrimary
-import com.alius.gmrstock.ui.theme.TextSecondary
+import com.alius.gmrstock.ui.theme.BadgeTextColor
 
 @Composable
-fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
-    var showDialog by remember { mutableStateOf(false) }
+fun LoteHistorialItemSmall(lote: LoteModel, modifier: Modifier = Modifier) {
+    var showBigBagsDialog by remember { mutableStateOf(false) }
 
-    // Animación de zoom al presionar
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.97f else 1f,
@@ -45,30 +39,18 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
             .height(260.dp)
             .padding(6.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        pressed = true
-                        try {
-                            awaitRelease()
-                        } finally {
-                            pressed = false
-                        }
-                    },
-                    onTap = { showDialog = true }
-                )
-            },
+            .clickable { showBigBagsDialog = true },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        // Fondo degradado
+        // Fondo degradado diferente para historial (gris/negro/rojo suave)
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(Color(0xFF029083), Color(0xFF00BFA5))
+                        colors = listOf(Color(0xFF888888), Color(0xFF555555))
                     )
                 )
                 .padding(16.dp)
@@ -78,9 +60,9 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Cliente
+                // Número del lote
                 Text(
-                    text = venta.ventaCliente,
+                    text = lote.number,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -88,53 +70,51 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                     maxLines = 1
                 )
 
-                // Icono central
+                // Icono central de archivo/historial
                 Icon(
                     imageVector = Icons.Default.Archive,
-                    contentDescription = "Euro Icon",
+                    contentDescription = "Lote Vendido",
                     tint = Color.White,
                     modifier = Modifier.size(48.dp)
                 )
 
-                // Bloque de información: lote, material, fecha, peso
+                // Información del lote
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Lote: ${venta.ventaLote}",
+                        text = lote.description,
                         color = Color(0xCCFFFFFF),
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
                     )
                     Text(
-                        text = "Material: ${venta.ventaMaterial}",
+                        text = "Fecha: ${formatInstant(lote.date)}",
+                        color = Color(0xAAFFFFFF)
+                    )
+                    Text(
+                        text = lote.location,
                         color = Color(0xAAFFFFFF),
                         maxLines = 1
                     )
                     Text(
-                        text = "Fecha: ${formatInstant(venta.ventaFecha)}",
-                        color = Color(0xAAFFFFFF)
-                    )
-                    val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "Peso: $it Kg" }
-                        ?: "Peso: No disponible"
-                    Text(
-                        text = pesoTexto,
+                        text = "Peso: ${lote.totalWeight} Kg",
                         color = Color(0xAAFFFFFF)
                     )
                 }
 
-                // Badge BigBags
+                // Badge Estado Historial
                 Box(
                     modifier = Modifier
-                        .background(SecondaryColor, RoundedCornerShape(12.dp))
+                        .background(Color(0xFFDD5555), RoundedCornerShape(12.dp))
                         .padding(horizontal = 10.dp, vertical = 5.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "BigBags ${venta.ventaBigbags.size}",
+                        text = "VENDIDO",
                         fontWeight = FontWeight.SemiBold,
-                        color = BadgeTextColor
+                        color = Color.White
                     )
                 }
             }
@@ -142,11 +122,11 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
     }
 
     // Diálogo de BigBags
-    if (showDialog) {
+    if (showBigBagsDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
+            onDismissRequest = { showBigBagsDialog = false },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
+                TextButton(onClick = { showBigBagsDialog = false }) {
                     Text("Cerrar", color = PrimaryColor)
                 }
             },
@@ -164,8 +144,9 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                 }
             },
             text = {
-                VentaBigBagsDialogContent(venta.ventaBigbags)
+                BigBagsDialogContent(bigBags = lote.bigBag)
             }
         )
     }
 }
+

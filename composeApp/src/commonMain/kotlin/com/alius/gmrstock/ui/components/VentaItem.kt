@@ -5,8 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EuroSymbol
-import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +19,6 @@ import com.alius.gmrstock.core.utils.formatInstant
 import com.alius.gmrstock.ui.theme.BadgeTextColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
-import com.alius.gmrstock.ui.theme.TextPrimary
 import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
@@ -80,7 +78,7 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Filled.EuroSymbol,
+                    imageVector = Icons.Default.Archive,
                     contentDescription = "Venta",
                     tint = PrimaryColor,
                     modifier = Modifier.size(36.dp)

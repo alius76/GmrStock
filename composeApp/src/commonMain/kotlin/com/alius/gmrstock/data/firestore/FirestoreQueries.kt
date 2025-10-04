@@ -475,3 +475,46 @@ fun buildPatchBodyForBooked(
         }
     }.toString()
 }
+
+fun buildQueryHistorialDeHoy(): String {
+    val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+
+    // 1. Inicio de hoy (medianoche)
+    val inicioDelDia = LocalDateTime(hoy.year, hoy.month, hoy.dayOfMonth, 0, 0, 0)
+        .toInstant(TimeZone.currentSystemDefault())
+
+    // 2. Inicio de mañana (medianoche del día siguiente)
+    val finDelDia = inicioDelDia.plus(1, DateTimeUnit.DAY, TimeZone.currentSystemDefault())
+
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "historial" }], 
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "createdAt" },
+                                "op": "GREATER_THAN_OR_EQUAL",
+                                "value": { "timestampValue": "$inicioDelDia" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "createdAt" },
+                                "op": "LESS_THAN",
+                                "value": { "timestampValue": "$finDelDia" }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "createdAt" }, "direction": "DESCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
+}

@@ -139,7 +139,7 @@ class BottomBarScreen(
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == transferTab.key,
                             onClick = { tabNavigator.current = transferTab },
-                            icon = { Icon(Icons.Filled.EuroSymbol, contentDescription = null) },
+                            icon = { Icon(Icons.Default.Archive, contentDescription = null) },
                             label = { Text(transferTab.options.title) }
                         )
                         BottomNavigationItem(
