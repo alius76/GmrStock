@@ -1,29 +1,37 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
+import androidx.compose.material.icons.filled.CalendarToday // 🆕 Icono para Fecha
+import androidx.compose.material.icons.filled.ListAlt // 🆕 Icono para Lote
+import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
-import com.alius.gmrstock.ui.theme.BadgeTextColor
+import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
+import com.alius.gmrstock.ui.theme.TextPrimary
 import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
+
+    // Conversión segura del String a Number
+    val totalWeightNumber = venta.ventaPesoTotal?.toDoubleOrNull() ?: 0.0
 
     Card(
         modifier = modifier
@@ -39,83 +47,108 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Fila superior: cliente + badge
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = venta.ventaCliente,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryColor,
-                    maxLines = 1
-                )
+            // --- 1. Título principal: Cliente ---
+            Text(
+                text = venta.ventaCliente,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+                color = PrimaryColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-                Box(
-                    modifier = Modifier
-                        .background(SecondaryColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "BigBags ${venta.ventaBigbags.size}",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = BadgeTextColor
-                    )
-                }
-            }
-
+            // --- Separador visual ---
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider(color = TextSecondary.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Fila de información adicional sin el fondo gris
+            // --- 2. Fila de Métricas Clave (Peso y BigBags) ---
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Archive,
-                    contentDescription = "Venta",
-                    tint = PrimaryColor,
-                    modifier = Modifier.size(36.dp)
+                // Métrica 1: Peso Total
+                MetricItem(
+                    icon = Icons.Default.Scale,
+                    label = "Peso Total",
+                    value = "${formatWeight(totalWeightNumber)} Kg",
+                    iconColor = SecondaryColor
                 )
 
-                Spacer(modifier = Modifier.width(12.dp))
+                // Métrica 2: BigBags
+                MetricItem(
+                    icon = Icons.Outlined.ShoppingBag,
+                    label = "BigBags",
+                    value = venta.ventaBigbags.size.toString(),
+                    iconColor = Color(0xFF00BFA5)
+                )
+            }
 
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = "Lote: ${venta.ventaLote}",
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // --- 3. Información Detallada (Lote, Material, Fecha) ⬅️ DISEÑO MODIFICADO ---
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp) // Espaciado entre detalles
+            ) {
+
+                // Lote (Ícono y Texto)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.ListAlt, // Icono para Lote/ID
+                        contentDescription = "Lote",
+                        tint = PrimaryColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Lote: ${venta.ventaLote}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = TextSecondary,
-                        maxLines = 1
-                        )
+                        color = TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
-                    Text(text = "Material: ${venta.ventaMaterial}",
+                // Material (Ícono y Texto)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Widgets,
+                        contentDescription = "Material",
+                        tint = PrimaryColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Material: ${venta.ventaMaterial}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = TextSecondary,
-                        maxLines = 1
-                        )
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
-                    Text(text = "Fecha: ${formatInstant(venta.ventaFecha)}",
+                // Fecha (Ícono y Texto)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday, // Icono para Fecha
+                        contentDescription = "Fecha",
+                        tint = PrimaryColor.copy(alpha = 0.7f),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Fecha: ${formatInstant(venta.ventaFecha)}",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = TextSecondary
-                        )
-
-
-                    val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "$it Kg" }
-                        ?: "No disponible"
-                    Text(text = "Peso total: $pesoTexto",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextSecondary
-                        )
-
+                    )
                 }
             }
         }
@@ -145,3 +178,4 @@ fun VentaItem(venta: Venta, modifier: Modifier = Modifier) {
         )
     }
 }
+

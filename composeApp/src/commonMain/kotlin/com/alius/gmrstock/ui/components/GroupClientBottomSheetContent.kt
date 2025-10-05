@@ -25,7 +25,7 @@ fun GroupClientBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(520.dp)
             .padding(vertical = 14.dp)
             .navigationBarsPadding()
     ) {

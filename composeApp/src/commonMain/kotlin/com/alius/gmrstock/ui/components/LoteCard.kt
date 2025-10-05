@@ -28,6 +28,7 @@ import com.alius.gmrstock.domain.model.*
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.ReservedColor
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.core.utils.formatWeight // ⬅️ ¡IMPORTACIÓN AÑADIDA!
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getLoteRepository
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,9 @@ fun LoteCard(
     var showRemarkDialog by remember { mutableStateOf(false) }
     var showAddRemarkDialog by remember { mutableStateOf(false) }
 
+    // Conversión segura del String a Number para el formateo ⬅️ ¡AÑADIDO!
+    val totalWeightNumber = lote.totalWeight.toDoubleOrNull() ?: 0.0
+
     // Siempre usamos el valor actual del lote
     var currentRemarkText by remember { mutableStateOf(lote.remark) }
 
@@ -77,26 +81,34 @@ fun LoteCard(
                 .padding(20.dp)
                 .animateContentSize()
         ) {
-            Row(
+
+            // 1. CABECERA REESTRUCTURADA: Lote Grande + Botones Debajo
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Número del lote más grande y centrado
                 Text(
                     text = lote.number,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryColor
+                    style = MaterialTheme.typography.headlineMedium, // ⬆️ Más grande y centrado
+                    fontWeight = FontWeight.ExtraBold,
+                    color = PrimaryColor,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Botones debajo, organizados en una fila
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.SpaceEvenly, // Espacio uniforme entre los botones
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
+                    // Reservado
                     IconButton(
                         onClick = { showReservedDialog = true },
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             Icons.Default.Lock,
@@ -105,15 +117,15 @@ fun LoteCard(
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-                    //  }
 
+                    // Observación
                     IconButton(
                         onClick = {
                             currentRemarkText = lote.remark
                             if (hasRemark) showRemarkDialog = true
                             else showAddRemarkDialog = true
                         },
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = if (hasRemark) Icons.Default.Description else Icons.AutoMirrored.Filled.NoteAdd,
@@ -125,6 +137,7 @@ fun LoteCard(
                         )
                     }
 
+                    // Certificado
                     IconButton(
                         onClick = {
                             if (certificado != null) {
@@ -145,6 +158,7 @@ fun LoteCard(
                         )
                     }
 
+                    // BigBags
                     IconButton(
                         onClick = { showBigBagsDialog = true },
                         modifier = Modifier.size(32.dp)
@@ -157,17 +171,21 @@ fun LoteCard(
                         )
                     }
                 }
-            }
+            } // Fin de Column(Cabecera)
 
             Spacer(modifier = Modifier.height(12.dp))
+            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp) // ⬅️ DIVIDER AÑADIDO
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // 2. BLOQUE DE DETALLES
             Box(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     DetailRow("Material", lote.description)
                     DetailRow("Fecha", formatInstant(lote.date))
                     DetailRow("Ubicación", lote.location)
                     DetailRow("BigBags", lote.count.toString())
-                    DetailRow("Peso total", "${lote.totalWeight} Kg", PrimaryColor)
+                    // ⬅️ FORMATO DE PESO APLICADO
+                    DetailRow("Peso total", "${formatWeight(totalWeightNumber)} Kg", PrimaryColor)
                 }
 
                 // Etiqueta reservado en la esquina inferior derecha en dos líneas
@@ -673,25 +691,18 @@ fun LoteCard(
                                 showReservedDialog = false
                                 val clienteToSave = selectedCliente?.copy(cliObservaciones = observaciones)
                                 scope.launch {
-                                    println("NAPIER: guardar reserva, cliente=$clienteToSave, fecha=$fecha")
                                     val success = loteRepository.updateLoteBooked(lote.id, clienteToSave, parsedDate)
-                                    if (success) {
-                                        onRemarkUpdated(lote.copy(booked = clienteToSave, dateBooked = parsedDate))
-                                        snackbarHostState.showSnackbar("Reserva guardada")
-                                    } else {
-                                        snackbarHostState.showSnackbar("Error al guardar la reserva")
-                                    }
+                                    if (success) onRemarkUpdated(lote.copy(booked = clienteToSave, dateBooked = parsedDate))
+                                    snackbarHostState.showSnackbar(
+                                        if (success) "Reserva guardada" else "Error al guardar la reserva"
+                                    )
                                 }
                             },
-                            enabled = true
-                        ) {
-                            Text("Guardar", color = PrimaryColor)
-                        }
+                            enabled = selectedCliente != null
+                        ) { Text("Guardar", color = PrimaryColor) }
                     }
                 }
             }
         )
-
     }
-
 }

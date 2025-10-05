@@ -2,7 +2,6 @@ package com.alius.gmrstock.presentation.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -20,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alius.gmrstock.core.utils.formatWeight // ⬅️ ¡Importación necesaria!
 import com.alius.gmrstock.data.getVentaRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.domain.model.Venta
@@ -28,6 +28,7 @@ import com.alius.gmrstock.ui.components.VentaData
 import com.alius.gmrstock.ui.components.VentaItem
 import com.alius.gmrstock.ui.components.VentaItemSmall
 import com.alius.gmrstock.ui.components.generateVentaDataFromCollection
+import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
@@ -44,24 +45,18 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
     var loading by remember { mutableStateOf(true) }
 
     // 🆕 Estado derivado para calcular el total de kilos de ventas del mes.
-    // Asumo que VentaData tiene un campo de peso sumable (como 'totalWeight' en RatioData).
     val totalKilosVentaMes by remember {
         derivedStateOf {
-            // NOTA: Es crucial que 'VentaData' tenga una propiedad que represente el peso
-            // y que pueda ser sumada (idealmente un Double o Float).
-            // Si la propiedad es 'totalWeight' y es Double/Float, el código es:
-            // ventaDataList.sumOf { it.totalWeight }
-
-            // Si la propiedad es String y necesitas convertirla:
+            // Se calcula el peso total como Double para evitar pérdida de precisión y usar formatWeight
             ventaDataList.sumOf {
                 try {
-                    // Adaptar esta línea a la propiedad de peso real de VentaData
-                    // Por ejemplo, si se llama 'weight':
-                    it.totalWeight.toDouble() // Asumiendo que VentaData tiene una prop. totalWeight: Double
+                    // ASUME que VentaData tiene una propiedad de peso (ej: totalWeight) que se puede convertir a Double.
+                    // Ajusta 'it.totalWeight' si tu VentaData usa otro nombre para el campo de peso sumable.
+                    it.totalWeight.toDouble()
                 } catch (e: Exception) {
                     0.0
                 }
-            }.toInt() // Lo convierto a Int para mostrarlo como número entero de kilos
+            }
         }
     }
 
@@ -74,6 +69,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
             ventasHoy = ventaRepository.mostrarLasVentasDeHoy()
             ultimasVentas = ventaRepository.mostrarLasUltimasVentas()
             ventasDelMes = ventaRepository.mostrarVentasDelMes()
+            // NOTA: generateVentaDataFromCollection debe asegurarse de que VentaData contenga el peso.
             ventaDataList = generateVentaDataFromCollection(ventasDelMes)
             loading = false
         }
@@ -92,7 +88,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- Ventas de Hoy (sin cambios) ---
+            // ... (Ventas de Hoy) ...
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(50.dp))
@@ -159,7 +155,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                     LazyRow(
                         state = hoyListState,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        flingBehavior = rememberSnapFlingBehavior(lazyListState = hoyListState),
+                        // ... (FlingBehavior)
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         items(ventasHoy) { venta ->
@@ -186,16 +182,16 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    // 🆕 Total de Kilos de Venta del Mes
+                    // ⬅️ ¡CORRECCIÓN! Formato de peso aplicado aquí
                     Text(
-                        text = "Total kilos: $totalKilosVentaMes kg",
+                        text = "Total kilos: ${formatWeight(totalKilosVentaMes)} Kg",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
                         color = TextSecondary
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp)) // Espacio antes del gráfico
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 VentaChartCard(
@@ -206,7 +202,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 )
             }
 
-            // --- Últimas Ventas (sin cambios) ---
+            // ... (Últimas Ventas) ...
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))

@@ -51,6 +51,7 @@ class HomeScreenContent(
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var showLogoutDialog by remember { mutableStateOf(false) }
+        var showUnimplementedDialog by remember { mutableStateOf(false) }
 
         val sheetStateGroup = rememberModalBottomSheetState()
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
@@ -121,6 +122,19 @@ class HomeScreenContent(
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize()) {
 
+                //Diálogo "Sin implementar"
+                if (showUnimplementedDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showUnimplementedDialog = false },
+                        title = { Text(text = "Funcionalidad en desarrollo", color = PrimaryColor) },
+                        text = { Text(text = "Esta funcionalidad aún no está implementada.") },
+                        confirmButton = {
+                            TextButton(onClick = { showUnimplementedDialog = false }) {
+                                Text("Aceptar", color = PrimaryColor)
+                            }
+                        }
+                    )
+                }
                 // Diálogo logout
                 if (showLogoutDialog) {
                     AlertDialog(
@@ -180,15 +194,15 @@ class HomeScreenContent(
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
-                                icon = Icons.Default.Bookmark,
-                                label = "Mantenimientos",
-                                onClick = { /* Acción reservar */ }
+                                icon = Icons.Default.Tune,
+                                label = "Datos",
+                                onClick = { showUnimplementedDialog = true }
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Search,
-                                label = "Consultas",
-                                onClick = { /* Acción consultas */ }
+                                label = "Buscar",
+                                onClick = { showUnimplementedDialog = true }
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),

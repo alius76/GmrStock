@@ -3,12 +3,11 @@ package com.alius.gmrstock.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
+import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,15 +21,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.core.utils.formatWeight // ⬅️ ¡IMPORTACIÓN AÑADIDA!
 import com.alius.gmrstock.ui.theme.BadgeTextColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
-import com.alius.gmrstock.ui.theme.TextPrimary
-import com.alius.gmrstock.ui.theme.TextSecondary
+
 
 @Composable
 fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
+
+    // Conversión segura del String a Number para el formateo ⬅️ ¡AÑADIDO!
+    val totalWeightNumber = venta.ventaPesoTotal?.toDoubleOrNull() ?: 0.0
 
     // Animación de zoom al presionar
     var pressed by remember { mutableStateOf(false) }
@@ -90,8 +92,8 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
 
                 // Icono central
                 Icon(
-                    imageVector = Icons.Default.Archive,
-                    contentDescription = "Euro Icon",
+                    imageVector = Icons.Default.LocalShipping,
+                    contentDescription = "Truck Icon",
                     tint = Color.White,
                     modifier = Modifier.size(48.dp)
                 )
@@ -116,8 +118,15 @@ fun VentaItemSmall(venta: Venta, modifier: Modifier = Modifier) {
                         text = "Fecha: ${formatInstant(venta.ventaFecha)}",
                         color = Color(0xAAFFFFFF)
                     )
-                    val pesoTexto = venta.ventaPesoTotal?.takeIf { it.isNotBlank() }?.let { "Peso: $it Kg" }
-                        ?: "Peso: No disponible"
+
+                    // ⬇️ APLICACIÓN DEL FORMATO DE PESO ⬇️
+                    val pesoFormateado = formatWeight(totalWeightNumber)
+                    val pesoTexto = if (totalWeightNumber > 0) {
+                        "Peso: $pesoFormateado Kg"
+                    } else {
+                        "Peso: No disponible"
+                    }
+
                     Text(
                         text = pesoTexto,
                         color = Color(0xAAFFFFFF)

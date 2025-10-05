@@ -6,11 +6,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -139,7 +137,7 @@ class BottomBarScreen(
                         BottomNavigationItem(
                             selected = tabNavigator.current.key == transferTab.key,
                             onClick = { tabNavigator.current = transferTab },
-                            icon = { Icon(Icons.Default.Archive, contentDescription = null) },
+                            icon = { Icon(Icons.Default.LocalShipping, contentDescription = null) },
                             label = { Text(transferTab.options.title) }
                         )
                         BottomNavigationItem(

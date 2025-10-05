@@ -5,21 +5,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Balance
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.ListAlt
+import androidx.compose.material.icons.filled.Scale
+import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.ClientGroupSell
-import com.alius.gmrstock.ui.theme.BadgeTextColor
+import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
+import com.alius.gmrstock.ui.theme.TextPrimary
 import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
@@ -27,6 +30,9 @@ fun ClientGroupSellCard(
     group: ClientGroupSell,
     onClick: (ClientGroupSell) -> Unit
 ) {
+    // ⬇️ Ya no necesitamos try-catch: el dato es un Int!
+    val totalKilosNumber = group.totalKilosVendidos
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,71 +47,69 @@ fun ClientGroupSellCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Fila superior: cliente + badge
+            // --- 1. Título principal: Cliente ---
+            Text(
+                text = group.cliente.cliNombre,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+                color = PrimaryColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            // --- Separador visual ---
+            Spacer(modifier = Modifier.height(8.dp))
+            Divider(color = TextSecondary.copy(alpha = 0.2f), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // --- 2. Fila de Métricas (Kilos, BigBags y Total Ventas en Badge) ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = group.cliente.cliNombre,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                // Métrica 1: Kilos Vendidos
+                MetricItem(
+                    icon = Icons.Default.Scale,
+                    label = "Kilos Vendidos",
+                    // ⬇️ Usamos el Int directamente
+                    value = "${formatWeight(totalKilosNumber)} Kg",
+                    iconColor = SecondaryColor
                 )
 
+                // Métrica 2: BigBags Vendidos ⬅️ USANDO EL DATO REAL
+                MetricItem(
+                    icon = Icons.Default.Inventory,
+                    label = "BigBags",
+                    value = group.totalBigBags.toString(), // ⬅️ ¡Dato real!
+                    iconColor = Color(0xFF00BFA5)
+                )
+
+                // Métrica 3: Ventas Totales (Badge grande)
                 Box(
                     modifier = Modifier
-                        .background(SecondaryColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                        .background(PrimaryColor.copy(alpha = 0.15f), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ShoppingCart,
-                            contentDescription = "Ventas",
-                            tint = BadgeTextColor,
-                            modifier = Modifier.size(16.dp)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = group.totalVentasMes.toString(),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryColor,
+                            fontSize = 24.sp
                         )
                         Text(
-                            text = "Ventas ${group.totalVentasMes}",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = BadgeTextColor,
-                            fontSize = 14.sp
+                            text = "Ventas",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Light,
+                            color = TextSecondary
                         )
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Fila de información adicional sin el fondo gris
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Balance,
-                    contentDescription = "Kilos vendidos",
-                    tint = PrimaryColor,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Kilos vendidos: ${group.totalKilosVendidos} kg",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextSecondary
-                )
-            }
         }
     }
 }
+

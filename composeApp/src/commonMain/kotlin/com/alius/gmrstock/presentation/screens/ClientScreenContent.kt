@@ -54,15 +54,22 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
     val grouped: List<Pair<ClientGroupSell, List<Venta>>> = ventas
         .groupBy { it.ventaCliente }
         .map { (clienteNombre, ventasCliente) ->
+
+            // 1. Calcular Kilos (Simplificamos ya que ahora sabemos que 'ventaPesoTotal' es el que se usa y puede ser Int/String)
             val totalKilos = ventasCliente.sumOf { venta ->
+
                 venta.ventaPesoTotal?.toIntOrNull()
                     ?: venta.ventaBigbags.sumOf { it.ventaBbWeight.toIntOrNull() ?: 0 }
             }
 
+            // 2. Calcular BigBags: Suma el tamaño de la lista de BigBags de cada venta
+            val totalBigBags = ventasCliente.sumOf { it.ventaBigbags.size } // ⬅️ Nuevo cálculo
+
             ClientGroupSell(
                 cliente = com.alius.gmrstock.domain.model.Cliente(cliNombre = clienteNombre),
                 totalVentasMes = ventasCliente.size,
-                totalKilosVendidos = totalKilos
+                totalKilosVendidos = totalKilos, // Usamos el cálculo de Kilos
+                totalBigBags = totalBigBags // ⬅️ Asignamos el valor calculado
             ) to ventasCliente
         }
         .sortedByDescending { it.first.totalKilosVendidos }
@@ -133,7 +140,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                         selectedClientGroup = null
                     },
                     sheetState = bottomSheetState,
-                    modifier = Modifier.fillMaxHeight(0.45f)
+                    modifier = Modifier.fillMaxHeight(0.5f)
                 ) {
                     GroupClientBottomSheetContent(
                         cliente = clientGroup.cliente,

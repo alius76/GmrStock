@@ -7,7 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,13 +19,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.BadgeTextColor
+
 
 @Composable
 fun LoteHistorialItemSmall(lote: LoteModel, modifier: Modifier = Modifier) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
+
+    // Conversión segura del String a Number para el formateo
+    val totalWeightNumber = lote.totalWeight.toDoubleOrNull() ?: 0.0 // ⬅️ Conversión añadida
 
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
@@ -72,7 +76,7 @@ fun LoteHistorialItemSmall(lote: LoteModel, modifier: Modifier = Modifier) {
 
                 // Icono central de archivo/historial
                 Icon(
-                    imageVector = Icons.Default.Archive,
+                    imageVector = Icons.Outlined.ShoppingBag,
                     contentDescription = "Lote Vendido",
                     tint = Color.White,
                     modifier = Modifier.size(48.dp)
@@ -99,7 +103,8 @@ fun LoteHistorialItemSmall(lote: LoteModel, modifier: Modifier = Modifier) {
                         maxLines = 1
                     )
                     Text(
-                        text = "Peso: ${lote.totalWeight} Kg",
+                        // ⬅️ ¡APLICACIÓN DE LA FUNCIÓN FORMATWEIGHT!
+                        text = "Peso: ${formatWeight(totalWeightNumber)} Kg",
                         color = Color(0xAAFFFFFF)
                     )
                 }
@@ -149,4 +154,3 @@ fun LoteHistorialItemSmall(lote: LoteModel, modifier: Modifier = Modifier) {
         )
     }
 }
-

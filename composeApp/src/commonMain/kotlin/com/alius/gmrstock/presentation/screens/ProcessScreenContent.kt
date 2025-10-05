@@ -28,6 +28,7 @@ import com.alius.gmrstock.ui.components.RatioData
 import com.alius.gmrstock.ui.components.RatioProductionCard
 import com.alius.gmrstock.ui.components.generateRatioDataFromCollection
 import com.alius.gmrstock.ui.theme.TextSecondary
+import com.alius.gmrstock.core.utils.formatWeight // ⬅️ ¡IMPORTACIÓN AÑADIDA!
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -43,10 +44,10 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
     var ratioDataList by remember { mutableStateOf<List<RatioData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
-    // 🆕 Estado derivado para calcular el total de kilos del mes.
-    // Se recalcula automáticamente solo cuando 'ratioDataList' cambia.
+    // Estado derivado para calcular el total de kilos del mes.
     val totalKilosMes by remember {
         derivedStateOf {
+            // totalKilosMes es un número (Double o Int)
             ratioDataList.sumOf { it.totalWeight }
         }
     }
@@ -170,15 +171,15 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                     Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = "Total kilos: $totalKilosMes kg",
+                        // ⬅️ APLICACIÓN DEL FORMATO DE PESO
+                        text = "Total kilos: ${formatWeight(totalKilosMes)} Kg",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
                         color = TextSecondary
-                        //modifier = Modifier.padding(bottom = 6.dp)
                     )
 
-                   // Spacer(modifier = Modifier.height(12.dp)) // Espacio antes del gráfico
+                    // Spacer(modifier = Modifier.height(12.dp)) // Espacio antes del gráfico
                 }
             }
 
