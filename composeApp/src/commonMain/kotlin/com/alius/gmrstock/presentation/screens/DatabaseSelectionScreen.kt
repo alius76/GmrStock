@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.data.FirestoreUrls
@@ -39,7 +40,6 @@ class DatabaseSelectionScreen(
 
     @Composable
     override fun Content() {
-        // Inicializamos en 0f para que la animación empiece desde el inicio
         var progressDB1 by remember { mutableStateOf(0f) }
         var progressDB2 by remember { mutableStateOf(0f) }
 
@@ -47,33 +47,22 @@ class DatabaseSelectionScreen(
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(Unit) {
-            // Añadimos un pequeño retardo para asegurar que el estado inicial se renderice antes de la animación
-            delay(100)
+            delay(100) // espera inicial para renderizar estados
 
-            // Carga de ratios para la primera base de datos
             scope.launch {
                 Napier.d { "Iniciando carga de ratios para la base de datos P07" }
                 val ratioRepository1 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB1_URL)
                 val ratios1 = ratioRepository1.listarRatiosDelDia()
-                Napier.d { "P07 - Ratios obtenidos: ${ratios1.size}" }
                 val pesoTotalHoy1 = ratios1.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
-                Napier.d { "P07 - Peso total producido hoy: $pesoTotalHoy1 kg" }
-                // El valor final se asigna aquí, lo que dispara la animación
                 progressDB1 = (pesoTotalHoy1 / produccionObjetivoKg).coerceIn(0.15f, 1f)
-                Napier.d { "P07 - Progreso final de la barra: $progressDB1" }
             }
 
-            // Carga de ratios para la segunda base de datos
             scope.launch {
                 Napier.d { "Iniciando carga de ratios para la base de datos P08" }
                 val ratioRepository2 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB2_URL)
                 val ratios2 = ratioRepository2.listarRatiosDelDia()
-                Napier.d { "P08 - Ratios obtenidos: ${ratios2.size}" }
                 val pesoTotalHoy2 = ratios2.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
-                Napier.d { "P08 - Peso total producido hoy: $pesoTotalHoy2 kg" }
-                // El valor final se asigna aquí, lo que dispara la animación
                 progressDB2 = (pesoTotalHoy2 / produccionObjetivoKg).coerceIn(0.15f, 1f)
-                Napier.d { "P08 - Progreso final de la barra: $progressDB2" }
             }
         }
 
@@ -89,7 +78,7 @@ class DatabaseSelectionScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Título y subtítulo de la app
+                // Título y subtítulo
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "GMR Stock",
@@ -110,7 +99,7 @@ class DatabaseSelectionScreen(
 
                 Spacer(modifier = Modifier.height(100.dp))
 
-                // Encabezado de la pantalla de selección
+                // Encabezado de selección
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Seleccione base de datos",
@@ -129,20 +118,22 @@ class DatabaseSelectionScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
+                // Fila de botones adaptativos
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     DatabaseCardWithProcessStyle(
                         label = "P07",
                         progress = progressDB1,
-                        onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) }
+                        onClick = { onDatabaseSelected(FirestoreUrls.DB1_URL) },
+                        modifier = Modifier.weight(1f).defaultMinSize(minWidth = 140.dp).widthIn(max = 200.dp)
                     )
-                    Spacer(modifier = Modifier.width(24.dp))
                     DatabaseCardWithProcessStyle(
                         label = "P08",
                         progress = progressDB2,
-                        onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) }
+                        onClick = { onDatabaseSelected(FirestoreUrls.DB2_URL) },
+                        modifier = Modifier.weight(1f).defaultMinSize(minWidth = 140.dp).widthIn(max = 200.dp)
                     )
                 }
             }
@@ -153,7 +144,8 @@ class DatabaseSelectionScreen(
     fun DatabaseCardWithProcessStyle(
         label: String,
         progress: Float,
-        onClick: () -> Unit
+        onClick: () -> Unit,
+        modifier: Modifier = Modifier
     ) {
         val animatedProgress by animateFloatAsState(
             targetValue = progress,
@@ -162,8 +154,8 @@ class DatabaseSelectionScreen(
 
         ElevatedCard(
             onClick = onClick,
-            modifier = Modifier
-                .size(width = 160.dp, height = 200.dp)
+            modifier = modifier
+                .height(200.dp)
                 .shadow(8.dp, RoundedCornerShape(20.dp)),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.elevatedCardColors(containerColor = Color.Transparent),

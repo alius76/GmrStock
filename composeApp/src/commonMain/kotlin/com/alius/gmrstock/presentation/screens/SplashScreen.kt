@@ -14,24 +14,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alius.gmrstock.data.PlatformImageComposable
-import com.alius.gmrstock.data.loadPlatformImage
 import kotlinx.coroutines.delay
 
 private val PrimaryColor = Color(0xFF029083)
+private val SecondaryColor = Color(0xFF00BFA5)
+private val AccentColor = Color(0xFFFFFFFF)
 
 @Composable
 fun SplashScreen(durationMillis: Int = 4000) {
-    println("📌 [SplashScreen] Comenzando splash screen")
-
-    val logoImage = loadPlatformImage("logo.png")
-
-    // Animaciones fade-in y slide-up
+    // Animaciones de fade-in y slide-up
     val alphaAnim = remember { Animatable(0f) }
-    val offsetY = remember { Animatable(50f) }
+    val offsetY = remember { Animatable(30f) }
 
     LaunchedEffect(Unit) {
-        println("📌 [SplashScreen] Iniciando animaciones")
         alphaAnim.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 1000)
@@ -40,10 +35,7 @@ fun SplashScreen(durationMillis: Int = 4000) {
             targetValue = 0f,
             animationSpec = tween(durationMillis = 1000)
         )
-
-        // Espera total del splash
         delay(durationMillis.toLong())
-        println("📌 [SplashScreen] Splash terminado")
     }
 
     Box(
@@ -52,60 +44,54 @@ fun SplashScreen(durationMillis: Int = 4000) {
             .background(PrimaryColor),
         contentAlignment = Alignment.Center
     ) {
-        // Contenido central animado
+        // Contenido central
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-
             modifier = Modifier
                 .offset(y = offsetY.value.dp)
-                .padding(bottom = 10.dp)
+                .padding(horizontal = 24.dp)
         ) {
-            // Logo
-            if (logoImage != null) {
-                PlatformImageComposable(
-                    image = logoImage,
-                    modifier = Modifier
-                        .fillMaxWidth(0.45f)
-                        .background(Color.Transparent)
-                        .height(46.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
+            // Nombre de la app
             Text(
                 text = "GMR Stock",
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
+                fontSize = 52.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = AccentColor,
                 modifier = Modifier.alpha(alphaAnim.value)
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            // Lema
             Text(
                 text = "La inteligencia de tu almacén",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = SecondaryColor,
                 modifier = Modifier.alpha(alphaAnim.value)
             )
             Spacer(modifier = Modifier.height(40.dp))
+            // Barra de progreso
             CircularProgressIndicator(
-                modifier = Modifier.alpha(alphaAnim.value),
-                color = Color.White,
-                strokeWidth = 6.dp
+                color = AccentColor,
+                strokeWidth = 5.dp,
+                modifier = Modifier
+                    .size(48.dp)
+                    .alpha(alphaAnim.value)
             )
         }
 
-        // Texto inferior
+        // Pie de página discreto
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 26.dp),
+                .padding(bottom = 20.dp),
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Desarrollado por Alejandro II",
                 fontSize = 14.sp,
-                color = Color.White,
+                fontWeight = FontWeight.Normal,
+                color = AccentColor.copy(alpha = 0.7f),
                 modifier = Modifier.alpha(alphaAnim.value)
             )
         }

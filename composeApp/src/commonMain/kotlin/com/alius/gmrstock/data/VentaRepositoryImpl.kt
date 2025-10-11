@@ -142,4 +142,13 @@ class VentaRepositoryImpl(
             emptyList()
         }
     }
+
+    override suspend fun mostrarVentasDelAno(): List<Venta> {
+        val ahora = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val inicioDelAno = LocalDateTime(ahora.year, 1, 1, 0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+        val finDelAno = Clock.System.now()
+        return obtenerVentasFiltradas(inicio = inicioDelAno, fin = finDelAno)
+    }
+
 }

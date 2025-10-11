@@ -23,53 +23,51 @@ import com.alius.gmrstock.data.getRatioRepository
 import com.alius.gmrstock.domain.model.Process
 import com.alius.gmrstock.domain.model.Ratio
 import com.alius.gmrstock.domain.model.User
-import com.alius.gmrstock.ui.components.ProcessItem
-import com.alius.gmrstock.ui.components.RatioData
-import com.alius.gmrstock.ui.components.RatioProductionCard
-import com.alius.gmrstock.ui.components.generateRatioDataFromCollection
+import com.alius.gmrstock.ui.components.*
+import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
-import com.alius.gmrstock.core.utils.formatWeight // ⬅️ ¡IMPORTACIÓN AÑADIDA!
+import com.alius.gmrstock.core.utils.formatWeight
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProcessScreenContent(user: User, databaseUrl: String) {
-    // Repositorios
     val processRepository = remember(databaseUrl) { getProcessRepository(databaseUrl) }
     val ratioRepository = remember(databaseUrl) { getRatioRepository(databaseUrl) }
 
     // Estados
     var procesos by remember { mutableStateOf<List<Process>>(emptyList()) }
-    var ratios by remember { mutableStateOf<List<Ratio>>(emptyList()) }
+    var ratiosDelMes by remember { mutableStateOf<List<Ratio>>(emptyList()) }
+    var ratiosDelAno by remember { mutableStateOf<List<Ratio>>(emptyList()) }
     var ratioDataList by remember { mutableStateOf<List<RatioData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
-
-    // Estado derivado para calcular el total de kilos del mes.
-    val totalKilosMes by remember {
-        derivedStateOf {
-            // totalKilosMes es un número (Double o Int)
-            ratioDataList.sumOf { it.totalWeight }
-        }
-    }
+    var isAnnual by remember { mutableStateOf(false) } // Mes/Año
 
     val scope = rememberCoroutineScope()
 
-    // Cargar procesos y ratios
+    // --- Función para actualizar lista de datos del gráfico ---
+    fun updateRatioDataList() {
+        ratioDataList = if (isAnnual) generateRatioDataByMonth(ratiosDelAno)
+        else generateRatioDataFromCollection(ratiosDelMes)
+    }
+
+    // Total kilos derivado
+    val totalKilos by derivedStateOf { ratioDataList.sumOf { it.totalWeight } }
+
     LaunchedEffect(databaseUrl) {
         loading = true
         scope.launch {
             procesos = processRepository.listarProcesos()
-            ratios = ratioRepository.listarRatiosDelMes()
-            ratioDataList = generateRatioDataFromCollection(ratios)
+            ratiosDelMes = ratioRepository.listarRatiosDelMes()
+            ratiosDelAno = ratioRepository.listarRatiosDelAno()
+            updateRatioDataList()
             loading = false
         }
     }
 
     if (loading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                color = com.alius.gmrstock.ui.theme.PrimaryColor
-            )
+            CircularProgressIndicator(color = PrimaryColor)
         }
     } else {
         LazyColumn(
@@ -78,23 +76,19 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // --- Bloque superior: título y subtítulo procesos (sin cambios) ---
+            // --- Título principal ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(50.dp))
-
                     Text(
                         text = "Lotes en progreso",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
 
-            // --- Lista de procesos (sin cambios) ---
+            // --- Lista de procesos ---
             item {
                 if (procesos.isEmpty()) {
                     Box(
@@ -121,9 +115,7 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
                                         imageVector = Icons.Filled.HourglassEmpty,
                                         contentDescription = "Sin procesos",
@@ -134,7 +126,6 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                                     Text(
                                         text = "No hay procesos activos",
                                         fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
                                 }
@@ -146,50 +137,58 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(procesos) { proceso ->
-                            ProcessItem(proceso = proceso)
-                        }
+                        items(procesos) { proceso -> ProcessItem(proceso = proceso) }
                     }
                 }
             }
 
-            // --- Bloque producción del mes (MODIFICADO) ---
+            // --- Bloque de producción ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Título Principal
-                    Text(
-                        text = "Producción del mes",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Gráfico producción",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
 
-                    Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.width(24.dp)) // separación entre título y botones
+
+                        MySegmentedButton(
+                            options = listOf("Mes", "Año"),
+                            selectedIndex = if (isAnnual) 1 else 0,
+                            onSelect = {
+                                isAnnual = it == 1
+                                updateRatioDataList()
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        // ⬅️ APLICACIÓN DEL FORMATO DE PESO
-                        text = "Total kilos: ${formatWeight(totalKilosMes)} Kg",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Medium
-                        ),
+                        text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
                         color = TextSecondary
                     )
-
-                    // Spacer(modifier = Modifier.height(12.dp)) // Espacio antes del gráfico
                 }
             }
 
-            // --- Gráfica ratios (sin cambios) ---
+            // --- Gráfico ---
             item {
+                // 🔹 Usamos safe copy dentro del Card
                 RatioProductionCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(250.dp),
-                    ratioDataList = ratioDataList
+                    ratioDataList = ratioDataList,
+                    isAnnual = isAnnual
                 )
             }
         }

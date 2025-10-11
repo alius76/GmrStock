@@ -1,5 +1,6 @@
 package com.alius.gmrstock.data
 
+import com.alius.gmrstock.data.firestore.buildQueryRatiosDelAnoActual
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelDia
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelMesActual
 import com.alius.gmrstock.data.mappers.RatioMapper
@@ -108,4 +109,48 @@ class RatioRepositoryImpl(
             Napier.d { "⏹️ Fin de la carga de ratios del día" }
         }
     }
+
+    override suspend fun listarRatiosDelAno(): List<Ratio> = withContext(Dispatchers.IO) {
+        Napier.d { "🌐 Iniciando listado de ratios del año desde: $databaseUrl" }
+
+        try {
+            val query = buildQueryRatiosDelAnoActual()
+            Napier.d { "📤 Query Firestore:\n$query" }
+
+            val response: HttpResponse = client.post(databaseUrl) {
+                headers { append("Content-Type", "application/json") }
+                setBody(query)
+            }
+
+            val responseText = response.bodyAsText()
+            Napier.d { "📥 Respuesta cruda (primeros 500 chars):\n${responseText.take(500)}" }
+
+            val rootArray = json.parseToJsonElement(responseText).jsonArray
+            val ratios = rootArray.mapNotNull { element ->
+                try {
+                    val fields = element.jsonObject["document"]?.jsonObject
+                        ?.get("fields")?.jsonObject
+
+                    fields?.let {
+                        val ratio = RatioMapper.fromFirestore(it)
+                        Napier.i { "📄 Ratio parseado: ${ratio.ratioId} | ${ratio.ratioDate} | ${ratio.ratioTotalWeight}" }
+                        ratio
+                    }
+                } catch (e: Exception) {
+                    Napier.e(e) { "⚠️ Error parseando un ratio." }
+                    null
+                }
+            }
+
+            Napier.d { "✅ Total de ratios obtenidos: ${ratios.size}" }
+            ratios
+
+        } catch (e: Exception) {
+            Napier.e(e) { "❌ Error en listarRatiosDelAno." }
+            emptyList()
+        } finally {
+            Napier.d { "⏹️ Fin de la carga de ratios del año" }
+        }
+    }
+
 }

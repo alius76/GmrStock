@@ -5,15 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Scale
-import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -22,7 +20,6 @@ import com.alius.gmrstock.domain.model.ClientGroupSell
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
-import com.alius.gmrstock.ui.theme.TextPrimary
 import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
@@ -79,7 +76,7 @@ fun ClientGroupSellCard(
 
                 // Métrica 2: BigBags Vendidos ⬅️ USANDO EL DATO REAL
                 MetricItem(
-                    icon = Icons.Default.Inventory,
+                    icon = Icons.Outlined.ShoppingBag,
                     label = "BigBags",
                     value = group.totalBigBags.toString(), // ⬅️ ¡Dato real!
                     iconColor = Color(0xFF00BFA5)

@@ -518,3 +518,48 @@ fun buildQueryHistorialDeHoy(): String {
     }
     """.trimIndent()
 }
+
+fun buildQueryRatiosDelAnoActual(): String {
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    val year = now.year
+
+    // Primer día del año a medianoche
+    val inicioDelAno = LocalDateTime(year, 1, 1, 0, 0)
+        .toInstant(TimeZone.currentSystemDefault())
+
+    // Primer día del siguiente año a medianoche
+    val inicioAnoSiguiente = LocalDateTime(year + 1, 1, 1, 0, 0)
+        .toInstant(TimeZone.currentSystemDefault())
+
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "ratio" }],
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "GREATER_THAN_OR_EQUAL",
+                                "value": { "timestampValue": "$inicioDelAno" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "LESS_THAN",
+                                "value": { "timestampValue": "$inicioAnoSiguiente" }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "ratioDate" }, "direction": "ASCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
+}

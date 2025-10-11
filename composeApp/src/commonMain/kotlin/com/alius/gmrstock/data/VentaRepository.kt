@@ -9,6 +9,7 @@ interface VentaRepository {
     suspend fun mostrarVentasPorCliente(cliente: String): List<Venta>
     suspend fun mostrarVentasDelMesPorCliente(cliente: String): List<Venta>
     suspend fun mostrarVentasDelMes(): List<Venta>
+    suspend fun mostrarVentasDelAno(): List<Venta>
 }
 
 expect fun getVentaRepository(databaseUrl: String): VentaRepository
