@@ -8,8 +8,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
@@ -31,7 +33,6 @@ actual fun VentaChartCard(
     if (data.isEmpty()) return
     val textMeasurer = rememberTextMeasurer()
 
-    // ✅ Se reinicia si cambia la data (para evitar crash al cambiar entre Mes/Año)
     var selectedIndex by remember(data) { mutableStateOf<Int?>(null) }
 
     val maxWeight = if (isAnnual) 1_000_000f else 100_000f
@@ -63,12 +64,13 @@ actual fun VentaChartCard(
                             if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
                         val idx =
                             ((tapOffset.x - leftPadding + stepX / 2) / stepX).toInt()
-                        selectedIndex = idx.coerceIn(0, data.size - 1)
+                        selectedIndex = idx.coerceIn(0, data.lastIndex)
                     }
                 }
         ) {
             val leftPadding = 60f
-            val bottomPadding = 40f
+            // ⭐️ AJUSTE 1: Aumentamos el padding interno para unificar con RatioProductionCard
+            val bottomPadding = 60f
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val stepX =
@@ -76,7 +78,7 @@ actual fun VentaChartCard(
             val scaleY = chartHeight / maxWeight
             val textStyle = TextStyle(color = Color.Black, fontSize = 12.sp)
 
-            // --- Eje Y ---
+            // --- Eje Y (sin cambios) ---
             yLabels.forEachIndexed { index, value ->
                 val y = chartHeight - value * scaleY
                 drawLine(
@@ -96,7 +98,7 @@ actual fun VentaChartCard(
                 )
             }
 
-            // --- Área bajo la curva ---
+            // --- Área, Línea principal, Puntos, y Tooltip (sin cambios en la lógica) ---
             val areaPath = Path().apply {
                 moveTo(leftPadding, chartHeight - data.first().totalWeight * scaleY)
                 data.forEachIndexed { index, d ->
@@ -115,7 +117,6 @@ actual fun VentaChartCard(
                 )
             )
 
-            // --- Línea principal ---
             for (i in 0 until data.size - 1) {
                 val x1 = leftPadding + i * stepX
                 val y1 = chartHeight - data[i].totalWeight * scaleY
@@ -131,16 +132,14 @@ actual fun VentaChartCard(
                 )
             }
 
-            // --- Puntos ---
             data.forEachIndexed { index, d ->
                 val x = leftPadding + index * stepX
                 val y = chartHeight - d.totalWeight * scaleY
                 drawCircle(color = PrimaryColor, radius = 6f, center = Offset(x, y))
             }
 
-            // --- Tooltip ---
             selectedIndex?.let { idx ->
-                val safeIdx = idx.coerceIn(0, data.lastIndex) // ✅ Protección segura
+                val safeIdx = idx.coerceIn(0, data.lastIndex)
                 val x = leftPadding + safeIdx * stepX
 
                 drawLine(
@@ -151,46 +150,68 @@ actual fun VentaChartCard(
                     pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 )
 
-                val tooltipText = if (isAnnual)
-                    "Mes ${data[safeIdx].day}: ${formatWeight(data[safeIdx].totalWeight)} Kg"
-                else
-                    "Día ${data[safeIdx].day}: ${formatWeight(data[safeIdx].totalWeight)} Kg"
+                val tooltipTitle = if (isAnnual) "Mes ${data[safeIdx].day}" else "Día ${data[safeIdx].day}"
+                val tooltipValue = "${formatWeight(data[safeIdx].totalWeight)} Kg"
 
-                val measured = textMeasurer.measure(tooltipText, textStyle)
-                val rectTop = chartHeight - data[safeIdx].totalWeight * scaleY - measured.size.height - 8.dp.toPx()
+                val titleStyle = textStyle.copy(color = PrimaryColor, fontSize = 13.sp)
+                val valueStyle = textStyle.copy(color = PrimaryColor, fontSize = 13.sp)
 
-                drawRect(
+                val line1 = textMeasurer.measure(tooltipTitle, titleStyle)
+                val line2 = textMeasurer.measure(tooltipValue, valueStyle)
+
+                val tooltipWidth = maxOf(line1.size.width, line2.size.width) + 20.dp.toPx()
+                val tooltipHeight = line1.size.height + line2.size.height + 16.dp.toPx()
+
+                val tooltipX = leftPadding + (chartWidth - tooltipWidth) / 2f
+                val tooltipY = chartHeight / 3f
+
+                drawRoundRect(
                     color = Color.White,
-                    topLeft = Offset(
-                        x - measured.size.width / 2 - 4.dp.toPx(),
-                        rectTop
-                    ),
-                    size = androidx.compose.ui.geometry.Size(
-                        measured.size.width + 8.dp.toPx(),
-                        measured.size.height + 4.dp.toPx()
-                    )
+                    topLeft = Offset(tooltipX, tooltipY),
+                    size = androidx.compose.ui.geometry.Size(tooltipWidth, tooltipHeight),
+                    cornerRadius = CornerRadius(10.dp.toPx())
+                )
+                drawRoundRect(
+                    color = Color.LightGray,
+                    topLeft = Offset(tooltipX, tooltipY),
+                    size = androidx.compose.ui.geometry.Size(tooltipWidth, tooltipHeight),
+                    cornerRadius = CornerRadius(10.dp.toPx()),
+                    style = Stroke(width = 1.dp.toPx())
                 )
 
                 drawText(
                     textMeasurer,
-                    tooltipText,
-                    Offset(
-                        x - measured.size.width / 2,
-                        rectTop + 2.dp.toPx()
+                    tooltipTitle,
+                    topLeft = Offset(
+                        tooltipX + (tooltipWidth - line1.size.width) / 2,
+                        tooltipY + 4.dp.toPx()
                     ),
-                    textStyle
+                    style = titleStyle
+                )
+                drawText(
+                    textMeasurer,
+                    tooltipValue,
+                    topLeft = Offset(
+                        tooltipX + (tooltipWidth - line2.size.width) / 2,
+                        tooltipY + line1.size.height + 6.dp.toPx()
+                    ),
+                    style = valueStyle
                 )
             }
 
-            // --- Eje X ---
+            // --- Eje X (Ajustado) ---
             val firstLabel =
                 if (isAnnual) "Mes ${data.first().day}" else "Día ${data.first().day}"
             val lastLabel =
                 if (isAnnual) "Mes ${data.last().day}" else "Día ${data.last().day}"
+
+            // ⭐️ AJUSTE 2: Usamos 10.dp.toPx() para unificar la distancia vertical
+            val xLabelY = chartHeight + 10.dp.toPx()
+
             drawText(
                 textMeasurer,
                 firstLabel,
-                Offset(leftPadding, chartHeight + 40f),
+                Offset(leftPadding, xLabelY),
                 textStyle
             )
             val lastMeasured = textMeasurer.measure(lastLabel, textStyle)
@@ -199,7 +220,7 @@ actual fun VentaChartCard(
                 lastLabel,
                 Offset(
                     leftPadding + chartWidth - lastMeasured.size.width,
-                    chartHeight + 40f
+                    xLabelY
                 ),
                 textStyle
             )

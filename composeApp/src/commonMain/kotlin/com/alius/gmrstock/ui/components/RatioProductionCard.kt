@@ -49,12 +49,19 @@ fun generateRatioDataFromCollection(ratios: List<Ratio>): List<RatioData> {
     return result
 }
 
-/** GENERACIÓN DE DATOS MENSUALES (ANUAL) */
+/** GENERACIÓN DE DATOS MENSUALES (ANUAL) — Incluye meses sin datos */
 fun generateRatioDataByMonth(ratios: List<Ratio>): List<RatioData> {
-    if (ratios.isEmpty()) return emptyList()
+    if (ratios.isEmpty()) {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        return (1..now.monthNumber).map { month ->
+            RatioData(day = month, totalWeight = 0)
+        }
+    }
 
-    val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
-    val monthlyMap = mutableMapOf<Int, Int>() // key = mes con datos
+    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    val currentYear = now.year
+    val currentMonth = now.monthNumber
+    val monthlyMap = mutableMapOf<Int, Int>()
 
     ratios.forEach { ratio ->
         if (ratio.ratioDate <= 0L) return@forEach
@@ -70,15 +77,15 @@ fun generateRatioDataByMonth(ratios: List<Ratio>): List<RatioData> {
         if (date.year == currentYear) {
             val weight = ratio.ratioTotalWeight.toIntOrNull() ?: 0
             monthlyMap[date.monthNumber] = (monthlyMap[date.monthNumber] ?: 0) + weight
-            println("📅 Mes ${date.monthNumber}: agregando $weight kg, total acumulado: ${monthlyMap[date.monthNumber]}")
         }
     }
 
-    val result = monthlyMap.entries
-        .sortedBy { it.key }
-        .map { RatioData(day = it.key, totalWeight = it.value) }
+    // 🔹 Incluimos todos los meses hasta el actual, con 0 si no tienen datos
+    val result = (1..currentMonth).map { month ->
+        RatioData(day = month, totalWeight = monthlyMap[month] ?: 0)
+    }
 
-    println("📊 Lista final de RatioData anual (solo meses con datos):")
+    println("📊 Lista final de RatioData anual (meses hasta $currentMonth):")
     result.forEach { println("Mes ${it.day}: ${it.totalWeight} kg") }
 
     return result

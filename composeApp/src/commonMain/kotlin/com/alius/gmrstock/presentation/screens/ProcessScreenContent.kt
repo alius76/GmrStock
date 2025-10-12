@@ -82,7 +82,9 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                     Spacer(modifier = Modifier.height(50.dp))
                     Text(
                         text = "Lotes en progreso",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.secondary
                     )
                 }
@@ -154,7 +156,9 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                     ) {
                         Text(
                             text = "Gráfico producción",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.secondary
                         )
 

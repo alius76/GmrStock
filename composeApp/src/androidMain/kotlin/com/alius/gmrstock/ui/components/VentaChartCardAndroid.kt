@@ -1,6 +1,5 @@
 package com.alius.gmrstock.ui.components
 
-import android.graphics.Paint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,13 +9,24 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.core.utils.formatWeight
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.sp
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 actual fun VentaChartCard(
     modifier: Modifier,
@@ -37,8 +47,11 @@ actual fun VentaChartCard(
         else "${(it / 1000).toInt()}K"
     }
 
-    // ✅ selectedIndex se resetea cuando cambia la data
     var selectedIndex by remember(data) { mutableStateOf<Int?>(null) }
+
+    // ⭐️ NUEVO: Inicializar TextMeasurer y TextStyle para compatibilidad
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = TextStyle(color = Color.Black, fontSize = 12.sp)
 
     Card(
         modifier = modifier,
@@ -58,19 +71,19 @@ actual fun VentaChartCard(
                             if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
                         val idx =
                             ((tapOffset.x - leftPadding + stepX / 2) / stepX).toInt()
-                        selectedIndex = idx.coerceIn(0, data.size - 1)
+                        selectedIndex = idx.coerceIn(0, data.lastIndex)
                     }
                 }
         ) {
             val leftPadding = 60f
-            val bottomPadding = 40f
+            val bottomPadding = 60f // Mantenemos 60f para espacio
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val stepX =
                 if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
             val scaleY = chartHeight / maxWeight
 
-            // --- Eje Y ---
+            // --- Eje Y (Usando drawText) ---
             yLabels.forEachIndexed { index, value ->
                 val y = chartHeight - value * scaleY
                 drawLine(
@@ -78,18 +91,21 @@ actual fun VentaChartCard(
                     start = Offset(leftPadding, y),
                     end = Offset(leftPadding + chartWidth, y)
                 )
-                drawContext.canvas.nativeCanvas.drawText(
-                    yLabelStrings[index],
-                    0f,
-                    y,
-                    Paint().apply {
-                        textSize = 28f
-                        color = android.graphics.Color.BLACK
-                    }
+
+                // ⭐️ Reemplazamos nativeCanvas.drawText con drawText
+                val measured = textMeasurer.measure(yLabelStrings[index], textStyle)
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = yLabelStrings[index],
+                    topLeft = Offset(
+                        leftPadding - measured.size.width - 4.dp.toPx(),
+                        y - measured.size.height / 2 // Centrado vertical
+                    ),
+                    style = textStyle
                 )
             }
 
-            // --- Área bajo la curva ---
+            // --- Área y Línea Principal (Sin cambios estructurales) ---
             val areaPath = Path().apply {
                 moveTo(leftPadding, chartHeight - data.first().totalWeight * scaleY)
                 data.forEachIndexed { index, d ->
@@ -111,7 +127,6 @@ actual fun VentaChartCard(
                 )
             )
 
-            // --- Línea principal ---
             for (i in 0 until data.size - 1) {
                 val x1 = leftPadding + i * stepX
                 val y1 = chartHeight - data[i].totalWeight * scaleY
@@ -130,80 +145,104 @@ actual fun VentaChartCard(
                 )
             }
 
-            // --- Puntos ---
+            // --- Puntos (Sin cambios) ---
             data.forEachIndexed { index, d ->
                 val x = leftPadding + index * stepX
                 val y = chartHeight - d.totalWeight * scaleY
                 drawCircle(color = PrimaryColor, radius = 6f, center = Offset(x, y))
             }
 
-            // --- Tooltip ---
+            // --- Tooltip (Usando drawText) ---
             selectedIndex?.let { idx ->
-                val safeIdx = idx.coerceIn(0, data.lastIndex) // ✅ Protección segura
-                val x = leftPadding + safeIdx * stepX
+                val safeIdx = idx.coerceIn(0, data.lastIndex)
+                val xPoint = leftPadding + safeIdx * stepX
 
                 drawLine(
                     color = Color.Gray,
-                    start = Offset(x, 0f),
-                    end = Offset(x, chartHeight),
+                    start = Offset(xPoint, 0f),
+                    end = Offset(xPoint, chartHeight),
                     strokeWidth = 2f,
-                    pathEffect = PathEffect.dashPathEffect(
-                        floatArrayOf(10f, 10f),
-                        0f
-                    )
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 )
 
-                val tooltipText = if (isAnnual)
-                    "Mes ${data[safeIdx].day}: ${formatWeight(data[safeIdx].totalWeight)} Kg"
-                else
-                    "Día ${data[safeIdx].day}: ${formatWeight(data[safeIdx].totalWeight)} Kg"
+                val tooltipTitle = if (isAnnual) "Mes ${data[safeIdx].day}" else "Día ${data[safeIdx].day}"
+                val tooltipValue = "${formatWeight(data[safeIdx].totalWeight)} Kg"
 
-                val paint = Paint().apply {
-                    textSize = 32f
-                    color = android.graphics.Color.BLACK
-                    isFakeBoldText = true
-                }
-                val textWidth = paint.measureText(tooltipText)
-                val textHeight = paint.fontMetrics.bottom - paint.fontMetrics.top
+                val titleStyle = textStyle.copy(color = PrimaryColor, fontSize = 13.sp)
+                val valueStyle = textStyle.copy(color = PrimaryColor, fontSize = 13.sp)
 
-                drawRect(
+                // ⭐️ Usamos TextMeasurer para medir y dibujar
+                val line1 = textMeasurer.measure(tooltipTitle, titleStyle)
+                val line2 = textMeasurer.measure(tooltipValue, valueStyle)
+
+                val tooltipWidth = maxOf(line1.size.width, line2.size.width) + 20.dp.toPx()
+                val tooltipHeight = line1.size.height + line2.size.height + 16.dp.toPx()
+
+                val tooltipX = leftPadding + (chartWidth - tooltipWidth) / 2f
+                val tooltipY = chartHeight / 3f
+
+                drawRoundRect(
                     color = Color.White,
-                    topLeft = Offset(
-                        x - textWidth / 2 - 8f,
-                        chartHeight - data[safeIdx].totalWeight * scaleY - textHeight - 12f
-                    ),
-                    size = androidx.compose.ui.geometry.Size(
-                        textWidth + 16f,
-                        textHeight + 8f
-                    )
+                    topLeft = Offset(tooltipX, tooltipY),
+                    size = androidx.compose.ui.geometry.Size(tooltipWidth, tooltipHeight),
+                    cornerRadius = CornerRadius(10.dp.toPx())
                 )
 
-                drawContext.canvas.nativeCanvas.drawText(
-                    tooltipText,
-                    x - textWidth / 2,
-                    chartHeight - data[safeIdx].totalWeight * scaleY - 12f,
-                    paint
+                drawRoundRect(
+                    color = Color.LightGray,
+                    topLeft = Offset(tooltipX, tooltipY),
+                    size = androidx.compose.ui.geometry.Size(tooltipWidth, tooltipHeight),
+                    cornerRadius = CornerRadius(10.dp.toPx()),
+                    style = Stroke(width = 1.dp.toPx())
+                )
+
+                // ⭐️ Usamos drawText
+                drawText(
+                    textMeasurer,
+                    tooltipTitle,
+                    topLeft = Offset(
+                        tooltipX + (tooltipWidth - line1.size.width) / 2,
+                        tooltipY + 4.dp.toPx()
+                    ),
+                    style = titleStyle
+                )
+                drawText(
+                    textMeasurer,
+                    tooltipValue,
+                    topLeft = Offset(
+                        tooltipX + (tooltipWidth - line2.size.width) / 2,
+                        tooltipY + line1.size.height + 6.dp.toPx()
+                    ),
+                    style = valueStyle
                 )
             }
 
-            // --- Eje X ---
+            // --- Eje X (Usando drawText) ---
             val firstLabel =
                 if (isAnnual) "Mes ${data.first().day}" else "Día ${data.first().day}"
             val lastLabel =
                 if (isAnnual) "Mes ${data.last().day}" else "Día ${data.last().day}"
-            drawContext.canvas.nativeCanvas.drawText(
+
+            // ⭐️ Usamos la coordenada que funciona para RatioProductionCard
+            val xLabelY = chartHeight + 10.dp.toPx()
+
+            drawText(
+                textMeasurer,
                 firstLabel,
-                leftPadding,
-                chartHeight + 40f,
-                Paint().apply { textSize = 28f; color = android.graphics.Color.BLACK }
+                Offset(leftPadding, xLabelY),
+                textStyle
             )
-            val lastTextWidth = Paint().apply { textSize = 28f }
-                .measureText(lastLabel)
-            drawContext.canvas.nativeCanvas.drawText(
+
+            // ⭐️ Usamos TextMeasurer para medir el ancho del último label
+            val lastMeasured = textMeasurer.measure(lastLabel, textStyle)
+            drawText(
+                textMeasurer,
                 lastLabel,
-                leftPadding + chartWidth - lastTextWidth,
-                chartHeight + 40f,
-                Paint().apply { textSize = 28f; color = android.graphics.Color.BLACK }
+                Offset(
+                    leftPadding + chartWidth - lastMeasured.size.width,
+                    xLabelY
+                ),
+                textStyle
             )
         }
     }
