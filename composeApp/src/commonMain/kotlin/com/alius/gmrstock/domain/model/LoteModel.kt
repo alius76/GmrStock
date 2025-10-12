@@ -18,6 +18,8 @@ data class LoteModel(
     val bigBag: List<BigBags>,
     val booked: Cliente? = null,
     val dateBooked: Instant?,
+    val bookedByUser: String? = null, // Usuario que realiza la reserva
+    val bookedRemark: String? = null,  // Observaciones de la reserva
     val remark: String,
     val certificateOk: Boolean = false,
     val createdAt: Instant?

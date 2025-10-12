@@ -25,7 +25,10 @@ interface LoteRepository {
     suspend fun updateLoteBooked(
         loteId: String,
         cliente: Cliente?,
-        dateBooked: Instant?
+        dateBooked: Instant?,
+        bookedByUser: String? = null,
+        bookedRemark: String? = null
+
     ): Boolean
 }
 

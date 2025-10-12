@@ -439,42 +439,47 @@ fun buildPatchBodyForRemark(newRemark: String): String {
 }
 
 /**
- * Construye el cuerpo JSON necesario para actualizar el campo `booked`
+ * Construye el cuerpo JSON necesario para actualizar el campo `booked` y campos relacionados
  * en Firestore usando el método PATCH.
  */
 fun buildPatchBodyForBooked(
     cliente: Cliente?,
-    dateBooked: Instant?
+    dateBooked: Instant?,
+    bookedByUser: String? = "",
+    bookedRemark: String? = ""
 ): String {
     return buildJsonObject {
         putJsonObject("fields") {
-            // booked (objeto Cliente)
+            // booked (Cliente)
             if (cliente != null) {
                 putJsonObject("booked") {
                     putJsonObject("mapValue") {
                         putJsonObject("fields") {
-                            putJsonObject("cliNombre") {
-                                put("stringValue", cliente.cliNombre)
-                            }
-                            putJsonObject("cliObservaciones") {
-                                put("stringValue", cliente.cliObservaciones)
-                            }
+                            putJsonObject("cliNombre") { put("stringValue", cliente.cliNombre) }
+                            putJsonObject("cliObservaciones") { put("stringValue", cliente.cliObservaciones) }
                         }
                     }
                 }
+            } else {
+                putJsonObject("booked") { put("nullValue", null) }
             }
-            // Si cliente es null, NO incluimos booked en 'fields' → Firestore eliminará si está en updateMask
 
-            // dateBooked (Instant -> timestampValue)
-            if (dateBooked != null) {
-                putJsonObject("dateBooked") {
+            // dateBooked
+            putJsonObject("dateBooked") {
+                if (dateBooked != null) {
                     put("timestampValue", dateBooked.toString())
+                } else {
+                    put("nullValue", null)
                 }
             }
-            // Si dateBooked es null, NO lo incluimos → Firestore eliminará si está en updateMask
+
+            // bookedByUser y bookedRemark siempre presentes
+            putJsonObject("bookedByUser") { put("stringValue", bookedByUser ?: "") }
+            putJsonObject("bookedRemark") { put("stringValue", bookedRemark ?: "") }
         }
     }.toString()
 }
+
 
 fun buildQueryHistorialDeHoy(): String {
     val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())

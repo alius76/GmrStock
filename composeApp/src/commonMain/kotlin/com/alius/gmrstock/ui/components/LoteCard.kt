@@ -28,7 +28,7 @@ import com.alius.gmrstock.domain.model.*
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.ReservedColor
 import com.alius.gmrstock.core.utils.formatInstant
-import com.alius.gmrstock.core.utils.formatWeight // ⬅️ ¡IMPORTACIÓN AÑADIDA!
+import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getLoteRepository
 import kotlinx.coroutines.CoroutineScope
@@ -48,7 +48,9 @@ fun LoteCard(
     onViewBigBags: (List<BigBags>) -> Unit,
     databaseUrl: String,
     onRemarkUpdated: (LoteModel) -> Unit,
-    clientRepository: ClientRepository
+    clientRepository: ClientRepository,
+    currentUserEmail: String
+    // -----------------------------------------------------------
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
     var showCertificadoDialog by remember { mutableStateOf(false) }
@@ -56,15 +58,17 @@ fun LoteCard(
     var showRemarkDialog by remember { mutableStateOf(false) }
     var showAddRemarkDialog by remember { mutableStateOf(false) }
 
-    // Conversión segura del String a Number para el formateo ⬅️ ¡AÑADIDO!
     val totalWeightNumber = lote.totalWeight.toDoubleOrNull() ?: 0.0
 
-    // Siempre usamos el valor actual del lote
+    // Estado para la observación general (no de reserva)
     var currentRemarkText by remember { mutableStateOf(lote.remark) }
+
+    // ⬇️ ESTADO PARA LA OBSERVACIÓN DE RESERVA ⬇️
+    var currentBookedRemark by remember { mutableStateOf(lote.bookedRemark ?: "") }
+    // ------------------------------------------
 
     val loteRepository = remember { getLoteRepository(databaseUrl) }
 
-    // ❌ NO usamos remember(lote), solo evaluamos el valor actual
     val hasRemark = lote.remark.isNotBlank()
 
     Card(
@@ -90,7 +94,7 @@ fun LoteCard(
                 // Número del lote más grande y centrado
                 Text(
                     text = lote.number,
-                    style = MaterialTheme.typography.headlineMedium, // ⬆️ Más grande y centrado
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = PrimaryColor,
                     textAlign = TextAlign.Center,
@@ -102,12 +106,15 @@ fun LoteCard(
                 // Botones debajo, organizados en una fila
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly, // Espacio uniforme entre los botones
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     // Reservado
                     IconButton(
-                        onClick = { showReservedDialog = true },
+                        onClick = {
+                            currentBookedRemark = lote.bookedRemark ?: "" // ⬅️ Inicializamos el estado antes de abrir
+                            showReservedDialog = true
+                        },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
@@ -174,7 +181,7 @@ fun LoteCard(
             } // Fin de Column(Cabecera)
 
             Spacer(modifier = Modifier.height(12.dp))
-            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp) // ⬅️ DIVIDER AÑADIDO
+            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
             // 2. BLOQUE DE DETALLES
@@ -184,7 +191,6 @@ fun LoteCard(
                     DetailRow("Fecha", formatInstant(lote.date))
                     DetailRow("Ubicación", lote.location)
                     DetailRow("BigBags", lote.count.toString())
-                    // ⬅️ FORMATO DE PESO APLICADO
                     DetailRow("Peso total", "${formatWeight(totalWeightNumber)} Kg", PrimaryColor)
                 }
 
@@ -220,31 +226,71 @@ fun LoteCard(
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis, // ✅ acorta si no entra
+                                overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
                 }
             }
-
         }
     }
 
-    // --- Diálogos Observación ---
+    // --- Función auxiliar para mostrar información no editable ---
+    @Composable
+    fun InfoCard(label: String, value: String) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+            }
+        }
+    }
+    // -------------------------------------------------------------
+
+    // --- Diálogos Observación General ---
     if (showRemarkDialog) {
         val isChanged = currentRemarkText.trim() != lote.remark.trim()
 
         AlertDialog(
             onDismissRequest = { showRemarkDialog = false },
             title = {
-                Text(
-                    "Observación del Lote ${lote.number}",
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryColor
-                )
+                // ✅ MODIFICACIÓN: Contenedor para centrar el título en el Dialog
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center // Alinea el contenido (Column) al centro
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Observación del Lote",
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = lote.number, // El número de lote en una segunda línea
+                            fontWeight = FontWeight.ExtraBold, // Opcional: hacerlo más destacado
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             },
             text = {
                 OutlinedTextField(
+                    // ... (El resto del TextField es igual)
                     value = currentRemarkText,
                     onValueChange = { currentRemarkText = it },
                     label = { Text("Editar observación") },
@@ -261,6 +307,7 @@ fun LoteCard(
                 )
             },
             confirmButton = {
+                // ... (confirmButton sigue siendo igual)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -308,18 +355,35 @@ fun LoteCard(
         )
     }
 
+// --- Diálogo Añadir Observación (Modificado) ---
     if (showAddRemarkDialog) {
         AlertDialog(
             onDismissRequest = { showAddRemarkDialog = false },
             title = {
-                Text(
-                    "Añadir observación",
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryColor
-                )
+                // ✅ MODIFICACIÓN: Contenedor para centrar el título en el Dialog
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center // Alinea el contenido (Column) al centro
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Observación del Lote",
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = lote.number,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             },
             text = {
                 OutlinedTextField(
+                    // ... (El resto del TextField es igual)
                     value = currentRemarkText,
                     onValueChange = { currentRemarkText = it },
                     label = { Text("Escribe tu observación") },
@@ -385,7 +449,7 @@ fun LoteCard(
         )
     }
 
-    // --- Diálogo Certificado ---
+    // --- Diálogo Certificado (Sin cambios necesarios) ---
     if (showCertificadoDialog && certificado != null) {
         Dialog(onDismissRequest = { showCertificadoDialog = false }) {
             Card(
@@ -479,10 +543,8 @@ fun LoteCard(
                                     }
                                 }
 
-                                // 🔹 Mostrar rango exactamente como en la base de datos
                                 val rangoTexto = parametro.rango?.let { rango ->
                                     if (rango.valorMin != null && rango.valorMax != null) {
-                                        // Mostrar como Int si es entero, mantener Double si tiene decimales
                                         val min = if (rango.valorMin % 1.0 == 0.0) rango.valorMin.toInt() else rango.valorMin
                                         val max = if (rango.valorMax % 1.0 == 0.0) rango.valorMax.toInt() else rango.valorMax
                                         "Rango: ($min - $max ${parametro.unidad})"
@@ -513,50 +575,72 @@ fun LoteCard(
     }
 
 
-    // DIALOG DE RESERVAS
+    // DIALOG DE RESERVAS COMPLETO (versión corregida)
     if (showReservedDialog) {
-        // Estado independiente para el cliente seleccionado
+        // 1. ESTADOS Y ALMACENAMIENTO DE VALORES ORIGINALES
         var selectedCliente by remember { mutableStateOf(lote.booked) }
-        val observaciones = selectedCliente?.cliObservaciones ?: ""
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
-
-        // Fecha editable si no hay reserva
         var fechaEditable by remember { mutableStateOf(lote.booked == null) }
 
-        var clientesList by remember { mutableStateOf<List<Cliente>>(emptyList()) }
-        LaunchedEffect(Unit) {
-            clientesList = clientRepository.getAllClientsOrderedByName()
-            println("NAPIER: clientes cargados: $clientesList")
+        // Observaciones sincronizadas
+        LaunchedEffect(lote.id) {
+            currentBookedRemark = lote.bookedRemark?.trim() ?: ""
         }
 
+        val originalRemarkClean: String? = remember(lote.id) {
+            val remarkFromLote = lote.bookedRemark?.trim()?.ifBlank { null }
+            val remarkFromState = currentBookedRemark.trim().ifBlank { null }
+            remarkFromLote ?: remarkFromState
+        }
+
+        val originalDateString = remember { formatInstant(lote.dateBooked) }
+        val originalCliente = remember { lote.booked }
+
+        var clientesList by remember { mutableStateOf<List<Cliente>>(emptyList()) }
+
+        LaunchedEffect(Unit) {
+            clientesList = clientRepository.getAllClientsOrderedByName()
+        }
+
+        // 2. DIÁLOGO
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
-            title = { Text("Reserva del Lote ${lote.number}", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+            title = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Reserva del Lote",
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = lote.number,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Mostrar reservado por solo si hay valor
+                    if (!lote.bookedByUser.isNullOrBlank()) {
+                        InfoCard(label = "Reservado por", value = lote.bookedByUser)
+                    }
 
-                    // Cliente y observaciones solo lectura si hay reserva
+                    // CLIENTE
                     if (lote.booked != null) {
                         OutlinedTextField(
                             value = selectedCliente?.cliNombre ?: "",
                             onValueChange = {},
                             label = { Text("Cliente") },
                             readOnly = true,
-                            enabled = false, // ❌ Deshabilitado visualmente
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        OutlinedTextField(
-                            value = observaciones,
-                            onValueChange = {},
-                            label = { Text("Observaciones") },
-                            readOnly = true,
-                            enabled = false, // ❌ Deshabilitado visualmente
+                            enabled = false,
                             colors = TextFieldDefaults.outlinedTextFieldColors(
                                 disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
@@ -565,7 +649,6 @@ fun LoteCard(
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else {
-                        // Nueva reserva → carrusel de clientes
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -582,7 +665,8 @@ fun LoteCard(
                                 ) {
                                     Text(
                                         text = cliente.cliNombre,
-                                        color = if (selectedCliente == cliente) MaterialTheme.colorScheme.onPrimary
+                                        color = if (selectedCliente == cliente)
+                                            MaterialTheme.colorScheme.onPrimary
                                         else MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                                     )
@@ -591,7 +675,26 @@ fun LoteCard(
                         }
                     }
 
-                    // Fecha editable con icono de borrar
+                    // OBSERVACIONES DE RESERVA
+                    OutlinedTextField(
+                        value = currentBookedRemark,
+                        onValueChange = { currentBookedRemark = it },
+                        label = { Text("Observaciones de reserva") },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp, max = 150.dp),
+                        singleLine = false,
+                        readOnly = lote.booked != null,
+                        enabled = lote.booked == null, // Igual que Cliente: si hay reserva, se deshabilita
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            focusedBorderColor = PrimaryColor,
+                            focusedLabelColor = PrimaryColor,
+                            cursorColor = PrimaryColor
+                        )
+                    )
+
+// FECHA
                     OutlinedTextField(
                         value = fecha,
                         onValueChange = { input ->
@@ -600,67 +703,71 @@ fun LoteCard(
                                 if (filtered.length <= 10) fecha = filtered
                             }
                         },
-                        label = {
-                            Text(
-                                "Fecha de reserva (DD-MM-YYYY)",
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                        label = { Text(
+                            "Fecha estimada (DD-MM-YYYY)",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                         },
                         singleLine = true,
                         readOnly = !fechaEditable,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
+                        enabled = fechaEditable, // Igual que Cliente: deshabilitada si no editable
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
                         trailingIcon = {
                             if (fecha.isNotBlank() || !fechaEditable) {
-                                IconButton(onClick = {
-                                    fecha = ""
-                                    fechaEditable = true
-                                }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Borrar fecha") // ✅ Icono más claro
+                                IconButton(onClick = { fecha = ""; fechaEditable = true }) {
+                                    Icon(Icons.Default.Clear, contentDescription = "Borrar fecha")
                                 }
                             }
                         },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                             focusedBorderColor = PrimaryColor,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            cursorColor = PrimaryColor,
                             focusedLabelColor = PrimaryColor,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            cursorColor = PrimaryColor
                         )
                     )
                 }
             },
             confirmButton = {
+                val isDateChanged = fecha.trim() != originalDateString.trim()
+                val isClientChanged = originalCliente != selectedCliente
+                val currentRemarkClean = currentBookedRemark.trim().ifBlank { null }
+                val isRemarkChanged = currentRemarkClean != originalRemarkClean
+                val isSaveEnabled = (selectedCliente != null || lote.booked != null) &&
+                        (isDateChanged || isRemarkChanged || isClientChanged)
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Botón Eliminar a la izquierda
+                    // Anular reserva
                     if (lote.booked != null || lote.dateBooked != null) {
                         TextButton(onClick = {
                             showReservedDialog = false
                             scope.launch {
-                                val success = loteRepository.updateLoteBooked(lote.id, null, null)
-                                if (success) onRemarkUpdated(lote.copy(booked = null, dateBooked = null))
+                                val success = loteRepository.updateLoteBooked(
+                                    loteId = lote.id,
+                                    cliente = null,
+                                    dateBooked = null,
+                                    bookedByUser = null,
+                                    bookedRemark = null
+                                )
+                                if (success) onRemarkUpdated(
+                                    lote.copy(booked = null, dateBooked = null, bookedByUser = null, bookedRemark = null)
+                                )
                                 snackbarHostState.showSnackbar(
-                                    if (success) "Reserva eliminada" else "Error al eliminar la reserva"
+                                    if (success) "Reserva anulada" else "Error al anular la reserva"
                                 )
                             }
-                        }) {
-                            Text("Anular", color = MaterialTheme.colorScheme.error)
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.width(1.dp)) // Mantener altura consistente si no hay botón eliminar
-                    }
+                        }) { Text("Anular", color = MaterialTheme.colorScheme.error) }
+                    } else Spacer(modifier = Modifier.width(1.dp))
 
-                    // Botones Cancelar y Guardar a la derecha
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { showReservedDialog = false }) {
-                            Text("Cancelar", color = PrimaryColor)
-                        }
+                        TextButton(onClick = { showReservedDialog = false }) { Text("Cancelar", color = PrimaryColor) }
                         TextButton(
                             onClick = {
                                 if (selectedCliente == null) {
@@ -689,20 +796,40 @@ fun LoteCard(
                                 }
 
                                 showReservedDialog = false
-                                val clienteToSave = selectedCliente?.copy(cliObservaciones = observaciones)
+
+                                // Usuario a guardar
+                                val userToSave = if (!lote.bookedByUser.isNullOrBlank()) lote.bookedByUser else currentUserEmail
+                                val remarkToSave = currentBookedRemark.trim().ifBlank { null }
+
                                 scope.launch {
-                                    val success = loteRepository.updateLoteBooked(lote.id, clienteToSave, parsedDate)
-                                    if (success) onRemarkUpdated(lote.copy(booked = clienteToSave, dateBooked = parsedDate))
-                                    snackbarHostState.showSnackbar(
-                                        if (success) "Reserva guardada" else "Error al guardar la reserva"
+                                    val success = loteRepository.updateLoteBooked(
+                                        loteId = lote.id,
+                                        cliente = selectedCliente,
+                                        dateBooked = parsedDate,
+                                        bookedByUser = userToSave,
+                                        bookedRemark = remarkToSave
                                     )
+                                    if (success) {
+                                        val updatedLote = lote.copy(
+                                            booked = selectedCliente,
+                                            dateBooked = parsedDate,
+                                            bookedByUser = userToSave,
+                                            bookedRemark = remarkToSave
+                                        )
+                                        onRemarkUpdated(updatedLote)
+                                        snackbarHostState.showSnackbar("Reserva guardada correctamente")
+                                    } else {
+                                        snackbarHostState.showSnackbar("Error al guardar la reserva")
+                                    }
                                 }
                             },
-                            enabled = selectedCliente != null
+                            enabled = isSaveEnabled
                         ) { Text("Guardar", color = PrimaryColor) }
                     }
                 }
             }
         )
     }
+
+
 }

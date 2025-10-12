@@ -123,24 +123,42 @@ class LoteRepositoryImpl(
     }
 
     // =========================================================================
-    // IMPLEMENTACIÓN DE ESCRITURA: UPDATE BOOKED
-    // =========================================================================
+// IMPLEMENTACIÓN DE ESCRITURA: UPDATE BOOKED
+// =========================================================================
     override suspend fun updateLoteBooked(
         loteId: String,
         cliente: Cliente?,
-        dateBooked: Instant?
+        dateBooked: Instant?,
+        bookedByUser: String?,
+        bookedRemark: String?
+
     ): Boolean = withContext(Dispatchers.IO) {
         val docUrl = "${buildDocumentBaseUrl()}/lote/$loteId"
-        val requestBody = buildPatchBodyForBooked(cliente, dateBooked)
+
+        // ⬇️ Pasar todos los campos al constructor del cuerpo JSON ⬇️
+        val requestBody = buildPatchBodyForBooked(cliente, dateBooked, bookedByUser, bookedRemark)
 
         try {
-            println("🌐 PATCH $docUrl?updateMask.fieldPaths=booked&updateMask.fieldPaths=dateBooked")
+            // Construir la URL con la máscara de actualización.
+            // TODOS los campos de reserva deben estar siempre en la máscara,
+            // ya sea para actualizar su valor o para borrarlo (enviando 'null').
+
+            // ❌ ELIMINAMOS la comprobación `if (bookedByUser != null)` etc.
+
+            println("🌐 PATCH $docUrl?updateMask.fieldPaths=booked&updateMask.fieldPaths=dateBooked&updateMask.fieldPaths=bookedByUser&updateMask.fieldPaths=bookedRemark")
             println("📤 Body: $requestBody")
 
             val response: HttpResponse = client.patch(docUrl) {
+                // Configurar la URL con TODOS los campos de reserva.
                 url.parameters.append("updateMask.fieldPaths", "booked")
                 url.parameters.append("updateMask.fieldPaths", "dateBooked")
-                headers { append("Content-Type", "application/json") }
+
+                // ✅ CORRECCIÓN: Incluimos los nuevos campos SIEMPRE en la máscara
+                url.parameters.append("updateMask.fieldPaths", "bookedByUser")
+                url.parameters.append("updateMask.fieldPaths", "bookedRemark")
+                // -----------------------------------------------------------
+
+                headers { append("Content-Type", ContentType.Application.Json) }
                 setBody(requestBody)
             }
 

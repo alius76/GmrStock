@@ -31,7 +31,8 @@ fun GroupMaterialBottomSheetContent(
     onViewBigBags: (List<BigBags>) -> Unit,
     databaseUrl: String,
     onRemarkUpdated: (LoteModel) -> Unit,
-    clientRepository: ClientRepository
+    clientRepository: ClientRepository,
+    currentUserEmail: String
 ) {
     val scope = rememberCoroutineScope()
     val loteRepository = remember { getLoteRepository(databaseUrl) }
@@ -138,7 +139,8 @@ fun GroupMaterialBottomSheetContent(
                                 lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
                                 onRemarkUpdated(updatedLote)
                             },
-                            clientRepository = clientRepository
+                            clientRepository = clientRepository,
+                            currentUserEmail = currentUserEmail
                         )
                     }
                 }

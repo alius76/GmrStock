@@ -20,6 +20,8 @@ data class LoteDto(
     val bigBag: List<BigBags> = emptyList(),
     val booked: Cliente? = null,
     val dateBooked: Long? = null,
+    val bookedByUser: String? = null, // Usuario que realiza la reserva
+    val bookedRemark: String? = null,  // Observaciones de la reserva
     val remark: String = "",
     val createdAt: Long? = null,
     val certificateOk: Boolean = false

@@ -58,6 +58,7 @@ class HomeScreenContent(
         var selectedGroupForSheet by remember { mutableStateOf<MaterialGroup?>(null) }
 
         val snackbarHostState = remember { SnackbarHostState() }
+        val currentUserEmail = remember(user.email) { user.email.substringBefore("@") }
 
         LaunchedEffect(databaseUrl) {
             isLoading = true
@@ -284,7 +285,9 @@ class HomeScreenContent(
                                     materialGroups = agruparPorMaterial(lotes)
                                 }
                             },
-                            clientRepository = clientRepository
+                            clientRepository = clientRepository,
+                            currentUserEmail = currentUserEmail
+
                         )
                     }
                 }

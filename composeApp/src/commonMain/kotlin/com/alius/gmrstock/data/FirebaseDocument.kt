@@ -28,6 +28,12 @@ data class FirebaseDocument(
             }
         }
 
+        // Función auxiliar para obtener un String value, siguiendo la estructura de Firebase REST
+        fun getStringValue(key: String): String? {
+            // Firestore REST API envuelve los valores primitivos en un objeto con la clave de tipo
+            return f[key]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content
+        }
+
         // Parsear la lista de BigBags
         val bigBagList = f["bigBag"]
             ?.jsonObject
@@ -63,6 +69,10 @@ data class FirebaseDocument(
                 )
             }
 
+        // Extraer los nuevos campos de la reserva (con la función auxiliar)
+        val bookedByUser = getStringValue("bookedByUser")
+        val bookedRemark = getStringValue("bookedRemark")
+
         // Crear el DTO completo
         return LoteDto(
             id = name.substringAfterLast("/"),
@@ -80,7 +90,13 @@ data class FirebaseDocument(
             dateBooked = parseTimestampToMillis("dateBooked"),
             remark = f["remark"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             createdAt = parseTimestampToMillis("createdAt"),
-            certificateOk = f["certificateOk"]?.jsonObject?.get("booleanValue")?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false
+            certificateOk = f["certificateOk"]?.jsonObject?.get("booleanValue")?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: false,
+            // ------------------------------------
+            // ⬇️ Asignación de los nuevos campos ⬇️
+            // ------------------------------------
+            bookedByUser = bookedByUser,
+            bookedRemark = bookedRemark
+            // ------------------------------------
         )
     }
 }
