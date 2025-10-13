@@ -46,14 +46,13 @@ class DatabaseSelectionScreen(
         val scope = rememberCoroutineScope()
 
         LaunchedEffect(Unit) {
-            delay(100) // espera inicial para renderizar estados
+            delay(100)
 
             scope.launch {
                 Napier.d { "Iniciando carga de ratios para la base de datos P07" }
                 val ratioRepository1 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB1_URL)
                 val ratios1 = ratioRepository1.listarRatiosDelDia()
                 val pesoTotalHoy1 = ratios1.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
-                // Conservamos la coerción original de 0.15f para simular un inicio de datos
                 progressDB1 = (pesoTotalHoy1 / produccionObjetivoKg).coerceIn(0.15f, 1f)
             }
 
@@ -62,7 +61,6 @@ class DatabaseSelectionScreen(
                 val ratioRepository2 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB2_URL)
                 val ratios2 = ratioRepository2.listarRatiosDelDia()
                 val pesoTotalHoy2 = ratios2.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
-                // Conservamos la coerción original de 0.15f para simular un inicio de datos
                 progressDB2 = (pesoTotalHoy2 / produccionObjetivoKg).coerceIn(0.15f, 1f)
             }
         }
@@ -72,12 +70,12 @@ class DatabaseSelectionScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Contenido principal (alineado en la parte superior)
+            // Contenido principal
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp)
-                    .padding(top = 80.dp), // Mueve el contenido principal hacia arriba
+                    .padding(top = 80.dp),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -139,27 +137,30 @@ class DatabaseSelectionScreen(
                         modifier = Modifier.weight(1f).defaultMinSize(minWidth = 140.dp).widthIn(max = 200.dp)
                     )
                 }
-            }
 
-            // 💡 Nuevo contenido en la parte inferior (Opción 1)
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter) // Alinea este Column abajo
-                    .padding(bottom = 24.dp, start = 24.dp, end = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Divider(
-                    modifier = Modifier.fillMaxWidth(0.6f).height(1.dp),
-                    color = DarkGrayColor.copy(alpha = 0.2f)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "GMR Stock v1.0.0 | © 2025",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Light,
-                    color = TextSecondary.copy(alpha = 0.7f)
-                )
+                // Este Spacer consume el espacio restante, empujando la versión hacia la parte inferior
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Información de la versión (Ajuste de altura agresivo)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // 💡 AJUSTE FINAL: Utilizamos 50.dp para garantizar que se vea
+                        .padding(bottom = 50.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Divider(
+                        modifier = Modifier.fillMaxWidth(0.6f).height(1.dp),
+                        color = DarkGrayColor.copy(alpha = 0.2f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "GMR Stock v1.0.0 | © 2025",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Light,
+                        color = TextSecondary.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
     }
