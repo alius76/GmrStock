@@ -76,7 +76,7 @@ actual fun VentaChartCard(
                 }
         ) {
             val leftPadding = 60f
-            val bottomPadding = 60f // Mantenemos 60f para espacio
+            val bottomPadding = 30.dp.toPx()
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val stepX =

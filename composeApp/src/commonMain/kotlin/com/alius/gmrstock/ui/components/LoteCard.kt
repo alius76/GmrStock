@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.automirrored.filled.ViewList
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -694,11 +696,12 @@ fun LoteCard(
                         )
                     )
 
-// FECHA
+                    // FECHA
                     OutlinedTextField(
                         value = fecha,
                         onValueChange = { input ->
                             if (fechaEditable) {
+                                // Mantenemos la lógica de filtrado para aceptar el guion
                                 val filtered = input.filter { it.isDigit() || it == '-' }
                                 if (filtered.length <= 10) fecha = filtered
                             }
@@ -711,7 +714,7 @@ fun LoteCard(
                         },
                         singleLine = true,
                         readOnly = !fechaEditable,
-                        enabled = fechaEditable, // Igual que Cliente: deshabilitada si no editable
+                        enabled = fechaEditable,
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         trailingIcon = {
                             if (fecha.isNotBlank() || !fechaEditable) {
@@ -720,6 +723,10 @@ fun LoteCard(
                                 }
                             }
                         },
+                        // --------------------------------------------------------
+                        // 💡 SOLUCIÓN PARA FORZAR EL TECLADO NUMÉRICO
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        // --------------------------------------------------------
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
@@ -830,6 +837,5 @@ fun LoteCard(
             }
         )
     }
-
 
 }

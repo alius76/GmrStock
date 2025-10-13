@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.alius.gmrstock.data.FirestoreUrls
@@ -54,6 +53,7 @@ class DatabaseSelectionScreen(
                 val ratioRepository1 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB1_URL)
                 val ratios1 = ratioRepository1.listarRatiosDelDia()
                 val pesoTotalHoy1 = ratios1.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
+                // Conservamos la coerción original de 0.15f para simular un inicio de datos
                 progressDB1 = (pesoTotalHoy1 / produccionObjetivoKg).coerceIn(0.15f, 1f)
             }
 
@@ -62,6 +62,7 @@ class DatabaseSelectionScreen(
                 val ratioRepository2 = RatioRepositoryImpl(httpClient, FirestoreUrls.DB2_URL)
                 val ratios2 = ratioRepository2.listarRatiosDelDia()
                 val pesoTotalHoy2 = ratios2.map { it.ratioTotalWeight.toFloatOrNull() ?: 0f }.sum()
+                // Conservamos la coerción original de 0.15f para simular un inicio de datos
                 progressDB2 = (pesoTotalHoy2 / produccionObjetivoKg).coerceIn(0.15f, 1f)
             }
         }
@@ -71,11 +72,13 @@ class DatabaseSelectionScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            // Contenido principal (alineado en la parte superior)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.Center,
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 80.dp), // Mueve el contenido principal hacia arriba
+                verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Título y subtítulo
@@ -97,7 +100,7 @@ class DatabaseSelectionScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(100.dp))
+                Spacer(modifier = Modifier.height(60.dp))
 
                 // Encabezado de selección
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -136,6 +139,27 @@ class DatabaseSelectionScreen(
                         modifier = Modifier.weight(1f).defaultMinSize(minWidth = 140.dp).widthIn(max = 200.dp)
                     )
                 }
+            }
+
+            // 💡 Nuevo contenido en la parte inferior (Opción 1)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter) // Alinea este Column abajo
+                    .padding(bottom = 24.dp, start = 24.dp, end = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Divider(
+                    modifier = Modifier.fillMaxWidth(0.6f).height(1.dp),
+                    color = DarkGrayColor.copy(alpha = 0.2f)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "GMR Stock v1.0.0 | © 2025",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Light,
+                    color = TextSecondary.copy(alpha = 0.7f)
+                )
             }
         }
     }
@@ -194,7 +218,7 @@ class DatabaseSelectionScreen(
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            text = "Planta de Producción",
+                            text = "Nivel de Producción",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White.copy(alpha = 0.9f),

@@ -70,7 +70,7 @@ actual fun VentaChartCard(
         ) {
             val leftPadding = 60f
             // ⭐️ AJUSTE 1: Aumentamos el padding interno para unificar con RatioProductionCard
-            val bottomPadding = 60f
+            val bottomPadding = 30.dp.toPx()
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val stepX =

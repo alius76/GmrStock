@@ -89,7 +89,7 @@ actual fun RatioProductionCard(
         ) {
             val leftPadding = 60f
             // AUMENTAMOS EL PADDING INFERIOR para dar espacio al texto
-            val bottomPadding = 60f
+            val bottomPadding = 30.dp.toPx()
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val stepX =

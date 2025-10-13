@@ -99,7 +99,7 @@ actual fun RatioProductionCard(
         ) {
             val leftPadding = 60f
             // Mantenemos 60f para el espacio del Eje X
-            val bottomPadding = 60f
+            val bottomPadding = 30.dp.toPx()
             val chartWidth = size.width - leftPadding
             val chartHeight = size.height - bottomPadding
             val stepX = if (data.size > 1) chartWidth / (data.size - 1) else chartWidth
