@@ -149,20 +149,30 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // 🔹 Solo el título
+                    Text(
+                        text = "Gráfico de producción",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // 🔹 Fila con Total kilos a la izquierda y botones a la derecha
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Gráfico producción",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.secondary
+                            text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
+                            color = TextSecondary
                         )
-
-                        Spacer(modifier = Modifier.width(24.dp)) // separación entre título y botones
 
                         MySegmentedButton(
                             options = listOf("Mes", "Año"),
@@ -173,14 +183,6 @@ fun ProcessScreenContent(user: User, databaseUrl: String) {
                             }
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                        color = TextSecondary
-                    )
                 }
             }
 

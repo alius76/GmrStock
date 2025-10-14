@@ -154,21 +154,31 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 🔹 Encabezado horizontal: título + selector con espacio fijo
+                    // 🔹 Solo el título en su propia línea
+                    Text(
+                        text = "Gráfico de ventas",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // 🔹 Fila con Total kilos a la izquierda y botones Mes/Año a la derecha
                     Row(
                         modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Gráfico de ventas",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold
+                            text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Medium
                             ),
-                            color = MaterialTheme.colorScheme.secondary
+                            color = TextSecondary
                         )
-
-                        Spacer(modifier = Modifier.width(24.dp)) // 🔹 Espacio fijo entre título y botones
 
                         MySegmentedButton(
                             options = listOf("Mes", "Año"),
@@ -181,16 +191,9 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
-
-                    Text(
-                        text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                        color = TextSecondary
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
+                // 🔹 Tarjeta del gráfico
                 VentaChartCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -199,6 +202,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                     isAnnual = isAnnual
                 )
             }
+
 
             // --- Últimas Ventas ---
             item {
