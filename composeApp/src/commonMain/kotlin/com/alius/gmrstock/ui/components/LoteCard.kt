@@ -581,7 +581,7 @@ fun LoteCard(
     }
 
 
-    // --- DIALOG DE RESERVAS PROFESIONAL CON TÍTULO CENTRADO ---
+    // --- DIALOG DE RESERVAS PROFESIONAL Y ESTABLE ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
@@ -591,10 +591,15 @@ fun LoteCard(
         // Observaciones sincronizadas
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
+        // Lista de clientes cargada desde el repositorio
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
         LaunchedEffect(Unit) { clientesList = clientRepository.getAllClientsOrderedByName() }
 
         AlertDialog(
+            modifier = Modifier
+                .widthIn(min = 360.dp, max = 360.dp) // 👈 ANCHO FIJO para eliminar el cambio de tamaño
+                .wrapContentHeight()
+                .animateContentSize(), // 👈 suaviza cualquier pequeño cambio interno
             onDismissRequest = { showReservedDialog = false },
             title = {
                 Box(
@@ -633,10 +638,11 @@ fun LoteCard(
                     } else {
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
 
+                        // Contenedor de altura fija y estable
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(80.dp)
+                                .height(90.dp) // 👈 altura constante, evita cambios visuales
                                 .padding(vertical = 8.dp)
                         ) {
                             if (clientesList == null) {
@@ -725,7 +731,7 @@ fun LoteCard(
                         UniversalDatePickerDialog(
                             initialDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
                             onDateSelected = { selected ->
-                                fecha = "${selected.dayOfMonth.toString().padStart(2,'0')}-${selected.monthNumber.toString().padStart(2,'0')}-${selected.year}"
+                                fecha = "${selected.dayOfMonth.toString().padStart(2, '0')}-${selected.monthNumber.toString().padStart(2, '0')}-${selected.year}"
                                 showDatePicker = false
                             },
                             onDismiss = { showDatePicker = false },
@@ -740,7 +746,7 @@ fun LoteCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Anular reserva
+                    // --- ANULAR RESERVA ---
                     if (lote.booked != null || lote.dateBooked != null) {
                         TextButton(onClick = {
                             showReservedDialog = false
@@ -757,9 +763,12 @@ fun LoteCard(
                                 )
                                 snackbarHostState.showSnackbar(if (success) "Reserva anulada" else "Error al anular la reserva")
                             }
-                        }) { Text("Anular", color = MaterialTheme.colorScheme.error) }
+                        }) {
+                            Text("Anular", color = MaterialTheme.colorScheme.error)
+                        }
                     } else Spacer(modifier = Modifier.width(1.dp))
 
+                    // --- BOTONES DE ACCIÓN ---
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { showReservedDialog = false }) { Text("Cancelar", color = PrimaryColor) }
                         TextButton(
@@ -808,13 +817,14 @@ fun LoteCard(
                                 }
                             },
                             enabled = selectedCliente != null
-                        ) { Text("Guardar", color = PrimaryColor) }
+                        ) {
+                            Text("Guardar", color = PrimaryColor)
+                        }
                     }
                 }
             }
         )
     }
-
 
 }
 
