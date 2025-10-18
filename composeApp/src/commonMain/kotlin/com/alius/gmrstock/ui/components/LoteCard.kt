@@ -614,6 +614,7 @@ fun LoteCard(
 
                     // --- CLIENTE ---
                     if (lote.booked != null) {
+                        // Cliente ya reservado, mostramos readOnly
                         OutlinedTextField(
                             value = selectedCliente?.cliNombre ?: "",
                             onValueChange = {},
@@ -629,26 +630,46 @@ fun LoteCard(
                         )
                     } else {
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+
+                        // Contenedor de altura fija para evitar cambios de tamaño
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp) // reservamos altura para la LazyRow
+                                .padding(vertical = 8.dp)
                         ) {
-                            items(clientesList) { cliente ->
-                                val isSelected = selectedCliente == cliente
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = if (isSelected) PrimaryColor else PrimaryColor.copy(alpha = 0.1f),
-                                    modifier = Modifier.clickable { selectedCliente = cliente }
+                            if (clientesList.isEmpty()) {
+                                // Indicador de carga centrado
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Text(
-                                        text = cliente.cliNombre,
-                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else PrimaryColor,
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                                    )
+                                    CircularProgressIndicator(color = PrimaryColor, strokeWidth = 2.dp)
+                                }
+                            } else {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(clientesList) { cliente ->
+                                        val isSelected = selectedCliente == cliente
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = if (isSelected) PrimaryColor else PrimaryColor.copy(alpha = 0.1f),
+                                            modifier = Modifier.clickable { selectedCliente = cliente }
+                                        ) {
+                                            Text(
+                                                text = cliente.cliNombre,
+                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else PrimaryColor,
+                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+
 
                     // --- OBSERVACIONES ---
                     OutlinedTextField(
