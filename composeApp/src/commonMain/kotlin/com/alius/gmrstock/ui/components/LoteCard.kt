@@ -581,7 +581,7 @@ fun LoteCard(
     }
 
 
-    // --- DIALOG DE RESERVAS ---
+    // --- DIALOG DE RESERVAS PROFESIONAL CON TÍTULO CENTRADO ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
@@ -591,13 +591,16 @@ fun LoteCard(
         // Observaciones sincronizadas
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
-        var clientesList by remember { mutableStateOf<List<Cliente>>(emptyList()) }
+        var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
         LaunchedEffect(Unit) { clientesList = clientRepository.getAllClientsOrderedByName() }
 
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
             title = {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Reserva del Lote", fontWeight = FontWeight.Bold, color = PrimaryColor)
                         Text(lote.number, fontWeight = FontWeight.Bold, color = PrimaryColor)
@@ -608,13 +611,12 @@ fun LoteCard(
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
                     // Usuario que reservó
-                    if (!lote.bookedByUser.isNullOrBlank()) {
-                        InfoCard(label = "Reservado por", value = lote.bookedByUser)
+                    lote.bookedByUser?.takeIf { it.isNotBlank() }?.let {
+                        InfoCard(label = "Reservado por", value = it)
                     }
 
                     // --- CLIENTE ---
                     if (lote.booked != null) {
-                        // Cliente ya reservado, mostramos readOnly
                         OutlinedTextField(
                             value = selectedCliente?.cliNombre ?: "",
                             onValueChange = {},
@@ -631,19 +633,14 @@ fun LoteCard(
                     } else {
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
 
-                        // Contenedor de altura fija para evitar cambios de tamaño
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(80.dp) // reservamos altura para la LazyRow
+                                .height(80.dp)
                                 .padding(vertical = 8.dp)
                         ) {
-                            if (clientesList.isEmpty()) {
-                                // Indicador de carga centrado
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
+                            if (clientesList == null) {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                     CircularProgressIndicator(color = PrimaryColor, strokeWidth = 2.dp)
                                 }
                             } else {
@@ -651,7 +648,7 @@ fun LoteCard(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     modifier = Modifier.fillMaxSize()
                                 ) {
-                                    items(clientesList) { cliente ->
+                                    items(clientesList!!) { cliente ->
                                         val isSelected = selectedCliente == cliente
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
@@ -670,7 +667,6 @@ fun LoteCard(
                         }
                     }
 
-
                     // --- OBSERVACIONES ---
                     OutlinedTextField(
                         value = currentBookedRemark,
@@ -678,8 +674,8 @@ fun LoteCard(
                         label = { Text("Observaciones de reserva") },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp, max = 150.dp),
                         singleLine = false,
-                        readOnly = false, // siempre editable
-                        enabled = true,   // siempre habilitado
+                        readOnly = false,
+                        enabled = true,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = PrimaryColor,
                             focusedLabelColor = PrimaryColor,
@@ -793,7 +789,7 @@ fun LoteCard(
                                     val success = loteRepository.updateLoteBooked(
                                         loteId = lote.id,
                                         cliente = selectedCliente,
-                                        dateBooked = parsedDate ?: lote.dateBooked, // conserva fecha si no se cambia
+                                        dateBooked = parsedDate ?: lote.dateBooked,
                                         bookedByUser = userToSave,
                                         bookedRemark = remarkToSave
                                     )
@@ -818,6 +814,7 @@ fun LoteCard(
             }
         )
     }
+
 
 }
 
