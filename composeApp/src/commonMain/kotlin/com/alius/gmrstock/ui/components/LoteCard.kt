@@ -581,25 +581,21 @@ fun LoteCard(
     }
 
 
-    // --- DIALOG DE RESERVAS PROFESIONAL Y ESTABLE ---
+    // --- DIALOG DE RESERVAS PROFESIONAL CON TÍTULO CENTRADO Y LISTA FIJA ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
         var showDatePicker by remember { mutableStateOf(false) }
+        var showClientes by remember { mutableStateOf(false) }
         var userToSave by remember { mutableStateOf(currentUserEmail) }
 
         // Observaciones sincronizadas
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
-        // Lista de clientes cargada desde el repositorio
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
         LaunchedEffect(Unit) { clientesList = clientRepository.getAllClientsOrderedByName() }
 
         AlertDialog(
-            modifier = Modifier
-                .widthIn(min = 360.dp, max = 360.dp) // 👈 ANCHO FIJO para eliminar el cambio de tamaño
-                .wrapContentHeight()
-                .animateContentSize(), // 👈 suaviza cualquier pequeño cambio interno
             onDismissRequest = { showReservedDialog = false },
             title = {
                 Box(
@@ -638,23 +634,42 @@ fun LoteCard(
                     } else {
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
 
-                        // Contenedor de altura fija y estable
+                        // Contenedor de altura fija para texto o lista
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(90.dp) // 👈 altura constante, evita cambios visuales
-                                .padding(vertical = 8.dp)
+                                .height(80.dp) // altura fija para evitar cambios
+                                .padding(vertical = 0.dp)
                         ) {
-                            if (clientesList == null) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(color = PrimaryColor, strokeWidth = 2.dp)
+                            if (!showClientes) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clickable { showClientes = true }
+                                        .padding(horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Default.Person,
+                                        contentDescription = "Clientes",
+                                        tint = PrimaryColor,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = "Mostrar clientes",
+                                        color = PrimaryColor,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 18.sp
+                                    )
                                 }
                             } else {
                                 LazyRow(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    items(clientesList!!) { cliente ->
+                                    items(clientesList ?: emptyList()) { cliente ->
                                         val isSelected = selectedCliente == cliente
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
@@ -708,7 +723,12 @@ fun LoteCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = PrimaryColor, modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.CalendarToday,
+                                    contentDescription = "Calendario",
+                                    tint = PrimaryColor,
+                                    modifier = Modifier.size(20.dp)
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (fecha.isNotBlank()) fecha else "Seleccione fecha",
@@ -731,7 +751,7 @@ fun LoteCard(
                         UniversalDatePickerDialog(
                             initialDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
                             onDateSelected = { selected ->
-                                fecha = "${selected.dayOfMonth.toString().padStart(2, '0')}-${selected.monthNumber.toString().padStart(2, '0')}-${selected.year}"
+                                fecha = "${selected.dayOfMonth.toString().padStart(2,'0')}-${selected.monthNumber.toString().padStart(2,'0')}-${selected.year}"
                                 showDatePicker = false
                             },
                             onDismiss = { showDatePicker = false },
@@ -746,7 +766,7 @@ fun LoteCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // --- ANULAR RESERVA ---
+                    // Anular reserva
                     if (lote.booked != null || lote.dateBooked != null) {
                         TextButton(onClick = {
                             showReservedDialog = false
@@ -763,12 +783,9 @@ fun LoteCard(
                                 )
                                 snackbarHostState.showSnackbar(if (success) "Reserva anulada" else "Error al anular la reserva")
                             }
-                        }) {
-                            Text("Anular", color = MaterialTheme.colorScheme.error)
-                        }
+                        }) { Text("Anular", color = MaterialTheme.colorScheme.error) }
                     } else Spacer(modifier = Modifier.width(1.dp))
 
-                    // --- BOTONES DE ACCIÓN ---
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { showReservedDialog = false }) { Text("Cancelar", color = PrimaryColor) }
                         TextButton(
@@ -817,14 +834,14 @@ fun LoteCard(
                                 }
                             },
                             enabled = selectedCliente != null
-                        ) {
-                            Text("Guardar", color = PrimaryColor)
-                        }
+                        ) { Text("Guardar", color = PrimaryColor) }
                     }
                 }
             }
         )
     }
+
+
 
 }
 
