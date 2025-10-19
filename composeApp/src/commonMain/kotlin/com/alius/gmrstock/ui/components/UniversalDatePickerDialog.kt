@@ -136,7 +136,11 @@ fun UniversalDatePickerDialog(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(7),
                     state = gridState,
-                    modifier = Modifier.height(280.dp),
+                    // ✅ CORRECCIÓN: Eliminar la altura fija (280.dp) y permitir que se ajuste al contenido.
+                    // Usamos .fillMaxWidth().wrapContentHeight() para asegurar que el AlertDialog no lo recorte
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding = PaddingValues(4.dp)
