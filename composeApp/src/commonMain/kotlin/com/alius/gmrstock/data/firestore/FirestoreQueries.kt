@@ -568,3 +568,39 @@ fun buildQueryRatiosDelAnoActual(): String {
     }
     """.trimIndent()
 }
+
+fun buildCreateBodyForClient(cliente: Cliente): String {
+    // La operación POST requiere que envolvamos todos los campos en 'fields'
+    return buildJsonObject {
+        putJsonObject("fields") {
+            // cliNombre
+            putJsonObject("cliNombre") {
+                put("stringValue", cliente.cliNombre)
+            }
+            // cliObservaciones
+            putJsonObject("cliObservaciones") {
+                put("stringValue", cliente.cliObservaciones)
+            }
+        }
+    }.toString()
+}
+
+/**
+ * Construye el cuerpo JSON para la operación PATCH (Actualizar) de un documento 'cliente'.
+ * La estructura es la misma que la de creación, ya que PATCH sobreescribe los campos.
+ */
+fun buildPatchBodyForClient(cliente: Cliente): String {
+    // La operación PATCH requiere que envolvamos todos los campos en 'fields'
+    return buildJsonObject {
+        putJsonObject("fields") {
+            // cliNombre
+            putJsonObject("cliNombre") {
+                put("stringValue", cliente.cliNombre)
+            }
+            // cliObservaciones
+            putJsonObject("cliObservaciones") {
+                put("stringValue", cliente.cliObservaciones)
+            }
+        }
+    }.toString()
+}

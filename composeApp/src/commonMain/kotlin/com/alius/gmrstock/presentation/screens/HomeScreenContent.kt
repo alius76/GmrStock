@@ -1,5 +1,6 @@
 package com.alius.gmrstock.presentation.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alius.gmrstock.core.LocalDatabaseUrl
+import com.alius.gmrstock.data.FirestoreUrls
 import com.alius.gmrstock.data.agruparPorMaterial
 import com.alius.gmrstock.data.getClientRepository
 import com.alius.gmrstock.data.getLoteRepository
@@ -41,10 +45,35 @@ class HomeScreenContent(
 
     @Composable
     override fun Content() {
+        // Estado para la base de datos actual
         val databaseUrl = LocalDatabaseUrl.current
-        val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
-        val clientRepository = remember(databaseUrl) { getClientRepository(databaseUrl) }
+        var currentDatabaseUrl by remember { mutableStateOf(databaseUrl) }
+
+        println("HomeScreenContent: databaseUrl inicial = $databaseUrl")
+        println("HomeScreenContent: currentDatabaseUrl inicial = $currentDatabaseUrl")
+
+        // Repositorios basados en la DB seleccionada
+        val loteRepository = remember(currentDatabaseUrl) {
+            println("Creando loteRepository para $currentDatabaseUrl")
+            getLoteRepository(currentDatabaseUrl)
+        }
+        val clientRepository = remember(currentDatabaseUrl) {
+            println("Creando clientRepository para $currentDatabaseUrl")
+            getClientRepository(currentDatabaseUrl)
+        }
         val coroutineScope = rememberCoroutineScope()
+
+        // Función para alternar entre DB1 y DB2
+        val swapDatabase: () -> Unit = {
+            val previous = currentDatabaseUrl
+            currentDatabaseUrl = if (currentDatabaseUrl == FirestoreUrls.DB1_URL) {
+                FirestoreUrls.DB2_URL
+            } else {
+                FirestoreUrls.DB1_URL
+            }
+            println("Swap DB: de $previous a $currentDatabaseUrl")
+            onChangeDatabase()
+        }
 
         val lotes = remember { mutableStateListOf<LoteModel>() }
         var materialGroups by remember { mutableStateOf<List<MaterialGroup>>(emptyList()) }
@@ -52,6 +81,8 @@ class HomeScreenContent(
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var showLogoutDialog by remember { mutableStateOf(false) }
         var showUnimplementedDialog by remember { mutableStateOf(false) }
+        // <-- AGREGADO: Nuevo estado para el diálogo de mantenimiento
+        var showMaintenanceDialog by remember { mutableStateOf(false) }
 
         val sheetStateGroup = rememberModalBottomSheetState()
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
@@ -59,8 +90,9 @@ class HomeScreenContent(
 
         val snackbarHostState = remember { SnackbarHostState() }
         val currentUserEmail = remember(user.email) { user.email.substringBefore("@") }
+        val localNavigator = LocalNavigator.currentOrThrow
 
-        LaunchedEffect(databaseUrl) {
+        LaunchedEffect(currentDatabaseUrl) {
             isLoading = true
             errorMessage = null
             try {
@@ -118,12 +150,46 @@ class HomeScreenContent(
             }
         }
 
+        @Composable
+        fun MaintenanceOption(label: String, icon: ImageVector, onClick: () -> Unit) {
+            OutlinedCard(
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.outlinedCardColors(containerColor = Color.White),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = PrimaryColor.copy(alpha = 0.5f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = PrimaryColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = label,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.DarkGray,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize()) {
 
-                //Diálogo "Sin implementar"
                 if (showUnimplementedDialog) {
                     AlertDialog(
                         onDismissRequest = { showUnimplementedDialog = false },
@@ -136,7 +202,7 @@ class HomeScreenContent(
                         }
                     )
                 }
-                // Diálogo logout
+
                 if (showLogoutDialog) {
                     AlertDialog(
                         onDismissRequest = { showLogoutDialog = false },
@@ -158,6 +224,57 @@ class HomeScreenContent(
                     )
                 }
 
+                //DIÁLOGO DE MANTENIMIENTO
+                if (showMaintenanceDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showMaintenanceDialog = false },
+                        title = {
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    "Mantenimiento de Datos",
+                                    fontWeight = FontWeight.Bold,
+                                    color = PrimaryColor
+                                )
+                            }
+                        },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                MaintenanceOption(
+                                    label = "Mantenimiento de clientes",
+                                    icon = Icons.Default.People,
+                                    onClick = {
+                                        showMaintenanceDialog = false
+                                        // Navegar a CrudClientScreen
+                                        localNavigator.push(CrudClientScreen(currentDatabaseUrl))
+                                    }
+                                )
+                                MaintenanceOption(
+                                    label = "Mantenimiento de materiales",
+                                    icon = Icons.Default.Category,
+                                    onClick = {
+                                        showMaintenanceDialog = false
+                                        showUnimplementedDialog = true
+                                    }
+                                )
+                                MaintenanceOption(
+                                    label = "Mantenimiento de reservas",
+                                    icon = Icons.Default.Event,
+                                    onClick = {
+                                        showMaintenanceDialog = false
+                                        showUnimplementedDialog = true
+                                    }
+                                )
+                            }
+                        },
+                        confirmButton = {},
+                        dismissButton = {
+                            TextButton(onClick = { showMaintenanceDialog = false }) {
+                                Text("Cerrar", color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    )
+                }
+
                 if (isLoading) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -173,14 +290,12 @@ class HomeScreenContent(
                         Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
                     }
                 } else {
-                    // 🔹 Column principal para botones + lista, pegado arriba
                     Column(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(horizontal = 16.dp)
                     ) {
 
-                        // Botones de acción
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -191,13 +306,15 @@ class HomeScreenContent(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.SwapHoriz,
                                 label = "SWAP",
-                                onClick = onChangeDatabase
+                                onClick = swapDatabase
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Tune,
                                 label = "Datos",
-                                onClick = { showUnimplementedDialog = true }
+                                onClick = {
+                                    showMaintenanceDialog = true
+                                }
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
@@ -212,9 +329,9 @@ class HomeScreenContent(
                                 onClick = { showLogoutDialog = true }
                             )
                         }
+
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // LazyColumn solo para materiales
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
                         ) {
@@ -250,7 +367,6 @@ class HomeScreenContent(
                     }
                 }
 
-                // BottomSheet
                 if (showGroupMaterialBottomSheet && selectedGroupForSheet != null) {
                     ModalBottomSheet(
                         onDismissRequest = {
@@ -277,7 +393,7 @@ class HomeScreenContent(
                             onViewBigBags = { bigBagsList: List<BigBags> ->
                                 println("Mostrando ${bigBagsList.size} BigBags")
                             },
-                            databaseUrl = databaseUrl,
+                            databaseUrl = currentDatabaseUrl,
                             onRemarkUpdated = { updatedLote ->
                                 val index = lotes.indexOfFirst { it.id == updatedLote.id }
                                 if (index >= 0) {
@@ -287,7 +403,6 @@ class HomeScreenContent(
                             },
                             clientRepository = clientRepository,
                             currentUserEmail = currentUserEmail
-
                         )
                     }
                 }
