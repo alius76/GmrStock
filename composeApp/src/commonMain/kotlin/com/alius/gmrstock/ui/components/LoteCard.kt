@@ -79,7 +79,7 @@ fun LoteCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
+            //.fillMaxWidth()
             .wrapContentHeight(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -666,7 +666,7 @@ fun LoteCard(
                             } else {
                                 LazyRow(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     items(clientesList ?: emptyList()) { cliente ->
