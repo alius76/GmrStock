@@ -3,6 +3,7 @@ package com.alius.gmrstock.data
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.MaterialGroup
+import com.alius.gmrstock.domain.model.Vertisol
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 
@@ -30,6 +31,8 @@ interface LoteRepository {
         bookedRemark: String? = null
 
     ): Boolean
+
+    suspend fun listarLotesVertisol(): List<Vertisol>
 }
 
 expect fun getLoteRepository(databaseUrl: String): LoteRepository

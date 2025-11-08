@@ -4,6 +4,7 @@ import com.alius.gmrstock.data.firestore.buildQueryUltimasVentas
 import com.alius.gmrstock.data.firestore.buildQueryVentasDeHoy
 import com.alius.gmrstock.data.firestore.buildQueryVentasPorClienteYFecha
 import com.alius.gmrstock.data.mappers.VentaMapper
+import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.Venta
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -22,6 +23,9 @@ class VentaRepositoryImpl(
     private val databaseUrl: String
 ) : VentaRepository {
 
+    // -----------------------------------------------------
+    // 🔹 Métodos existentes (ventas generales)
+    // -----------------------------------------------------
     override suspend fun mostrarTodasLasVentas(): List<Venta> =
         obtenerVentasFiltradas()
 
@@ -57,28 +61,30 @@ class VentaRepositoryImpl(
         return obtenerVentasFiltradas(inicio = inicioDelMes, fin = fin)
     }
 
-    /**
-     * Función privada genérica para obtener ventas filtradas por cliente y rango de fechas.
-     * Si cliente es "" trae todos los clientes.
-     * Si inicio/fin son null, se traen todas las ventas (limite opcional aplicado en Firestore).
-     */
+    override suspend fun mostrarVentasDelAno(): List<Venta> {
+        val ahora = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val inicioDelAno = LocalDateTime(ahora.year, 1, 1, 0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+        val finDelAno = Clock.System.now()
+        return obtenerVentasFiltradas(inicio = inicioDelAno, fin = finDelAno)
+    }
+
+    // -----------------------------------------------------
+    // 🔹 Core genérico: obtenerVentasFiltradas
+    // -----------------------------------------------------
     private suspend fun obtenerVentasFiltradas(
         cliente: String = "",
         inicio: Instant? = null,
         fin: Instant? = null
     ): List<Venta> = withContext(Dispatchers.IO) {
         try {
-            // Generamos la query según si hay cliente o rango de fechas
-            val query = if (cliente.isNotBlank() && inicio != null && fin != null) {
-                buildQueryVentasPorClienteYFecha(cliente, inicio, fin)
-            } else if (inicio != null && fin != null) {
-                buildQueryVentasDeHoy(inicio, fin) // puedes crear una query genérica por fecha si quieres
-            } else {
-                buildQueryUltimasVentas(50) // límite por defecto si no hay filtro
+            val query = when {
+                cliente.isNotBlank() && inicio != null && fin != null ->
+                    buildQueryVentasPorClienteYFecha(cliente, inicio, fin)
+                inicio != null && fin != null ->
+                    buildQueryVentasDeHoy(inicio, fin)
+                else -> buildQueryUltimasVentas(50)
             }
-
-            println("🌐 POST $databaseUrl (ventas filtradas)")
-            println("📤 Body: $query")
 
             val response: HttpResponse = client.post(databaseUrl) {
                 headers { append("Content-Type", "application/json") }
@@ -86,8 +92,6 @@ class VentaRepositoryImpl(
             }
 
             val responseText = response.bodyAsText()
-            println("📦 Response ventas filtradas:\n$responseText")
-
             val jsonArray = Json.parseToJsonElement(responseText).jsonArray
 
             jsonArray.mapNotNull { element ->
@@ -106,25 +110,14 @@ class VentaRepositoryImpl(
         }
     }
 
-
-    /**
-     * Método específico para obtener las últimas N ventas.
-     */
     private suspend fun obtenerUltimasVentas(limite: Int): List<Venta> = withContext(Dispatchers.IO) {
         try {
             val body = buildQueryUltimasVentas(limite)
-
-            println("🌐 POST $databaseUrl (ultimas $limite ventas)")
-            println("📤 Body: $body")
-
             val response: HttpResponse = client.post(databaseUrl) {
                 headers { append("Content-Type", "application/json") }
                 setBody(body)
             }
-
             val responseText = response.bodyAsText()
-            println("📦 Response ultimas ventas:\n$responseText")
-
             val jsonArray = Json.parseToJsonElement(responseText).jsonArray
 
             jsonArray.mapNotNull { element ->
@@ -143,12 +136,79 @@ class VentaRepositoryImpl(
         }
     }
 
-    override suspend fun mostrarVentasDelAno(): List<Venta> {
-        val ahora = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val inicioDelAno = LocalDateTime(ahora.year, 1, 1, 0, 0)
-            .toInstant(TimeZone.currentSystemDefault())
-        val finDelAno = Clock.System.now()
-        return obtenerVentasFiltradas(inicio = inicioDelAno, fin = finDelAno)
+    // -----------------------------------------------------
+    // 🔹 Nuevas funciones para Devoluciones
+    // -----------------------------------------------------
+
+    /**
+     * Devuelve todas las ventas que corresponden a un lote concreto.
+     */
+    override suspend fun obtenerVentasPorLote(loteNumber: String): List<Venta> = withContext(Dispatchers.IO) {
+        try {
+            val todas = mostrarTodasLasVentas()
+            todas.filter { it.ventaLote == loteNumber }
+        } catch (e: Exception) {
+            println("❌ Error en obtenerVentasPorLote: ${e.message}")
+            emptyList()
+        }
     }
 
+    /**
+     * Devuelve los BigBags vendidos a un cliente dentro de un lote,
+     * quedándose solo con la última venta (por fecha) de cada BigBag.
+     */
+    override suspend fun obtenerUltimosBigBagsDeCliente(
+        loteNumber: String,
+        cliente: String
+    ): List<BigBags> = withContext(Dispatchers.IO) {
+        try {
+            val ventas = mostrarTodasLasVentas()
+                .filter { it.ventaLote == loteNumber && it.ventaCliente == cliente }
+
+            val ultimaVentaPorBb = ventas
+                .flatMap { venta ->
+                    venta.ventaBigbags.map { bb ->
+                        Triple(bb.ventaBbNumber, bb.ventaBbWeight, venta.ventaFecha)
+                    }
+                }
+                .groupBy { it.first }
+                .mapValues { (_, registros) ->
+                    registros.maxByOrNull { it.third ?: Instant.DISTANT_PAST }
+                }
+                .values
+                .filterNotNull()
+
+            ultimaVentaPorBb.map {
+                BigBags(
+                    bbNumber = it.first,
+                    bbWeight = it.second,
+                    bbLocation = "",
+                    bbStatus = "o",
+                    bbRemark = ""
+                )
+            }
+        } catch (e: Exception) {
+            println("❌ Error en obtenerUltimosBigBagsDeCliente: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /**
+     * Devuelve el cliente y fecha de la última venta de un BigBag concreto.
+     */
+    override suspend fun obtenerUltimoClienteYFechaDeBigBag(
+        loteNumber: String,
+        bbNumber: String
+    ): Pair<String, Instant>? {
+        return try {
+            val ventasDelLote = mostrarTodasLasVentas().filter { it.ventaLote == loteNumber }
+            ventasDelLote
+                .filter { venta -> venta.ventaBigbags.any { it.ventaBbNumber == bbNumber } }
+                .maxByOrNull { it.ventaFecha ?: Instant.DISTANT_PAST }
+                ?.let { venta -> Pair(venta.ventaCliente, venta.ventaFecha!!) }
+        } catch (e: Exception) {
+            println("⚠️ Error al obtener último cliente/fecha del BigBag $bbNumber: ${e.message}")
+            null
+        }
+    }
 }

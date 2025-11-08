@@ -1,6 +1,9 @@
 package com.alius.gmrstock.data.firestore
 
+import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.Cliente
+import com.alius.gmrstock.domain.model.Devolucion
+import com.alius.gmrstock.domain.model.LoteModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
@@ -9,8 +12,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.plus
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
 
@@ -569,6 +574,54 @@ fun buildQueryRatiosDelAnoActual(): String {
     """.trimIndent()
 }
 
+// 🛠️ FUNCIÓN DE ACTUALIZACIÓN DEL LOTE (NUEVA FUNCIÓN)
+/**
+ * Construye el cuerpo JSON necesario para actualizar la lista completa de BigBags,
+ * el conteo y el peso total en un documento 'lote' usando el método PATCH.
+ */
+fun buildPatchBodyForBigBagStatus(
+    bigBags: List<BigBags>,
+    count: Int,
+    totalWeight: Double
+): String {
+    // Función auxiliar para formatear el peso a String
+    fun doubleToStringSafe(value: Double): String =
+        if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()
+
+    val countString = count.toString()
+    val totalWeightString = doubleToStringSafe(totalWeight)
+
+    return buildJsonObject {
+        putJsonObject("fields") {
+            // bigBag (La lista completa)
+            putJsonObject("bigBag") {
+                putJsonObject("arrayValue") {
+                    putJsonArray("values") {
+                        bigBags.forEach { bb ->
+                            val bbWeightString = doubleToStringSafe(bb.bbWeight.toDoubleOrNull() ?: 0.0)
+                            add(buildJsonObject {
+                                putJsonObject("mapValue") {
+                                    putJsonObject("fields") {
+                                        put("bbNumber", buildJsonObject { put("stringValue", bb.bbNumber) })
+                                        put("bbWeight", buildJsonObject { put("stringValue", bbWeightString) })
+                                        put("bbLocation", buildJsonObject { put("stringValue", bb.bbLocation) })
+                                        put("bbStatus", buildJsonObject { put("stringValue", bb.bbStatus) })
+                                        put("bbRemark", buildJsonObject { put("stringValue", bb.bbRemark ?: "") })
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+            }
+
+            // count y totalWeight (actualizados)
+            putJsonObject("count") { put("stringValue", countString) }
+            putJsonObject("totalWeight") { put("stringValue", totalWeightString) }
+        }
+    }.toString()
+}
+
 fun buildCreateBodyForClient(cliente: Cliente): String {
     // La operación POST requiere que envolvamos todos los campos en 'fields'
     return buildJsonObject {
@@ -600,6 +653,206 @@ fun buildPatchBodyForClient(cliente: Cliente): String {
             // cliObservaciones
             putJsonObject("cliObservaciones") {
                 put("stringValue", cliente.cliObservaciones)
+            }
+        }
+    }.toString()
+}
+
+/**
+ * ✅ FUNCIÓN CORREGIDA
+ * El campo devolucionBigbags ahora usa "arrayValue" para formar una lista
+ * de objetos (mapValue), lo cual es la estructura correcta para Firestore.
+ */
+fun buildCreateBodyForDevolucion(devolucion: Devolucion): String {
+    return buildJsonObject {
+        putJsonObject("fields") {
+            // Cliente, lote y material
+            putJsonObject("devolucionCliente") { put("stringValue", devolucion.devolucionCliente) }
+            putJsonObject("devolucionLote") { put("stringValue", devolucion.devolucionLote) }
+            putJsonObject("devolucionMaterial") { put("stringValue", devolucion.devolucionMaterial) }
+
+            // Fecha
+            putJsonObject("devolucionFecha") {
+                if (devolucion.devolucionFecha != null) {
+                    put("timestampValue", devolucion.devolucionFecha.toString())
+                } else {
+                    put("nullValue", null)
+                }
+            }
+
+            // Peso total
+            putJsonObject("devolucionPesoTotal") {
+                if (!devolucion.devolucionPesoTotal.isNullOrEmpty()) {
+                    put("stringValue", devolucion.devolucionPesoTotal)
+                } else {
+                    put("nullValue", null)
+                }
+            }
+
+            // 🌟 CORRECCIÓN CLAVE: Usar arrayValue para la lista de BigBags
+            putJsonObject("devolucionBigbags") {
+                putJsonObject("arrayValue") { // <-- ¡CORRECTO! Esto indica un arreglo de Firestore
+                    putJsonArray("values") {
+                        devolucion.devolucionBigbags
+                            .filter { !it.devolucionBbNumber.isNullOrEmpty() && !it.devolucionBbWeight.isNullOrEmpty() }
+                            .forEach { bb ->
+                                // Cada elemento del arreglo es un mapValue
+                                add(buildJsonObject {
+                                    putJsonObject("mapValue") {
+                                        putJsonObject("fields") {
+                                            putJsonObject("devolucionBbNumber") { put("stringValue", bb.devolucionBbNumber) }
+                                            putJsonObject("devolucionBbWeight") { put("stringValue", bb.devolucionBbWeight) }
+                                        }
+                                    }
+                                })
+                            }
+                    }
+                }
+            }
+        }
+    }.toString()
+}
+
+
+fun buildPatchBodyForDevolucion(devolucion: Devolucion): String {
+    return buildJsonObject {
+        putJsonObject("fields") {
+            // Cliente, lote y material
+            putJsonObject("devolucionCliente") { put("stringValue", devolucion.devolucionCliente) }
+            putJsonObject("devolucionLote") { put("stringValue", devolucion.devolucionLote) }
+            putJsonObject("devolucionMaterial") { put("stringValue", devolucion.devolucionMaterial) }
+
+            // Fecha
+            putJsonObject("devolucionFecha") {
+                if (devolucion.devolucionFecha != null) {
+                    put("timestampValue", devolucion.devolucionFecha.toString())
+                } else {
+                    put("nullValue", null)
+                }
+            }
+
+            // Peso total
+            putJsonObject("devolucionPesoTotal") {
+                if (!devolucion.devolucionPesoTotal.isNullOrEmpty()) {
+                    put("stringValue", devolucion.devolucionPesoTotal)
+                } else {
+                    put("nullValue", null)
+                }
+            }
+
+            // 🌟 CORRECCIÓN CLAVE: Envuelve la lista de maps en arrayValue
+            putJsonObject("devolucionBigbags") {
+                putJsonObject("arrayValue") {
+                    putJsonArray("values") {
+                        devolucion.devolucionBigbags
+                            .filter { !it.devolucionBbNumber.isNullOrEmpty() && !it.devolucionBbWeight.isNullOrEmpty() }
+                            .forEach { bb ->
+                                add(buildJsonObject {
+                                    putJsonObject("mapValue") {
+                                        putJsonObject("fields") {
+                                            putJsonObject("devolucionBbNumber") { put("stringValue", bb.devolucionBbNumber) }
+                                            putJsonObject("devolucionBbWeight") { put("stringValue", bb.devolucionBbWeight) }
+                                        }
+                                    }
+                                })
+                            }
+                    }
+                }
+            }
+        }
+    }.toString()
+}
+
+fun buildQueryPorNumeroExacto(number: String, collection: String = "lote"): String { // ⬅️ Añadimos 'collection' con valor por defecto
+    return """
+    {
+        "structuredQuery": {
+            "from": [{"collectionId": "$collection"}],
+            "where": {
+                "fieldFilter": {
+                    "field": {"fieldPath": "number"},
+                    "op": "EQUAL",
+                    "value": {"stringValue": "$number"}
+                }
+            },
+            "limit": 1
+        }
+    }
+    """.trimIndent()
+}
+
+/**
+ * Construye el cuerpo JSON necesario para CREAR un nuevo documento 'lote'
+ * (o copiar uno de historial) usando el método POST.
+ * Requiere que todos los campos del LoteModel se serialicen correctamente.
+ */
+fun buildCreateBodyForLote(lote: LoteModel): String {
+    // Función auxiliar para formatear el peso a String (ya la tienes)
+    fun doubleToStringSafe(value: Double): String =
+        if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()
+
+    return buildJsonObject {
+        putJsonObject("fields") {
+
+            // 🛑 CORRECCIÓN CLAVE: INCLUIR EL CAMPO DE DATOS "id"
+            // Esto asegura que el registro en Firestore tenga la estructura que el parser de Android espera.
+            putJsonObject("id") { put("stringValue", lote.id) }
+
+            // Campos primitivos (Strings)
+            putJsonObject("number") { put("stringValue", lote.number) }
+            putJsonObject("description") { put("stringValue", lote.description) }
+            putJsonObject("location") { put("stringValue", lote.location) }
+            putJsonObject("count") { put("stringValue", lote.count) }
+            putJsonObject("weight") { put("stringValue", lote.weight) }
+            putJsonObject("status") { put("stringValue", lote.status) }
+            putJsonObject("totalWeight") { put("stringValue", lote.totalWeight) }
+            putJsonObject("remark") { put("stringValue", lote.remark) }
+            putJsonObject("bookedByUser") { put("stringValue", lote.bookedByUser ?: "") }
+            putJsonObject("bookedRemark") { put("stringValue", lote.bookedRemark ?: "") }
+            putJsonObject("qrCode") { put("stringValue", lote.qrCode ?: "") }
+            putJsonObject("certificateOk") { put("booleanValue", lote.certificateOk) }
+
+            // Campos de Fecha (Timestamp)
+            putJsonObject("date") { put("timestampValue", lote.date?.toString() ?: Clock.System.now().toString()) }
+            putJsonObject("createdAt") { put("timestampValue", lote.createdAt?.toString() ?: Clock.System.now().toString()) }
+            putJsonObject("dateBooked") {
+                if (lote.dateBooked != null) put("timestampValue", lote.dateBooked.toString()) else put("nullValue", JsonNull)
+            }
+
+            // booked (MapValue/Cliente)
+            if (lote.booked != null) {
+                putJsonObject("booked") {
+                    putJsonObject("mapValue") {
+                        putJsonObject("fields") {
+                            putJsonObject("cliNombre") { put("stringValue", lote.booked.cliNombre) }
+                            putJsonObject("cliObservaciones") { put("stringValue", lote.booked.cliObservaciones) }
+                        }
+                    }
+                }
+            } else {
+                putJsonObject("booked") { put("nullValue", JsonNull) } // Usar JsonNull para el valor nulo
+            }
+
+            // bigBag (ArrayValue/List<MapValue>)
+            putJsonObject("bigBag") {
+                putJsonObject("arrayValue") {
+                    putJsonArray("values") {
+                        lote.bigBag.forEach { bb ->
+                            val bbWeightString = doubleToStringSafe(bb.bbWeight.toDoubleOrNull() ?: 0.0)
+                            add(buildJsonObject {
+                                putJsonObject("mapValue") {
+                                    putJsonObject("fields") {
+                                        put("bbNumber", buildJsonObject { put("stringValue", bb.bbNumber) })
+                                        put("bbWeight", buildJsonObject { put("stringValue", bbWeightString) })
+                                        put("bbLocation", buildJsonObject { put("stringValue", bb.bbLocation) })
+                                        put("bbStatus", buildJsonObject { put("stringValue", bb.bbStatus) })
+                                        put("bbRemark", buildJsonObject { put("stringValue", bb.bbRemark ?: "") })
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
             }
         }
     }.toString()

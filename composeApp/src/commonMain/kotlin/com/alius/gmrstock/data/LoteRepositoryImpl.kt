@@ -10,6 +10,8 @@ import com.alius.gmrstock.data.firestore.parseRunQueryResponse
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.MaterialGroup
+import com.alius.gmrstock.domain.model.Vertisol
+import com.alius.gmrstock.domain.model.VertisolBigBag
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -176,4 +178,63 @@ class LoteRepositoryImpl(
             return@withContext false
         }
     }
+
+    override suspend fun listarLotesVertisol(): List<Vertisol> = withContext(Dispatchers.IO) {
+        try {
+            // 1️⃣ Obtener todos los lotes
+            val allLotes = listarLotes("")
+
+            // 2️⃣ Crear instancia de TrasvaseRepository
+            val trasvaseRepository = getTrasvaseRepository(baseUrl)
+
+            // 3️⃣ Filtrar lotes que tengan BigBags en Vertisol y en stock, luego mapearlos
+            val vertisolList = allLotes.mapNotNull { lote ->
+                val filteredBigBags = lote.bigBag.filter {
+                    it.bbLocation.equals("Vertisol", ignoreCase = true) && it.bbStatus == "s"
+                }
+                if (filteredBigBags.isEmpty()) return@mapNotNull null
+
+                // 4️⃣ Obtener todos los trasvases del lote
+                val trasvases = trasvaseRepository.getTrasvasesByLote(lote.number)
+
+                // 5️⃣ Mapear cada BigBag y asignar la fecha correcta buscando en todos los trasvases
+                val vertisolBbList = filteredBigBags.map { bb ->
+                    var fecha: kotlinx.datetime.Instant? = null
+                    for (t in trasvases) {
+                        if (t.trasvaseBigBag.any { it.bbTrasNumber == bb.bbNumber }) {
+                            fecha = t.trasvaseDate
+                            break
+                        }
+                    }
+                    VertisolBigBag(
+                        bbNumber = bb.bbNumber,
+                        bbWeight = bb.bbWeight,
+                        bbTrasvaseDate = fecha
+                    )
+                }
+
+                // 6️⃣ Calcular peso total de los BigBags filtrados
+                val totalWeight = filteredBigBags.sumOf { it.bbWeight.toDoubleOrNull() ?: 0.0 }
+                val totalWeightString = if (totalWeight % 1.0 == 0.0) totalWeight.toInt().toString() else totalWeight.toString()
+
+                // 7️⃣ Construir el modelo Vertisol
+                Vertisol(
+                    vertisolNumber = lote.number,
+                    vertisolDescription = lote.description,
+                    vertisolLocation = "Vertisol",
+                    vertisolCount = lote.count,
+                    vertisolTotalWeight = totalWeightString,
+                    vertisolCompletado = true,
+                    vertisolBigBag = vertisolBbList
+                )
+            }
+
+            vertisolList
+        } catch (e: Exception) {
+            println("❌ Error en listarLotesVertisol: ${e.message}")
+            emptyList()
+        }
+    }
+
+
 }

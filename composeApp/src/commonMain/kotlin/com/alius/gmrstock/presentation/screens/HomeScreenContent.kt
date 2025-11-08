@@ -22,6 +22,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alius.gmrstock.core.LocalDatabaseUrl
+import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.data.FirestoreUrls
 import com.alius.gmrstock.data.agruparPorMaterial
 import com.alius.gmrstock.data.getClientRepository
@@ -45,23 +46,14 @@ class HomeScreenContent(
 
     @Composable
     override fun Content() {
-        // Estado para la base de datos actual
+        // --- 1. Estado y Repositorios ---
         val databaseUrl = LocalDatabaseUrl.current
         var currentDatabaseUrl by remember { mutableStateOf(databaseUrl) }
 
-        println("HomeScreenContent: databaseUrl inicial = $databaseUrl")
-        println("HomeScreenContent: currentDatabaseUrl inicial = $currentDatabaseUrl")
-
-        // Repositorios basados en la DB seleccionada
-        val loteRepository = remember(currentDatabaseUrl) {
-            println("Creando loteRepository para $currentDatabaseUrl")
-            getLoteRepository(currentDatabaseUrl)
-        }
-        val clientRepository = remember(currentDatabaseUrl) {
-            println("Creando clientRepository para $currentDatabaseUrl")
-            getClientRepository(currentDatabaseUrl)
-        }
+        val loteRepository = remember(currentDatabaseUrl) { getLoteRepository(currentDatabaseUrl) }
+        val clientRepository = remember(currentDatabaseUrl) { getClientRepository(currentDatabaseUrl) }
         val coroutineScope = rememberCoroutineScope()
+        val localNavigator = LocalNavigator.currentOrThrow
 
         // Función para alternar entre DB1 y DB2
         val swapDatabase: () -> Unit = {
@@ -71,18 +63,22 @@ class HomeScreenContent(
             } else {
                 FirestoreUrls.DB1_URL
             }
-            println("Swap DB: de $previous a $currentDatabaseUrl")
             onChangeDatabase()
         }
 
+        // Estados principales de datos y UI
         val lotes = remember { mutableStateListOf<LoteModel>() }
         var materialGroups by remember { mutableStateOf<List<MaterialGroup>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
+
+        // Estados de diálogos y BottomSheet
         var showLogoutDialog by remember { mutableStateOf(false) }
         var showUnimplementedDialog by remember { mutableStateOf(false) }
-        // <-- AGREGADO: Nuevo estado para el diálogo de mantenimiento
         var showMaintenanceDialog by remember { mutableStateOf(false) }
+        var showSearchDialog by remember { mutableStateOf(false) }
+        // NUEVO: Estado para el diálogo de Vertisol
+        var showVertisolDialog by remember { mutableStateOf(false) }
 
         val sheetStateGroup = rememberModalBottomSheetState()
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
@@ -90,23 +86,25 @@ class HomeScreenContent(
 
         val snackbarHostState = remember { SnackbarHostState() }
         val currentUserEmail = remember(user.email) { user.email.substringBefore("@") }
-        val localNavigator = LocalNavigator.currentOrThrow
 
+        // --- 2. Carga de Datos (Effect) ---
         LaunchedEffect(currentDatabaseUrl) {
             isLoading = true
             errorMessage = null
             try {
+                // Se corrigió para listar lotes con status 's' (Stock) o manteniéndolo en vacío
                 val loadedLotes = loteRepository.listarLotes("")
                 lotes.clear()
                 lotes.addAll(loadedLotes)
                 materialGroups = agruparPorMaterial(loadedLotes)
             } catch (e: Exception) {
-                errorMessage = e.message ?: "Error desconocido"
+                errorMessage = e.message ?: "Error desconocido al cargar lotes"
             } finally {
                 isLoading = false
             }
         }
 
+        // --- 3. Componentes Reutilizables ---
         @Composable
         fun ActionButton(
             modifier: Modifier = Modifier,
@@ -185,11 +183,13 @@ class HomeScreenContent(
             }
         }
 
+        // --- 4. Estructura Scaffold y Diálogos ---
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
             Box(modifier = Modifier.fillMaxSize()) {
 
+                // Diálogo de Funcionalidad No Implementada
                 if (showUnimplementedDialog) {
                     AlertDialog(
                         onDismissRequest = { showUnimplementedDialog = false },
@@ -203,6 +203,7 @@ class HomeScreenContent(
                     )
                 }
 
+                // Diálogo de Confirmación de Logout
                 if (showLogoutDialog) {
                     AlertDialog(
                         onDismissRequest = { showLogoutDialog = false },
@@ -224,32 +225,27 @@ class HomeScreenContent(
                     )
                 }
 
-                //DIÁLOGO DE MANTENIMIENTO
+                // Diálogo de Mantenimiento/Datos
                 if (showMaintenanceDialog) {
                     AlertDialog(
                         onDismissRequest = { showMaintenanceDialog = false },
                         title = {
                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                Text(
-                                    "Mantenimiento de Datos",
-                                    fontWeight = FontWeight.Bold,
-                                    color = PrimaryColor
-                                )
+                                Text("Seleccione opción", fontWeight = FontWeight.Bold, color = PrimaryColor)
                             }
                         },
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
-                                    label = "Mantenimiento de clientes",
+                                    label = "Gestión de clientes",
                                     icon = Icons.Default.People,
                                     onClick = {
                                         showMaintenanceDialog = false
-                                        // Navegar a CrudClientScreen
                                         localNavigator.push(CrudClientScreen(currentDatabaseUrl))
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Mantenimiento de materiales",
+                                    label = "Gestión de materiales",
                                     icon = Icons.Default.Category,
                                     onClick = {
                                         showMaintenanceDialog = false
@@ -257,11 +253,11 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Mantenimiento de reservas",
-                                    icon = Icons.Default.Event,
+                                    label = "Devoluciones",
+                                    icon = Icons.Default.AssignmentReturn,
                                     onClick = {
                                         showMaintenanceDialog = false
-                                        showUnimplementedDialog = true
+                                        localNavigator.push(DevolucionesScreen(currentDatabaseUrl))
                                     }
                                 )
                             }
@@ -275,18 +271,81 @@ class HomeScreenContent(
                     )
                 }
 
+                // Diálogo de Búsqueda
+                if (showSearchDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showSearchDialog = false },
+                        title = {
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                Text("Seleccione opción de búsqueda", fontWeight = FontWeight.Bold, color = PrimaryColor)
+                            }
+                        },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                MaintenanceOption(
+                                    label = "Buscar por Fecha",
+                                    icon = Icons.Default.DateRange,
+                                    onClick = {
+                                        showSearchDialog = false
+                                        showUnimplementedDialog = true
+                                    }
+                                )
+                                MaintenanceOption(
+                                    label = "Buscar por Referencia",
+                                    icon = Icons.Default.BookmarkBorder,
+                                    onClick = {
+                                        showSearchDialog = false
+                                        showUnimplementedDialog = true
+                                    }
+                                )
+                                MaintenanceOption(
+                                    label = "Buscar por Lote",
+                                    icon = Icons.Default.ConfirmationNumber,
+                                    onClick = {
+                                        showSearchDialog = false
+                                        showUnimplementedDialog = true
+                                    }
+                                )
+                            }
+                        },
+                        confirmButton = {},
+                        dismissButton = {
+                            TextButton(onClick = { showSearchDialog = false }) {
+                                Text("Cerrar", color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    )
+                }
+
+                // NUEVO DIÁLOGO: VERTISOL
+                if (showVertisolDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showVertisolDialog = false },
+                        title = {
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                Text("Opciones Vertisol", fontWeight = FontWeight.Bold, color = PrimaryColor)
+                            }
+                        },
+                        text = {
+                            Text("Funcionalidades relacionadas con la gestión de Vertisol. (No implementado aún)")
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showVertisolDialog = false }) {
+                                Text("Aceptar", color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+                            }
+                        },
+                        dismissButton = {}
+                    )
+                }
+
+
+                // --- 5. Contenido Principal (Carga/Error/Éxito) ---
                 if (isLoading) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = PrimaryColor)
                     }
                 } else if (errorMessage != null) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error)
                     }
                 } else {
@@ -296,6 +355,7 @@ class HomeScreenContent(
                             .padding(horizontal = 16.dp)
                     ) {
 
+                        // Fila de Botones de Acción (5 BOTONES)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -312,26 +372,35 @@ class HomeScreenContent(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Tune,
                                 label = "Datos",
-                                onClick = {
-                                    showMaintenanceDialog = true
-                                }
+                                onClick = { showMaintenanceDialog = true }
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Search,
                                 label = "Buscar",
-                                onClick = { showUnimplementedDialog = true }
+                                onClick = { showSearchDialog = true }
                             )
+                            // 🔑 NUEVO BOTÓN: VERTISOL
+                            ActionButton(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.Apartment,
+                                label = "Vertisol",
+                                onClick = {
+                                    localNavigator.push(VertisolScreen(currentDatabaseUrl))
+                                }
+                            )
+                            // ÚLTIMO BOTÓN: USER
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.PowerSettingsNew,
-                                label = user.email.substringBefore("@"),
+                                label = currentUserEmail,
                                 onClick = { showLogoutDialog = true }
                             )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        // Lista de Grupos de Materiales
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
                         ) {
@@ -344,9 +413,13 @@ class HomeScreenContent(
                                     ),
                                     color = MaterialTheme.colorScheme.secondary
                                 )
+
                                 Spacer(modifier = Modifier.height(2.dp))
+
+                                // Cálculo y visualización del peso total
+                                val totalKilos = materialGroups.sumOf { it.totalWeight.toDoubleOrNull() ?: 0.0 }
                                 Text(
-                                    text = "Número de materiales: ${materialGroups.size}",
+                                    text = "Total kilos: ${formatWeight(totalKilos)} Kg",
                                     style = MaterialTheme.typography.titleMedium.copy(
                                         fontWeight = FontWeight.Medium
                                     ),
@@ -367,6 +440,7 @@ class HomeScreenContent(
                     }
                 }
 
+                // --- 6. BottomSheet de Material Group ---
                 if (showGroupMaterialBottomSheet && selectedGroupForSheet != null) {
                     ModalBottomSheet(
                         onDismissRequest = {
@@ -377,7 +451,7 @@ class HomeScreenContent(
                             }
                         },
                         sheetState = sheetStateGroup,
-                        modifier = Modifier.fillMaxHeight(0.5f)
+                        modifier = Modifier.fillMaxHeight(0.9f)
                     ) {
                         GroupMaterialBottomSheetContent(
                             loteNumbers = selectedGroupForSheet!!.loteNumbers,

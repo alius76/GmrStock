@@ -52,17 +52,20 @@ class CrudClientScreen(
         var nameField by remember { mutableStateOf(TextFieldValue("")) }
         var obsField by remember { mutableStateOf(TextFieldValue("")) }
 
-        // 🎨 Definición de colores de TextField para el estado enfocado
+        // 🎨 Definición de colores de TextField para el estado enfocado (SIN CAMBIOS)
         val focusedTextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = PrimaryColor,
             focusedLabelColor = PrimaryColor
         )
 
+        // 🎨 NUEVO: Forma redondeada de 12.dp para TextFields y Cards
+        val roundedShape12 = RoundedCornerShape(12.dp)
+
         fun refreshClients() {
             coroutineScope.launch {
-                loading = true // Inicia la carga
+                loading = true
                 clients = clientRepo.getAllClientsWithIds()
-                loading = false // Finaliza la carga
+                loading = false
             }
         }
 
@@ -77,9 +80,7 @@ class CrudClientScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
-                        color = PrimaryColor // Usando el color definido localmente
-                    )
+                    CircularProgressIndicator(color = PrimaryColor)
                 }
             } else {
                 // --- Contenido principal solo si NO está cargando ---
@@ -96,114 +97,100 @@ class CrudClientScreen(
                             // Título y Flecha en la parte superior del Box, incluso si la lista está vacía
                             Column(modifier = Modifier.fillMaxWidth()) {
 
-                                // 1. Botón de Atrás (Top Left - en el espacio de 50.dp)
+                                // 1. Botón de Atrás (Top Left - SIN CAMBIOS)
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(50.dp), // Altura fija para compensar la barra de estado
+                                        .height(50.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Start // Alineado a la izquierda
+                                    horizontalArrangement = Arrangement.Start
                                 ) {
-                                    // El IconButton tiene padding interno que lo mueve ligeramente,
-                                    // pero está alineado con el inicio de la Row (borde del Box)
                                     IconButton(onClick = { navigator.pop() }) {
-                                        Icon(
-                                            Icons.Default.ArrowBack,
-                                            contentDescription = "Atrás",
-                                            tint = PrimaryColor,
-                                        )
+                                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
                                     }
                                 }
 
-                                // 2. Título Principal: "Gestión de clientes" (alineado a la izquierda)
+                                // 2. Título Principal: "Gestión de clientes" (SIN CAMBIOS)
                                 Text(
                                     text = "Gestión de clientes",
                                     style = MaterialTheme.typography.titleLarge.copy(
-                                        fontSize = 26.sp, // Tamaño y peso del título principal
+                                        fontSize = 26.sp,
                                         fontWeight = FontWeight.Bold
                                     ),
                                     color = MaterialTheme.colorScheme.secondary,
-                                    // ✅ QUITADO padding(horizontal = 16.dp) para alinear con el borde del Box/Card
                                 )
 
-                                Spacer(modifier = Modifier.height(20.dp)) // Espacio después del encabezado
+                                Spacer(modifier = Modifier.height(20.dp))
                             }
 
                             // Mensaje central si está vacío
                             Box(
-                                modifier = Modifier.fillMaxSize().padding(top = 100.dp), // Ajuste para que no colisione con el título
+                                modifier = Modifier.fillMaxSize().padding(top = 100.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("No hay clientes registrados.", color = TextSecondary)
                             }
-
                         }
                     } else {
                         LazyColumn(
-                            // Este LazyColumn ya tiene padding horizontal=16.dp
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            // MEJORA: Aumentar espaciado entre tarjetas
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
 
-                            // --- Área de Títulos Combinada (Alineada a la referencia) ---
+                            // --- Área de Títulos Combinada (Encabezado del LazyColumn - SIN CAMBIOS) ---
                             item {
                                 Column(modifier = Modifier.fillMaxWidth()) {
 
-                                    // 1. Botón de Atrás (Top Left - en el espacio de 50.dp)
+                                    // 1. Botón de Atrás (Top Left - SIN CAMBIOS)
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(50.dp), // Altura fija para compensar la barra de estado
+                                            .height(50.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Start // Alineado a la izquierda
+                                        horizontalArrangement = Arrangement.Start
                                     ) {
-                                        // Alineado con el borde del LazyColumn
                                         IconButton(onClick = { navigator.pop() }) {
-                                            Icon(
-                                                Icons.Default.ArrowBack,
-                                                contentDescription = "Atrás",
-                                                tint = PrimaryColor,
-                                            )
+                                            Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
                                         }
                                     }
 
-                                    // 2. Título Principal: "Gestión de clientes"
+                                    // 2. Título Principal: "Gestión de clientes" (SIN CAMBIOS)
                                     Text(
                                         text = "Gestión de clientes",
                                         style = MaterialTheme.typography.titleLarge.copy(
-                                            fontSize = 26.sp, // Tamaño y peso del título principal
+                                            fontSize = 26.sp,
                                             fontWeight = FontWeight.Bold
                                         ),
-                                        // ✅ CAMBIADO A MaterialTheme.colorScheme.secondary
                                         color = MaterialTheme.colorScheme.secondary,
-                                        // ✅ QUITADO padding(horizontal = 16.dp)
                                     )
 
-                                    // 3. Subtítulo: "Clientes Registrados" (Antiguo título de la lista)
+                                    // 3. Subtítulo: "Clientes Registrados" (SIN CAMBIOS)
                                     Text(
                                         text = "Clientes Registrados",
                                         style = MaterialTheme.typography.titleMedium.copy(
                                             fontWeight = FontWeight.Medium
                                         ),
-                                        color = Color.Gray, // Color secundario para el subtítulo
-                                        // ✅ QUITADO padding(start = 16.dp, end = 16.dp)
+                                        color = Color.Gray,
                                         modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
                                     )
                                 }
                             }
 
-                            // --- Cards de Clientes con la nueva estética ---
+                            // --- Cards de Clientes (MEJORADO) ---
                             items(clients) { (documentId, cliente) ->
                                 Card(
-                                    // Alineada con el borde del LazyColumn (16.dp)
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    // 🎨 USO DE BACKGROUNDCOLOR
-                                    colors = CardDefaults.cardColors(containerColor = BackgroundColor),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                                    modifier = Modifier.fillMaxWidth(),
+                                    // MEJORA: Esquinas redondeadas a 12.dp
+                                    shape = roundedShape12,
+                                    colors = CardDefaults.cardColors(
+                                        // MEJORA: Usar color de fondo estándar de tarjeta para contraste
+                                        containerColor = Color.White
+                                    ),
+                                    // MEJORA: Reducir un poco la elevación para un look más plano
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -216,10 +203,10 @@ class CrudClientScreen(
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(
                                                 cliente.cliNombre,
-                                                style = MaterialTheme.typography.titleLarge,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                // 🎨 USO DE PRIMARYCOLOR
-                                                color = PrimaryColor,
+                                                // MEJORA: Font más grande y negrita para destacar
+                                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = PrimaryColor, // Usar PrimaryColor
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
@@ -228,17 +215,16 @@ class CrudClientScreen(
                                                 Text(
                                                     "Obs: ${cliente.cliObservaciones}",
                                                     style = MaterialTheme.typography.bodyMedium,
-                                                    // 🎨 USO DE TEXTSECONDARY
-                                                    color = TextSecondary,
+                                                    color = Color.DarkGray, // Un gris más oscuro que TextSecondary
                                                     maxLines = 2,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
 
-                                        // 2. Botones de Acción (Derecha)
+                                        // 2. Botones de Acción (Derecha - SIN CAMBIOS EN COLORES, solo espaciado)
                                         Row(
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp), // Aumentar espacio entre iconos
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             IconButton(onClick = {
@@ -247,33 +233,25 @@ class CrudClientScreen(
                                                 obsField = TextFieldValue(cliente.cliObservaciones)
                                                 showEditCreateDialog = true
                                             }) {
-                                                Icon(
-                                                    Icons.Default.Edit,
-                                                    contentDescription = "Editar",
-                                                    // 🎨 USO DE PRIMARYCOLOR
-                                                    tint = PrimaryColor
-                                                )
+                                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = PrimaryColor)
                                             }
                                             IconButton(onClick = {
                                                 clientToDelete = documentId to cliente
                                                 showDeleteConfirmDialog = true
                                             }) {
-                                                Icon(
-                                                    Icons.Default.Delete,
-                                                    contentDescription = "Eliminar",
-                                                    // 🎨 USO DE RESERVEDCOLOR
-                                                    tint = ReservedColor
-                                                )
+                                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ReservedColor)
                                             }
                                         }
                                     }
                                 }
                             }
+                            // Espacio al final de la lista para el FAB
+                            item { Spacer(Modifier.height(80.dp)) }
                         }
                     }
-                } // Fin Column (Arrow + Content)
+                } // Fin Column (Content)
 
-                // 🚨 Floating Action Button (Manualmente posicionado)
+                // 🚨 Floating Action Button (SIN CAMBIOS)
                 FloatingActionButton(
                     onClick = {
                         editingClient = null
@@ -281,47 +259,48 @@ class CrudClientScreen(
                         obsField = TextFieldValue("")
                         showEditCreateDialog = true
                     },
-                    // 🎨 USO DE PRIMARYCOLOR
                     containerColor = PrimaryColor,
+                    // MEJORA: Asegurar que la forma sea circular (50% de radio)
+                    shape = RoundedCornerShape(50),
                     modifier = Modifier
-                        .align(Alignment.BottomEnd) // Posicionamiento manual
-                        .padding(24.dp) // Padding exterior
+                        .align(Alignment.BottomEnd)
+                        .padding(24.dp)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Nuevo cliente", tint = Color.White)
                 }
             } // Fin del bloque 'else' (no loading)
 
-            // 🔹 Dialogo Crear/Editar
+            // 🔹 Dialogo Crear/Editar (MEJORADO)
             if (showEditCreateDialog) {
                 AlertDialog(
                     onDismissRequest = { showEditCreateDialog = false },
                     title = {
-                        // ✅ Título centrado
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text(
                                 if (editingClient == null) "Nuevo cliente" else "Editar cliente",
                                 fontWeight = FontWeight.Bold,
-                                // 🎨 USO DE PRIMARYCOLOR
                                 color = PrimaryColor
                             )
                         }
                     },
                     text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            // ✅ TextField con color enfocado PrimaryColor
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { // Aumentar espacio
+                            // MEJORA: Aplicar forma redondeada de 12.dp
                             OutlinedTextField(
                                 value = nameField,
                                 onValueChange = { nameField = it },
                                 label = { Text("Nombre del cliente") },
                                 singleLine = true,
+                                shape = roundedShape12,
                                 colors = focusedTextFieldColors
                             )
-                            // ✅ TextField con color enfocado PrimaryColor
+                            // MEJORA: Aplicar forma redondeada de 12.dp
                             OutlinedTextField(
                                 value = obsField,
                                 onValueChange = { obsField = it },
                                 label = { Text("Observaciones") },
                                 maxLines = 3,
+                                shape = roundedShape12,
                                 colors = focusedTextFieldColors
                             )
                         }
@@ -349,26 +328,22 @@ class CrudClientScreen(
                 )
             }
 
-            // --- DIÁLOGO DE CONFIRMACIÓN DE ELIMINACIÓN ---
+            // --- DIÁLOGO DE CONFIRMACIÓN DE ELIMINACIÓN (MEJORADO) ---
             if (showDeleteConfirmDialog && clientToDelete != null) {
                 val (documentId, cliente) = clientToDelete!!
                 AlertDialog(
                     onDismissRequest = { showDeleteConfirmDialog = false },
-                    // 🎨 USO DE RESERVEDCOLOR
                     icon = { Icon(Icons.Default.Warning, contentDescription = "Advertencia", tint = ReservedColor) },
                     title = {
-                        // ✅ Título centrado
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text(
                                 "Confirmar eliminación",
                                 fontWeight = FontWeight.Bold,
-                                // 🎨 USO DE PRIMARYCOLOR
                                 color = PrimaryColor
                             )
                         }
                     },
                     text = {
-                        // El diálogo de confirmación no tiene TextFields, solo el mensaje de texto.
                         Text("¿Está seguro de que desea eliminar al cliente ${cliente.cliNombre}?")
                     },
                     confirmButton = {
@@ -380,8 +355,8 @@ class CrudClientScreen(
                                 refreshClients()
                             }
                         }) {
-                            // 🎨 USO DE RESERVEDCOLOR
-                            Text("Eliminar", color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+                            // MEJORA: Usar ReservedColor para la acción destructiva
+                            Text("Eliminar", color = ReservedColor, fontWeight = FontWeight.SemiBold)
                         }
                     },
                     dismissButton = {
