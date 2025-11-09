@@ -3,6 +3,8 @@ package com.alius.gmrstock.data.firestore
 import com.alius.gmrstock.data.FirebaseDocument
 import com.alius.gmrstock.data.mappers.LoteDtoMapper
 import com.alius.gmrstock.domain.model.LoteModel
+import com.alius.gmrstock.domain.model.Reprocesar
+import com.alius.gmrstock.domain.model.ReprocesarBigBag
 import com.alius.gmrstock.domain.model.Trasvase
 import com.alius.gmrstock.domain.model.TrasvaseBigBag
 import kotlinx.serialization.json.Json
@@ -115,6 +117,58 @@ fun parseRunQueryResponseTrasvase(jsonBody: String): List<Trasvase> {
 
     return resultList
 }
+fun parseRunQueryResponseReprocesar(jsonBody: String): List<Reprocesar> {
+    val rootElement = try {
+        json.parseToJsonElement(jsonBody)
+    } catch (_: Exception) {
+        return emptyList()
+    }
+
+    val elements = rootElement.jsonArrayOrNull ?: return emptyList()
+    val resultList = mutableListOf<Reprocesar>()
+
+    for (element in elements) {
+        try {
+            val docElement = element.jsonObject["document"] ?: continue
+            val fields = docElement.jsonObject["fields"]?.jsonObject ?: continue
+
+            val reproBigBags = fields["bigBagsReprocesados"]
+                ?.jsonObject
+                ?.get("arrayValue")
+                ?.jsonObject
+                ?.get("values")
+                ?.jsonArray
+                ?.mapNotNull { bbJson ->
+                    val bbFields = bbJson.jsonObject["mapValue"]?.jsonObject?.get("fields")?.jsonObject
+                        ?: return@mapNotNull null
+                    ReprocesarBigBag(
+                        bbNumber = bbFields["bbNumber"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                        bbWeight = bbFields["bbWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
+                    )
+                } ?: emptyList()
+
+            val reproceso = Reprocesar(
+                reprocesoNumber = fields["reprocesarLoteNumber"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                reprocesoDescription = fields["reprocesarDescription"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                reprocesoCreatedAt = fields["reprocesarCreatedAt"]?.jsonObject?.get("timestampValue")?.jsonPrimitive?.content
+                    ?.let { Instant.parse(it) },
+                reprocesoLoteWeight = fields["reprocesarTotalWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                reprocesoTargetLoteNumber = fields["reprocesarLoteDestino"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
+                reprocesoDate = fields["reprocesarFechaReproceso"]?.jsonObject?.get("timestampValue")?.jsonPrimitive?.content
+                    ?.let { Instant.parse(it) },
+                reprocesoBigBag = reproBigBags
+            )
+
+            resultList.add(reproceso)
+        } catch (_: Exception) {
+            // Ignorar documento si falla el parseo
+        }
+    }
+
+    // 🔹 Ordenar por fecha de reproceso descendente
+    return resultList.sortedByDescending { it.reprocesoDate }
+}
+
 
 // -------------------- EXTENSION JSON --------------------
 

@@ -38,16 +38,14 @@ class VertisolScreen(private val databaseUrl: String) : Screen {
         var isLoading by remember { mutableStateOf(true) }
         var totalKilos by remember { mutableStateOf(0.0) }
 
-        // 🔹 Cargar los lotes Vertisol al iniciar
+        // 🔹 Cargar los lotes Vertisol
         LaunchedEffect(Unit) {
             scope.launch {
                 try {
                     isLoading = true
                     val loadedVertisol = loteRepository.listarLotesVertisol()
                     vertisolList = loadedVertisol
-                    totalKilos = loadedVertisol.sumOf {
-                        it.vertisolTotalWeight.toDoubleOrNull() ?: 0.0
-                    }
+                    totalKilos = loadedVertisol.sumOf { it.vertisolTotalWeight.toDoubleOrNull() ?: 0.0 }
                 } catch (e: Exception) {
                     println("❌ Error cargando Vertisol: ${e.message}")
                 } finally {
@@ -89,55 +87,52 @@ class VertisolScreen(private val databaseUrl: String) : Screen {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // 🔸 Encabezado (scrollable)
+                        // 🔸 Header scrollable
                         item {
-                            // Botón de volver
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 4.dp, top = 8.dp, bottom = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { navigator.pop() }) {
-                                    Icon(
-                                        Icons.Default.ArrowBack,
-                                        contentDescription = "Volver",
-                                        tint = PrimaryColor
-                                    )
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(50.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    IconButton(onClick = { navigator.pop() }) {
+                                        Icon(
+                                            Icons.Default.ArrowBack,
+                                            contentDescription = "Volver",
+                                            tint = PrimaryColor
+                                        )
+                                    }
                                 }
-                            }
 
-                            // Título principal
-                            Text(
-                                text = "Lotes en Vertisol",
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            )
-
-                            // Subtítulo con total de kilos
-                            Text(
-                                text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(
-                                    start = 8.dp,
-                                    top = 4.dp,
-                                    bottom = 16.dp
+                                Text(
+                                    text = "Lotes en Vertisol",
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.secondary
                                 )
-                            )
+
+                                Text(
+                                    text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+                                )
+                            }
                         }
 
                         // 🔸 Listado de Vertisoles
                         items(vertisolList) { vertisol ->
                             VertisolCard(vertisol = vertisol)
                         }
+
+                        // 🔸 Spacer final
+                        item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
                 }
             }

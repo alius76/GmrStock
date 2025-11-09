@@ -586,14 +586,21 @@ fun LoteCard(
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
         var showDatePicker by remember { mutableStateOf(false) }
-        var showClientes by remember { mutableStateOf(false) }
+        // ❌ ELIMINADO: var showClientes by remember { mutableStateOf(false) }
         var userToSave by remember { mutableStateOf(currentUserEmail) }
 
         // Observaciones sincronizadas
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
-        LaunchedEffect(Unit) { clientesList = clientRepository.getAllClientsOrderedByName() }
+
+        // 🟢 Carga de clientes y filtrado de "NO OK" para el carrusel
+        LaunchedEffect(Unit) {
+            // Obtenemos todos los clientes
+            val allClients = clientRepository.getAllClientsOrderedByName()
+            // Filtramos la lista visible para el carrusel (excluimos "NO OK")
+            clientesList = allClients.filter { it.cliNombre != "NO OK" }
+        }
 
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
@@ -634,58 +641,77 @@ fun LoteCard(
                     } else {
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
 
-                        // Contenedor de altura fija para texto o lista
+                        // Contenedor de altura fija para la lista (LazyRow)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(80.dp) // altura fija para evitar cambios
+                                .height(80.dp) // Altura fija
                                 .padding(vertical = 0.dp)
                         ) {
-                            if (!showClientes) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clickable { showClientes = true }
-                                        .padding(horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.Person,
-                                        contentDescription = "Clientes",
-                                        tint = PrimaryColor,
-                                        modifier = Modifier.size(28.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = "Mostrar clientes",
-                                        color = PrimaryColor,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 18.sp
-                                    )
-                                }
-                            } else {
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    items(clientesList ?: emptyList()) { cliente ->
-                                        val isSelected = selectedCliente == cliente
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = if (isSelected) PrimaryColor else PrimaryColor.copy(alpha = 0.1f),
-                                            modifier = Modifier.clickable { selectedCliente = cliente }
-                                        ) {
-                                            Text(
-                                                text = cliente.cliNombre,
-                                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else PrimaryColor,
-                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                                            )
-                                        }
+                            // 🟢 MOSTRAR EL LAZYROW DIRECTAMENTE
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth().fillMaxHeight(), // Mantiene la altura fija de 80.dp
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Muestra solo clientes reales
+                                items(clientesList ?: emptyList()) { cliente ->
+                                    val isSelected = selectedCliente == cliente
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isSelected) PrimaryColor else PrimaryColor.copy(alpha = 0.1f),
+                                        modifier = Modifier.clickable { selectedCliente = cliente }
+                                    ) {
+                                        Text(
+                                            text = cliente.cliNombre,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else PrimaryColor,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                        )
                                     }
                                 }
                             }
                         }
+
+                        // -------------------------------------------------------------
+                        // 🟢 SECCIÓN: Bloqueo Interno ("NO OK") separado
+                        // -------------------------------------------------------------
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        val noOkCliente = Cliente(cliNombre = "NO OK")
+                        val isSelected = selectedCliente?.cliNombre == "NO OK"
+                        val errorColor = MaterialTheme.colorScheme.error
+
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) errorColor else errorColor.copy(alpha = 0.15f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                                .clickable { selectedCliente = noOkCliente } // Selecciona "NO OK"
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Lock,
+                                    contentDescription = "Bloquear",
+                                    tint = if (isSelected) Color.White else errorColor,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "BLOQUEO INTERNO",
+                                    color = if (isSelected) Color.White else errorColor,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                        // -------------------------------------------------------------
                     }
 
                     // --- OBSERVACIONES ---
@@ -814,7 +840,7 @@ fun LoteCard(
                                 scope.launch {
                                     val success = loteRepository.updateLoteBooked(
                                         loteId = lote.id,
-                                        cliente = selectedCliente,
+                                        cliente = selectedCliente, // Se guarda el cliente seleccionado (real o "NO OK")
                                         dateBooked = parsedDate ?: lote.dateBooked,
                                         bookedByUser = userToSave,
                                         bookedRemark = remarkToSave
@@ -840,7 +866,6 @@ fun LoteCard(
             }
         )
     }
-
 
 
 }

@@ -277,21 +277,21 @@ class HomeScreenContent(
                         onDismissRequest = { showSearchDialog = false },
                         title = {
                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                Text("Seleccione opción de búsqueda", fontWeight = FontWeight.Bold, color = PrimaryColor)
+                                Text("Seleccione opción", fontWeight = FontWeight.Bold, color = PrimaryColor)
                             }
                         },
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
-                                    label = "Buscar por Fecha",
-                                    icon = Icons.Default.DateRange,
+                                    label = "Lotes reprocesados",
+                                    icon = Icons.Default.Repeat,
                                     onClick = {
                                         showSearchDialog = false
-                                        showUnimplementedDialog = true
+                                        localNavigator.push(ReprocesarScreen(currentDatabaseUrl))
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Buscar por Referencia",
+                                    label = "Calendario de reseras",
                                     icon = Icons.Default.BookmarkBorder,
                                     onClick = {
                                         showSearchDialog = false
