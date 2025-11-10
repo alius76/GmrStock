@@ -237,7 +237,7 @@ class HomeScreenContent(
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
-                                    label = "Gestión de clientes",
+                                    label = "Mantenimiento de clientes",
                                     icon = Icons.Default.People,
                                     onClick = {
                                         showMaintenanceDialog = false
@@ -245,7 +245,7 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Gestión de materiales",
+                                    label = "Control de materiales",
                                     icon = Icons.Default.Category,
                                     onClick = {
                                         showMaintenanceDialog = false
@@ -299,7 +299,7 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Buscar por Lote",
+                                    label = "Trazabilidad",
                                     icon = Icons.Default.ConfirmationNumber,
                                     onClick = {
                                         showSearchDialog = false
@@ -371,13 +371,13 @@ class HomeScreenContent(
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Tune,
-                                label = "Datos",
+                                label = "Gestión",
                                 onClick = { showMaintenanceDialog = true }
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Search,
-                                label = "Buscar",
+                                label = "Consulta",
                                 onClick = { showSearchDialog = true }
                             )
                             // 🔑 NUEVO BOTÓN: VERTISOL
