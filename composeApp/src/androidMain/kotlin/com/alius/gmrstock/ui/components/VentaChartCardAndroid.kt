@@ -36,11 +36,11 @@ actual fun VentaChartCard(
     val data = ventaDataList
     if (data.isEmpty()) return
 
-    val maxWeight = if (isAnnual) 1_000_000f else 100_000f
+    val maxWeight = if (isAnnual) 1_000_000f else 160_000f
     val yLabels = if (isAnnual)
         listOf(0f, 200_000f, 400_000f, 600_000f, 800_000f, 1_000_000f)
     else
-        listOf(0f, 20_000f, 40_000f, 60_000f, 80_000f, 100_000f)
+        listOf(0f, 20_000f, 40_000f, 60_000f, 80_000f, 100_000f, 120_000f, 140_000f, 160_000f)
 
     val yLabelStrings = yLabels.map {
         if (it >= 1_000_000f) "${(it / 1_000_000).toInt()}M"

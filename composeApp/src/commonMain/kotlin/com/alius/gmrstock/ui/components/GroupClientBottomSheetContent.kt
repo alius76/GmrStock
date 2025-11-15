@@ -3,7 +3,10 @@ package com.alius.gmrstock.ui.components
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
@@ -11,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.alius.gmrstock.domain.model.Venta
@@ -54,7 +58,7 @@ fun GroupClientBottomSheetContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         when {
             isLoading -> {
@@ -80,85 +84,89 @@ fun GroupClientBottomSheetContent(
             }
 
             else -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(380.dp),
-                    contentAlignment = Alignment.Center
+                // Carrusel de clientes con puntos
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // 🚀 FADE + ZOOM + LEVE DESPLAZAMIENTO VERTICAL
-                    AnimatedContent(
-                        targetState = currentIndex,
-                        transitionSpec = {
-                            fadeIn(
-                                animationSpec = tween(
-                                    durationMillis = 450,
-                                    easing = FastOutSlowInEasing
-                                )
-                            ) + scaleIn(
-                                initialScale = 0.96f,
-                                animationSpec = tween(
-                                    durationMillis = 450,
-                                    easing = FastOutSlowInEasing
-                                )
-                            ) + slideInVertically(
-                                initialOffsetY = { it / 10 }, // 10% hacia abajo al entrar
-                                animationSpec = tween(
-                                    durationMillis = 450,
-                                    easing = FastOutSlowInEasing
-                                )
-                            ) with fadeOut(
-                                animationSpec = tween(
-                                    durationMillis = 350,
-                                    easing = FastOutSlowInEasing
-                                )
-                            ) + slideOutVertically(
-                                targetOffsetY = { -it / 10 }, // 10% hacia arriba al salir
-                                animationSpec = tween(
-                                    durationMillis = 350,
-                                    easing = FastOutSlowInEasing
-                                )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(380.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AnimatedContent(
+                            targetState = currentIndex,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(450, easing = FastOutSlowInEasing)) +
+                                        scaleIn(initialScale = 0.96f, animationSpec = tween(450, easing = FastOutSlowInEasing)) with
+                                        fadeOut(animationSpec = tween(350, easing = FastOutSlowInEasing))
+                            }
+                        ) { index ->
+                            val venta = ventas[index]
+                            ClientCard(
+                                cliente = cliente,
+                                venta = venta,
+                                modifier = Modifier.fillMaxWidth(0.8f)
                             )
                         }
-                    ) { index ->
-                        val venta = ventas[index]
-                        ClientCard(
-                            cliente = cliente,
-                            venta = venta,
-                            modifier = Modifier
-                                .fillMaxWidth(0.8f)
-                        )
+
+                        // Botón izquierda
+                        IconButton(
+                            onClick = { if (currentIndex > 0) currentIndex-- },
+                            modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
+                            enabled = currentIndex > 0
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = "Anterior",
+                                tint = if (currentIndex > 0) PrimaryColor
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            )
+                        }
+
+                        // Botón derecha
+                        IconButton(
+                            onClick = { if (currentIndex < ventas.size - 1) currentIndex++ },
+                            modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
+                            enabled = currentIndex < ventas.size - 1
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowForwardIos,
+                                contentDescription = "Siguiente",
+                                tint = if (currentIndex < ventas.size - 1) PrimaryColor
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            )
+                        }
                     }
 
-                    // Botón izquierda
-                    IconButton(
-                        onClick = { if (currentIndex > 0) currentIndex-- },
-                        modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
-                        enabled = currentIndex > 0
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
-                            contentDescription = "Anterior",
-                            tint = if (currentIndex > 0) PrimaryColor
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Botón derecha
-                    IconButton(
-                        onClick = { if (currentIndex < ventas.size - 1) currentIndex++ },
-                        modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
-                        enabled = currentIndex < ventas.size - 1
+                    // Barra de puntos interactiva
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForwardIos,
-                            contentDescription = "Siguiente",
-                            tint = if (currentIndex < ventas.size - 1) PrimaryColor
+                        ventas.forEachIndexed { index, _ ->
+                            val isActive = index == currentIndex
+                            val size = if (isActive) 14.dp else 10.dp
+                            val color = if (isActive) PrimaryColor
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        )
+
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 4.dp)
+                                    .size(size)
+                                    .clip(CircleShape)
+                                    .background(color)
+                                    .clickable { currentIndex = index } // Permite seleccionar los puntos
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+

@@ -80,7 +80,7 @@ class HomeScreenContent(
         // NUEVO: Estado para el diálogo de Vertisol
         var showVertisolDialog by remember { mutableStateOf(false) }
 
-        val sheetStateGroup = rememberModalBottomSheetState()
+        val sheetStateGroup = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
         var selectedGroupForSheet by remember { mutableStateOf<MaterialGroup?>(null) }
 
@@ -451,7 +451,7 @@ class HomeScreenContent(
                             }
                         },
                         sheetState = sheetStateGroup,
-                        modifier = Modifier.fillMaxHeight(0.9f)
+                        modifier = Modifier.fillMaxHeight(0.7f)
                     ) {
                         GroupMaterialBottomSheetContent(
                             loteNumbers = selectedGroupForSheet!!.loteNumbers,

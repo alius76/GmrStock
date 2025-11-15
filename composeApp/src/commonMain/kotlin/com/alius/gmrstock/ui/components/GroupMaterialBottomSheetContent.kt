@@ -3,7 +3,10 @@ package com.alius.gmrstock.ui.components
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForwardIos
@@ -11,7 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.alius.gmrstock.data.ClientRepository
@@ -80,7 +83,7 @@ fun GroupMaterialBottomSheetContent(
             color = PrimaryColor
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         if (isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -96,112 +99,106 @@ fun GroupMaterialBottomSheetContent(
             }
         } else {
             // Contenedor carrusel
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(380.dp),
-                contentAlignment = Alignment.Center
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(380.dp),
+                    contentAlignment = Alignment.Center
+                ) {
 
-                // 🚀 FADE + ZOOM SUAVE (ScaleIn)
-                AnimatedContent(
-                    targetState = currentIndex,
-                    transitionSpec = {
-                        fadeIn(
-                            animationSpec = tween(
-                                durationMillis = 400,
-                                easing = FastOutSlowInEasing
+                    // AnimatedContent para mostrar la card actual
+                    AnimatedContent(
+                        targetState = currentIndex,
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(450, easing = FastOutSlowInEasing)) +
+                                    scaleIn(initialScale = 0.96f, animationSpec = tween(450, easing = FastOutSlowInEasing)) with
+                                    fadeOut(animationSpec = tween(350, easing = FastOutSlowInEasing))
+                        }
+                    ) { index ->
+                        val lote = lotes[index]
+                        val cert = certificados[lote.number]
+                        val certColor = when (cert?.status) {
+                            CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                            CertificadoStatus.CORRECTO -> PrimaryColor
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+
+                        Box {
+                            LoteCard(
+                                lote = lote,
+                                certificado = cert,
+                                certificadoIconColor = certColor,
+                                modifier = Modifier.fillMaxWidth(0.8f),
+                                scope = scope,
+                                snackbarHostState = snackbarHostState,
+                                onViewBigBags = onViewBigBags,
+                                databaseUrl = databaseUrl,
+                                onRemarkUpdated = { updatedLote ->
+                                    lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                    onRemarkUpdated(updatedLote)
+                                },
+                                clientRepository = clientRepository,
+                                currentUserEmail = currentUserEmail
                             )
-                        ) + scaleIn(
-                            initialScale = 0.9f, // Zoom más marcado
-                            animationSpec = tween(
-                                durationMillis = 400,
-                                easing = FastOutSlowInEasing
-                            )
-                        ) + slideInHorizontally(
-                            initialOffsetX = { fullWidth -> if (targetState > initialState) fullWidth else -fullWidth },
-                            animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
-                        ) with fadeOut(
-                            animationSpec = tween(
-                                durationMillis = 350,
-                                easing = FastOutSlowInEasing
-                            )
-                        ) + scaleOut(
-                            targetScale = 0.95f,
-                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                        ) + slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> if (targetState > initialState) -fullWidth else fullWidth },
-                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                        )
-                    }
-                ) { index ->
-                    val lote = lotes[index]
-                    val cert = certificados[lote.number]
-                    val certColor = when (cert?.status) {
-                        CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
-                        CertificadoStatus.CORRECTO -> PrimaryColor
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 12.dp, bottom = 64.dp)
-                            .graphicsLayer {
-                                // Elevación temporal para resaltar la card
-                                shadowElevation = 16f
-                            }
+                    // Botón izquierda
+                    IconButton(
+                        onClick = { if (currentIndex > 0) currentIndex-- },
+                        modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
+                        enabled = currentIndex > 0
                     ) {
-                        LoteCard(
-                            lote = lote,
-                            certificado = cert,
-                            certificadoIconColor = certColor,
-                            modifier = Modifier.fillMaxWidth(0.8f),
-                            scope = scope,
-                            snackbarHostState = snackbarHostState,
-                            onViewBigBags = onViewBigBags,
-                            databaseUrl = databaseUrl,
-                            onRemarkUpdated = { updatedLote ->
-                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                                onRemarkUpdated(updatedLote)
-                            },
-                            clientRepository = clientRepository,
-                            currentUserEmail = currentUserEmail
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Anterior",
+                            tint = if (currentIndex > 0) PrimaryColor
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        )
+                    }
+
+                    // Botón derecha
+                    IconButton(
+                        onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
+                        modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
+                        enabled = currentIndex < lotes.size - 1
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForwardIos,
+                            contentDescription = "Siguiente",
+                            tint = if (currentIndex < lotes.size - 1) PrimaryColor
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                         )
                     }
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
 
-
-                // Botón izquierda
-                IconButton(
-                    onClick = {
-                        if (currentIndex > 0) currentIndex--
-                    },
-                    modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
-                    enabled = currentIndex > 0
+                // Barra de puntos interactiva
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = "Anterior",
-                        tint = if (currentIndex > 0) PrimaryColor
+                    lotes.forEachIndexed { index, _ ->
+                        val isActive = index == currentIndex
+                        val size = if (isActive) 14.dp else 10.dp
+                        val color = if (isActive) PrimaryColor
                         else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    )
-                }
 
-                // Botón derecha
-                IconButton(
-                    onClick = {
-                        if (currentIndex < lotes.size - 1) currentIndex++
-                    },
-                    modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
-                    enabled = currentIndex < lotes.size - 1
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowForwardIos,
-                        contentDescription = "Siguiente",
-                        tint = if (currentIndex < lotes.size - 1) PrimaryColor
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    )
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(size)
+                                .clip(CircleShape)
+                                .background(color)
+                                .clickable { currentIndex = index } // Permite seleccionar los puntos
+                        )
+                    }
                 }
             }
         }
