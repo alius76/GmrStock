@@ -1,11 +1,12 @@
 package com.alius.gmrstock.ui.components
 
-
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -56,7 +57,6 @@ fun LoteCard(
     onRemarkUpdated: (LoteModel) -> Unit,
     clientRepository: ClientRepository,
     currentUserEmail: String
-    // -----------------------------------------------------------
 ) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
     var showCertificadoDialog by remember { mutableStateOf(false) }
@@ -66,21 +66,15 @@ fun LoteCard(
 
     val totalWeightNumber = lote.totalWeight.toDoubleOrNull() ?: 0.0
 
-    // Estado para la observación general (no de reserva)
     var currentRemarkText by remember { mutableStateOf(lote.remark) }
-
-    // ⬇️ ESTADO PARA LA OBSERVACIÓN DE RESERVA ⬇️
     var currentBookedRemark by remember { mutableStateOf(lote.bookedRemark ?: "") }
-    // ------------------------------------------
 
     val loteRepository = remember { getLoteRepository(databaseUrl) }
-
     val hasRemark = lote.remark.isNotBlank()
 
+    // -------------------- CARD --------------------
     Card(
-        modifier = modifier
-            //.fillMaxWidth()
-            .wrapContentHeight(),
+        modifier = modifier.wrapContentHeight(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
@@ -92,12 +86,11 @@ fun LoteCard(
                 .animateContentSize()
         ) {
 
-            // 1. CABECERA REESTRUCTURADA: Lote Grande + Botones Debajo
+            // 1. CABECERA REESTRUCTURADA
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Número del lote más grande y centrado
                 Text(
                     text = lote.number,
                     style = MaterialTheme.typography.headlineMedium,
@@ -109,7 +102,6 @@ fun LoteCard(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Botones debajo, organizados en una fila
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -118,7 +110,7 @@ fun LoteCard(
                     // Reservado
                     IconButton(
                         onClick = {
-                            currentBookedRemark = lote.bookedRemark ?: "" // ⬅️ Inicializamos el estado antes de abrir
+                            currentBookedRemark = lote.bookedRemark ?: ""
                             showReservedDialog = true
                         },
                         modifier = Modifier.size(32.dp)
@@ -143,9 +135,7 @@ fun LoteCard(
                         Icon(
                             imageVector = if (hasRemark) Icons.Default.Description else Icons.AutoMirrored.Filled.NoteAdd,
                             contentDescription = if (hasRemark) "Ver/Editar observación" else "Añadir observación",
-                            tint = if (hasRemark) PrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                alpha = 0.5f
-                            ),
+                            tint = if (hasRemark) PrimaryColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -153,12 +143,9 @@ fun LoteCard(
                     // Certificado
                     IconButton(
                         onClick = {
-                            if (certificado != null) {
-                                showCertificadoDialog = true
-                            } else {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("No se encontró certificado para el lote ${lote.number}")
-                                }
+                            if (certificado != null) showCertificadoDialog = true
+                            else scope.launch {
+                                snackbarHostState.showSnackbar("No se encontró certificado para el lote ${lote.number}")
                             }
                         },
                         modifier = Modifier.size(32.dp)
@@ -184,7 +171,7 @@ fun LoteCard(
                         )
                     }
                 }
-            } // Fin de Column(Cabecera)
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
             Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
@@ -200,7 +187,6 @@ fun LoteCard(
                     DetailRow("Peso total", "${formatWeight(totalWeightNumber)} Kg", PrimaryColor)
                 }
 
-                // Etiqueta reservado en la esquina inferior derecha en dos líneas
                 if (lote.booked != null && lote.booked.cliNombre.isNotBlank()) {
                     Surface(
                         color = ReservedColor,
@@ -241,68 +227,43 @@ fun LoteCard(
         }
     }
 
-    // --- Función auxiliar para mostrar información no editable ---
+    // --- InfoCard auxiliar ---
     @Composable
     fun InfoCard(label: String, value: String) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
+                Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
             }
         }
     }
-    // -------------------------------------------------------------
 
-    // --- Diálogos Observación General ---
+    // --- Diálogo Observación General ---
     if (showRemarkDialog) {
         val isChanged = currentRemarkText.trim() != lote.remark.trim()
-
         AlertDialog(
             onDismissRequest = { showRemarkDialog = false },
             title = {
-                // ✅ MODIFICACIÓN: Contenedor para centrar el título en el Dialog
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center // Alinea el contenido (Column) al centro
-                ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Observación del Lote",
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryColor,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = lote.number, // El número de lote en una segunda línea
-                            fontWeight = FontWeight.ExtraBold, // Opcional: hacerlo más destacado
-                            color = PrimaryColor,
-                            textAlign = TextAlign.Center
-                        )
+                        Text("Observación del Lote", fontWeight = FontWeight.Bold, color = PrimaryColor, textAlign = TextAlign.Center)
+                        Text(lote.number, fontWeight = FontWeight.ExtraBold, color = PrimaryColor, textAlign = TextAlign.Center)
                     }
                 }
             },
             text = {
                 OutlinedTextField(
-                    // ... (El resto del TextField es igual)
                     value = currentRemarkText,
                     onValueChange = { currentRemarkText = it },
                     label = { Text("Editar observación") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
                     singleLine = false,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -313,7 +274,6 @@ fun LoteCard(
                 )
             },
             confirmButton = {
-                // ... (confirmButton sigue siendo igual)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -325,32 +285,23 @@ fun LoteCard(
                             scope.launch {
                                 val success = loteRepository.updateLoteRemark(lote.id, "")
                                 if (success) onRemarkUpdated(lote.copy(remark = ""))
-                                snackbarHostState.showSnackbar(
-                                    if (success) "Observación eliminada"
-                                    else "Error al eliminar la observación"
-                                )
+                                snackbarHostState.showSnackbar(if (success) "Observación eliminada" else "Error al eliminar la observación")
                             }
                         },
                         enabled = lote.remark.isNotBlank()
                     ) { Text("Eliminar", color = MaterialTheme.colorScheme.error) }
 
                     Row(horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = { showRemarkDialog = false }) {
-                            Text("Cerrar", color = PrimaryColor)
-                        }
+                        TextButton(onClick = { showRemarkDialog = false }) { Text("Cerrar", color = PrimaryColor) }
                         Spacer(Modifier.width(8.dp))
                         TextButton(
                             onClick = {
                                 showRemarkDialog = false
                                 val remarkToSave = currentRemarkText.trim()
                                 scope.launch {
-                                    val success =
-                                        loteRepository.updateLoteRemark(lote.id, remarkToSave)
+                                    val success = loteRepository.updateLoteRemark(lote.id, remarkToSave)
                                     if (success) onRemarkUpdated(lote.copy(remark = remarkToSave))
-                                    snackbarHostState.showSnackbar(
-                                        if (success) "Observación actualizada"
-                                        else "Error al actualizar la observación"
-                                    )
+                                    snackbarHostState.showSnackbar(if (success) "Observación actualizada" else "Error al actualizar la observación")
                                 }
                             },
                             enabled = isChanged && currentRemarkText.isNotBlank()
@@ -361,41 +312,24 @@ fun LoteCard(
         )
     }
 
-// --- Diálogo Añadir Observación (Modificado) ---
+    // --- Diálogo Añadir Observación ---
     if (showAddRemarkDialog) {
         AlertDialog(
             onDismissRequest = { showAddRemarkDialog = false },
             title = {
-                // ✅ MODIFICACIÓN: Contenedor para centrar el título en el Dialog
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center // Alinea el contenido (Column) al centro
-                ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Observación del Lote",
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryColor,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = lote.number,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryColor,
-                            textAlign = TextAlign.Center
-                        )
+                        Text("Observación del Lote", fontWeight = FontWeight.Bold, color = PrimaryColor, textAlign = TextAlign.Center)
+                        Text(lote.number, fontWeight = FontWeight.Bold, color = PrimaryColor, textAlign = TextAlign.Center)
                     }
                 }
             },
             text = {
                 OutlinedTextField(
-                    // ... (El resto del TextField es igual)
                     value = currentRemarkText,
                     onValueChange = { currentRemarkText = it },
                     label = { Text("Escribe tu observación") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp),
+                    modifier = Modifier.fillMaxWidth().height(150.dp),
                     singleLine = false,
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -413,106 +347,57 @@ fun LoteCard(
                         scope.launch {
                             val success = loteRepository.updateLoteRemark(lote.id, remarkToSave)
                             if (success) onRemarkUpdated(lote.copy(remark = remarkToSave))
-                            snackbarHostState.showSnackbar(
-                                if (success) "Observación guardada"
-                                else "Error al guardar la observación"
-                            )
+                            snackbarHostState.showSnackbar(if (success) "Observación guardada" else "Error al guardar la observación")
                         }
                     },
                     enabled = currentRemarkText.isNotBlank()
                 ) { Text("Guardar", color = PrimaryColor) }
             },
             dismissButton = {
-                TextButton(onClick = { showAddRemarkDialog = false }) {
-                    Text(
-                        "Cancelar",
-                        color = PrimaryColor
-                    )
-                }
+                TextButton(onClick = { showAddRemarkDialog = false }) { Text("Cancelar", color = PrimaryColor) }
             }
         )
     }
+
     // --- Diálogo BigBags ---
     if (showBigBagsDialog) {
         AlertDialog(
             onDismissRequest = { showBigBagsDialog = false },
             confirmButton = {
-                TextButton(onClick = { showBigBagsDialog = false }) {
-                    Text("Cerrar", color = PrimaryColor)
-                }
+                TextButton(onClick = { showBigBagsDialog = false }) { Text("Cerrar", color = PrimaryColor) }
             },
             title = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "Lista de BigBags",
-                        color = PrimaryColor,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
+                    Text("Lista de BigBags", color = PrimaryColor, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 }
             },
             text = { BigBagsDialogContent(bigBags = lote.bigBag) }
         )
     }
 
-    // --- Diálogo Certificado (Sin cambios necesarios) ---
+    // --- Diálogo Certificado ---
     if (showCertificadoDialog && certificado != null) {
         Dialog(onDismissRequest = { showCertificadoDialog = false }) {
             Card(
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                modifier = Modifier
-                    .fillMaxWidth(0.95f)
-                    .padding(16.dp)
+                modifier = Modifier.fillMaxWidth(0.95f).padding(16.dp)
             ) {
                 Column(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(20.dp),
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val (icon, estadoText, estadoColor) = when (certificado.status) {
-                        CertificadoStatus.ADVERTENCIA -> Triple(
-                            Icons.Default.Warning,
-                            "Advertencia",
-                            MaterialTheme.colorScheme.error
-                        )
-
-                        CertificadoStatus.CORRECTO -> Triple(
-                            Icons.Default.CheckCircle,
-                            "Correcto",
-                            PrimaryColor
-                        )
-
-                        else -> Triple(
-                            Icons.Default.Description,
-                            "Sin Datos",
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        CertificadoStatus.ADVERTENCIA -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
+                        CertificadoStatus.CORRECTO -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
+                        else -> Triple(Icons.Default.Description, "Sin Datos", MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = estadoText,
-                        tint = estadoColor,
-                        modifier = Modifier.size(48.dp)
-                    )
-
-                    Text(
-                        text = "Certificado de ${lote.number}",
-                        color = PrimaryColor,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 22.sp,
-                        textAlign = TextAlign.Center
-                    )
-
+                    Icon(icon, contentDescription = estadoText, tint = estadoColor, modifier = Modifier.size(48.dp))
+                    Text("Certificado de ${lote.number}", color = PrimaryColor, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, textAlign = TextAlign.Center)
                     Divider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         certificado.parametros.forEach { parametro ->
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(
@@ -520,32 +405,13 @@ fun LoteCard(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text(
-                                        text = parametro.descripcion,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1f),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.End
-                                    ) {
+                                    Text(parametro.descripcion, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
                                         if (parametro.warning) {
-                                            Icon(
-                                                Icons.Default.Warning,
-                                                contentDescription = "Advertencia",
-                                                tint = MaterialTheme.colorScheme.error,
-                                                modifier = Modifier.size(18.dp)
-                                            )
+                                            Icon(Icons.Default.Warning, contentDescription = "Advertencia", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                                             Spacer(modifier = Modifier.width(4.dp))
                                         }
-                                        Text(
-                                            text = parametro.valor,
-                                            color = if (parametro.warning) MaterialTheme.colorScheme.error
-                                            else MaterialTheme.colorScheme.onSurface,
-                                            fontSize = 14.sp
-                                        )
+                                        Text(parametro.valor, color = if (parametro.warning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                                     }
                                 }
 
@@ -556,23 +422,13 @@ fun LoteCard(
                                         "Rango: ($min - $max ${parametro.unidad})"
                                     } else "Rango: N/A"
                                 } ?: "Rango: N/A"
-
-                                Text(
-                                    text = rangoTexto,
-                                    color = Color.Gray,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
+                                Text(rangoTexto, color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                             }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
-
-                    TextButton(
-                        onClick = { showCertificadoDialog = false },
-                        modifier = Modifier.align(Alignment.End),
-                    ) {
+                    TextButton(onClick = { showCertificadoDialog = false }, modifier = Modifier.align(Alignment.End)) {
                         Text("Cerrar", color = PrimaryColor)
                     }
                 }
@@ -580,35 +436,26 @@ fun LoteCard(
         }
     }
 
-
-    // --- DIALOG DE RESERVAS PROFESIONAL CON TÍTULO CENTRADO Y LISTA FIJA ---
+    // --- Diálogo de reservas con selección de cliente ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
         var showDatePicker by remember { mutableStateOf(false) }
-        // ❌ ELIMINADO: var showClientes by remember { mutableStateOf(false) }
+        var showClientesDialog by remember { mutableStateOf(false) }
         var userToSave by remember { mutableStateOf(currentUserEmail) }
-
-        // Observaciones sincronizadas
-        LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
-
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
-        // 🟢 Carga de clientes y filtrado de "NO OK" para el carrusel
+        LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
+
         LaunchedEffect(Unit) {
-            // Obtenemos todos los clientes
             val allClients = clientRepository.getAllClientsOrderedByName()
-            // Filtramos la lista visible para el carrusel (excluimos "NO OK")
             clientesList = allClients.filter { it.cliNombre != "NO OK" }
         }
 
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
             title = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Reserva del Lote", fontWeight = FontWeight.Bold, color = PrimaryColor)
                         Text(lote.number, fontWeight = FontWeight.Bold, color = PrimaryColor)
@@ -618,100 +465,67 @@ fun LoteCard(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-                    // Usuario que reservó
                     lote.bookedByUser?.takeIf { it.isNotBlank() }?.let {
                         InfoCard(label = "Reservado por", value = it)
                     }
 
                     // --- CLIENTE ---
-                    if (lote.booked != null) {
-                        OutlinedTextField(
-                            value = selectedCliente?.cliNombre ?: "",
-                            onValueChange = {},
-                            label = { Text("Cliente") },
-                            readOnly = true,
-                            enabled = false,
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            ),
-                            modifier = Modifier.fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .border(
+                                width = 1.dp,
+                                color = if (selectedCliente != null) PrimaryColor
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .clickable { showClientesDialog = true }
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Text(
+                            text = selectedCliente?.cliNombre ?: "Reservado al cliente",
+                            color = if (selectedCliente != null) PrimaryColor
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
-                    } else {
-                        Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
+                    }
 
-                        // Contenedor de altura fija para la lista (LazyRow)
-                        Box(
+                    // Bloqueo "NO OK"
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val noOkCliente = Cliente(cliNombre = "NO OK")
+                    val isNoOkSelected = selectedCliente?.cliNombre == "NO OK"
+                    val errorColor = MaterialTheme.colorScheme.error
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isNoOkSelected) errorColor else errorColor.copy(alpha = 0.15f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .clickable { selectedCliente = noOkCliente }
+                    ) {
+                        Row(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(80.dp) // Altura fija
-                                .padding(vertical = 0.dp)
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            // 🟢 MOSTRAR EL LAZYROW DIRECTAMENTE
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth().fillMaxHeight(), // Mantiene la altura fija de 80.dp
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Muestra solo clientes reales
-                                items(clientesList ?: emptyList()) { cliente ->
-                                    val isSelected = selectedCliente == cliente
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (isSelected) PrimaryColor else PrimaryColor.copy(alpha = 0.1f),
-                                        modifier = Modifier.clickable { selectedCliente = cliente }
-                                    ) {
-                                        Text(
-                                            text = cliente.cliNombre,
-                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else PrimaryColor,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                                        )
-                                    }
-                                }
-                            }
+                            Icon(
+                                Icons.Default.Lock,
+                                contentDescription = "Bloquear",
+                                tint = if (isNoOkSelected) Color.White else errorColor,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "BLOQUEO INTERNO",
+                                color = if (isNoOkSelected) Color.White else errorColor,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
                         }
-
-                        // -------------------------------------------------------------
-                        // 🟢 SECCIÓN: Bloqueo Interno ("NO OK") separado
-                        // -------------------------------------------------------------
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        val noOkCliente = Cliente(cliNombre = "NO OK")
-                        val isSelected = selectedCliente?.cliNombre == "NO OK"
-                        val errorColor = MaterialTheme.colorScheme.error
-
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected) errorColor else errorColor.copy(alpha = 0.15f),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .clickable { selectedCliente = noOkCliente } // Selecciona "NO OK"
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Lock,
-                                    contentDescription = "Bloquear",
-                                    tint = if (isSelected) Color.White else errorColor,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = "BLOQUEO INTERNO",
-                                    color = if (isSelected) Color.White else errorColor,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                        // -------------------------------------------------------------
                     }
 
                     // --- OBSERVACIONES ---
@@ -721,19 +535,14 @@ fun LoteCard(
                         label = { Text("Observaciones de reserva") },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp, max = 150.dp),
                         singleLine = false,
-                        readOnly = false,
-                        enabled = true,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = PrimaryColor,
                             focusedLabelColor = PrimaryColor,
-                            cursorColor = PrimaryColor,
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                            disabledBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            cursorColor = PrimaryColor
                         )
                     )
 
-                    // --- FECHA COMO BOTÓN ---
+                    // --- FECHA ---
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Fecha estimada", fontWeight = FontWeight.Bold)
                     Box(
@@ -749,30 +558,21 @@ fun LoteCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.CalendarToday,
-                                    contentDescription = "Calendario",
-                                    tint = PrimaryColor,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = PrimaryColor, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = if (fecha.isNotBlank()) fecha else "Seleccione fecha",
-                                    color = if (fecha.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    if (fecha.isNotBlank()) fecha else "Seleccione fecha",
+                                    color = if (fecha.isNotBlank()) MaterialTheme.colorScheme.onSurface
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
                             }
                             if (fecha.isNotBlank()) {
-                                Icon(
-                                    Icons.Default.Clear,
-                                    contentDescription = "Borrar fecha",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(20.dp).clickable { fecha = "" }
-                                )
+                                Icon(Icons.Default.Clear, contentDescription = "Borrar fecha", tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(20.dp).clickable { fecha = "" })
                             }
                         }
                     }
 
-                    // --- UNIVERSAL DATE PICKER ---
                     if (showDatePicker) {
                         UniversalDatePickerDialog(
                             initialDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
@@ -792,21 +592,12 @@ fun LoteCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Anular reserva
                     if (lote.booked != null || lote.dateBooked != null) {
                         TextButton(onClick = {
                             showReservedDialog = false
                             scope.launch {
-                                val success = loteRepository.updateLoteBooked(
-                                    loteId = lote.id,
-                                    cliente = null,
-                                    dateBooked = null,
-                                    bookedByUser = null,
-                                    bookedRemark = null
-                                )
-                                if (success) onRemarkUpdated(
-                                    lote.copy(booked = null, dateBooked = null, bookedByUser = null, bookedRemark = null)
-                                )
+                                val success = loteRepository.updateLoteBooked(lote.id, null, null, null, null)
+                                if (success) onRemarkUpdated(lote.copy(booked = null, dateBooked = null, bookedByUser = null, bookedRemark = null))
                                 snackbarHostState.showSnackbar(if (success) "Reserva anulada" else "Error al anular la reserva")
                             }
                         }) { Text("Anular", color = MaterialTheme.colorScheme.error) }
@@ -839,11 +630,7 @@ fun LoteCard(
 
                                 scope.launch {
                                     val success = loteRepository.updateLoteBooked(
-                                        loteId = lote.id,
-                                        cliente = selectedCliente, // Se guarda el cliente seleccionado (real o "NO OK")
-                                        dateBooked = parsedDate ?: lote.dateBooked,
-                                        bookedByUser = userToSave,
-                                        bookedRemark = remarkToSave
+                                        lote.id, selectedCliente, parsedDate ?: lote.dateBooked, userToSave, remarkToSave
                                     )
                                     if (success) {
                                         val updatedLote = lote.copy(
@@ -854,9 +641,7 @@ fun LoteCard(
                                         )
                                         onRemarkUpdated(updatedLote)
                                         snackbarHostState.showSnackbar("Reserva guardada correctamente")
-                                    } else {
-                                        snackbarHostState.showSnackbar("Error al guardar la reserva")
-                                    }
+                                    } else snackbarHostState.showSnackbar("Error al guardar la reserva")
                                 }
                             },
                             enabled = selectedCliente != null
@@ -865,9 +650,56 @@ fun LoteCard(
                 }
             }
         )
+
+        // --- DIALOGO DE SELECCION DE CLIENTE ---
+        if (showClientesDialog) {
+            Dialog(onDismissRequest = { showClientesDialog = false }) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .wrapContentHeight(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Seleccione un cliente",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = PrimaryColor,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        ClientesSelectedDialogContent(
+                            clientes = clientesList ?: emptyList(),
+                            selectedCliente = selectedCliente,
+                            onClienteSelected = { cliente ->
+                                selectedCliente = cliente
+                                showClientesDialog = false
+                            },
+                            onDismiss = { showClientesDialog = false }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        TextButton(
+                            onClick = { showClientesDialog = false },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text("Cerrar", color = PrimaryColor)
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
 }
-
 
