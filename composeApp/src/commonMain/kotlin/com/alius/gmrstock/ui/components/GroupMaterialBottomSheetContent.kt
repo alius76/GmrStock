@@ -70,7 +70,7 @@ fun GroupMaterialBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(520.dp)
+            .height(520.dp) // altura fija para evitar vibraciones
             .padding(vertical = 14.dp)
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -102,10 +102,10 @@ fun GroupMaterialBottomSheetContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(380.dp), // suficiente para card + botones
+                    .height(380.dp), // altura fija
                 contentAlignment = Alignment.Center
             ) {
-                // Card centrada
+                // Card centrada pero con padding superior para subirla un poco
                 val lote = lotes[currentIndex]
                 val cert = certificados[lote.number]
                 val certColor = when (cert?.status) {
@@ -114,36 +114,39 @@ fun GroupMaterialBottomSheetContent(
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
 
-                LoteCard(
-                    lote = lote,
-                    certificado = cert,
-                    certificadoIconColor = certColor,
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f) // ocupa el 80% del ancho
-                        .align(Alignment.Center),
-                    scope = scope,
-                    snackbarHostState = snackbarHostState,
-                    onViewBigBags = onViewBigBags,
-                    databaseUrl = databaseUrl,
-                    onRemarkUpdated = { updatedLote ->
-                        lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                        onRemarkUpdated(updatedLote)
-                    },
-                    clientRepository = clientRepository,
-                    currentUserEmail = currentUserEmail
-                )
+                Box(modifier = Modifier.padding(top = 16.dp, bottom = 64.dp)) {
+                    LoteCard(
+                        lote = lote,
+                        certificado = cert,
+                        certificadoIconColor = certColor,
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f) // ocupa el 80% del ancho
+                            .align(Alignment.Center),
+                        scope = scope,
+                        snackbarHostState = snackbarHostState,
+                        onViewBigBags = onViewBigBags,
+                        databaseUrl = databaseUrl,
+                        onRemarkUpdated = { updatedLote ->
+                            lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                            onRemarkUpdated(updatedLote)
+                        },
+                        clientRepository = clientRepository,
+                        currentUserEmail = currentUserEmail
+                    )
+                }
 
                 // Botón izquierda
                 IconButton(
                     onClick = { if (currentIndex > 0) currentIndex-- },
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .size(48.dp)
+                        .size(48.dp),
+                    enabled = currentIndex > 0
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Anterior",
-                        tint = PrimaryColor
+                        tint = if (currentIndex > 0) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
 
@@ -152,12 +155,13 @@ fun GroupMaterialBottomSheetContent(
                     onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .size(48.dp)
+                        .size(48.dp),
+                    enabled = currentIndex < lotes.size - 1
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowForward,
                         contentDescription = "Siguiente",
-                        tint = PrimaryColor
+                        tint = if (currentIndex < lotes.size - 1) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
             }
