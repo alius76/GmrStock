@@ -1,15 +1,6 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.with
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -18,8 +9,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getCertificadoRepository
 import com.alius.gmrstock.data.getLoteRepository
@@ -77,6 +68,7 @@ fun GroupMaterialBottomSheetContent(
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Título
         Text(
             text = "Lotes disponibles",
             style = MaterialTheme.typography.headlineMedium,
@@ -99,22 +91,22 @@ fun GroupMaterialBottomSheetContent(
                 )
             }
         } else {
+            // Contenedor del carrusel
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(380.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // --- AnimatedContent para transición ---
                 AnimatedContent(
                     targetState = currentIndex,
                     transitionSpec = {
-                        if (targetState > previousIndex) {
-                            slideInHorizontally { width -> width } + fadeIn() with
-                                    slideOutHorizontally { width -> -width } + fadeOut()
+                        if (targetState > initialState) {
+                            slideInHorizontally { width -> width / 4 } + fadeIn() with
+                                    slideOutHorizontally { width -> -width / 4 } + fadeOut()
                         } else {
-                            slideInHorizontally { width -> -width } + fadeIn() with
-                                    slideOutHorizontally { width -> width } + fadeOut()
+                            slideInHorizontally { width -> -width / 4 } + fadeIn() with
+                                    slideOutHorizontally { width -> width / 4 } + fadeOut()
                         }.using(SizeTransform(clip = false))
                     }
                 ) { index ->
