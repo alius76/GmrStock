@@ -1,22 +1,20 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowOutward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.CircleShape
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getCertificadoRepository
 import com.alius.gmrstock.data.getLoteRepository
@@ -27,7 +25,7 @@ import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun GroupMaterialBottomSheetContent(
     loteNumbers: List<String>,
@@ -47,6 +45,8 @@ fun GroupMaterialBottomSheetContent(
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
+    var currentIndex by remember { mutableStateOf(0) }
+    var previousIndex by remember { mutableStateOf(0) }
 
     // Carga inicial
     LaunchedEffect(loteNumbers) {
@@ -95,22 +95,26 @@ fun GroupMaterialBottomSheetContent(
                 )
             }
         } else {
-            val pagerState = rememberPagerState(
-                initialPage = 0,
-                pageCount = { lotes.size }
-            )
-
+            // Contenedor del carrusel
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(380.dp),
                 contentAlignment = Alignment.Center
             ) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    val lote = lotes[page]
+                AnimatedContent(
+                    targetState = currentIndex,
+                    transitionSpec = {
+                        if (targetState > initialState) {
+                            slideInHorizontally { width -> width / 4 } + fadeIn() with
+                                    slideOutHorizontally { width -> -width / 4 } + fadeOut()
+                        } else {
+                            slideInHorizontally { width -> -width / 4 } + fadeIn() with
+                                    slideOutHorizontally { width -> width / 4 } + fadeOut()
+                        }.using(SizeTransform(clip = false))
+                    }
+                ) { index ->
+                    val lote = lotes[index]
                     val cert = certificados[lote.number]
                     val certColor = when (cert?.status) {
                         CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
@@ -118,12 +122,7 @@ fun GroupMaterialBottomSheetContent(
                         else -> MaterialTheme.colorScheme.onSurfaceVariant
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 12.dp, bottom = 64.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.padding(top = 12.dp, bottom = 64.dp)) {
                         LoteCard(
                             lote = lote,
                             certificado = cert,
@@ -146,57 +145,37 @@ fun GroupMaterialBottomSheetContent(
                 // Botón izquierda
                 IconButton(
                     onClick = {
-                        if (pagerState.currentPage > 0) {
-                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                        if (currentIndex > 0) {
+                            previousIndex = currentIndex
+                            currentIndex--
                         }
                     },
                     modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
-                    enabled = pagerState.currentPage > 0
+                    enabled = currentIndex > 0
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.Default.ArrowBackIosNew,
                         contentDescription = "Anterior",
-                        tint = if (pagerState.currentPage > 0) PrimaryColor
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        tint = if (currentIndex > 0) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
 
                 // Botón derecha
                 IconButton(
                     onClick = {
-                        if (pagerState.currentPage < lotes.size - 1) {
-                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                        if (currentIndex < lotes.size - 1) {
+                            previousIndex = currentIndex
+                            currentIndex++
                         }
                     },
                     modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
-                    enabled = pagerState.currentPage < lotes.size - 1
+                    enabled = currentIndex < lotes.size - 1
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = Icons.Default.ArrowForwardIos,
                         contentDescription = "Siguiente",
-                        tint = if (pagerState.currentPage < lotes.size - 1) PrimaryColor
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        tint = if (currentIndex < lotes.size - 1) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
-                }
-
-                // Barra de puntos
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    repeat(lotes.size) { i ->
-                        Box(
-                            modifier = Modifier
-                                .size(if (pagerState.currentPage == i) 12.dp else 8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (pagerState.currentPage == i) PrimaryColor
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                                )
-                        )
-                    }
                 }
             }
         }
