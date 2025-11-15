@@ -61,7 +61,6 @@ fun GroupMaterialBottomSheetContent(
         }
     }
 
-    // Precarga inicial
     LaunchedEffect(loteNumbers) {
         loadLotesAndCertificados()
     }
@@ -84,7 +83,6 @@ fun GroupMaterialBottomSheetContent(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor
-
             )
         }
 
@@ -111,6 +109,7 @@ fun GroupMaterialBottomSheetContent(
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .requiredHeight(350.dp) // requiredHeight para evitar relayouts en iOS
                         .padding(horizontal = 16.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -129,7 +128,8 @@ fun GroupMaterialBottomSheetContent(
                             certificado = cert,
                             certificadoIconColor = certColor,
                             modifier = Modifier
-                                .width(300.dp)
+                                .requiredWidth(300.dp)   // ancho obligatorio para iOS estable
+                                .requiredHeight(300.dp)  // alto obligatorio para iOS estable
                                 .clickable { onLoteClick(lote) },
                             scope = scope,
                             snackbarHostState = snackbarHostState,
