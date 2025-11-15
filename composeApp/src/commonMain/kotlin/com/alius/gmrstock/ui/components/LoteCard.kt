@@ -446,7 +446,7 @@ fun LoteCard(
         var userToSave by remember { mutableStateOf(currentUserEmail) }
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
-        val dialogWidthFraction = 0.9f
+        val dialogWidthFraction = 0.95f
 
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
