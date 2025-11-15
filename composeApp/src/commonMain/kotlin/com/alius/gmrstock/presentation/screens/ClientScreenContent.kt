@@ -140,7 +140,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                         selectedClientGroup = null
                     },
                     sheetState = bottomSheetState,
-                    modifier = Modifier.fillMaxHeight(0.7f)
+                    modifier = Modifier.fillMaxHeight(0.75f)
                 ) {
                     GroupClientBottomSheetContent(
                         cliente = clientGroup.cliente,
