@@ -74,7 +74,7 @@ fun GroupMaterialBottomSheetContent(
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(460.dp)
             .height(520.dp)
             .padding(vertical = 14.dp)
             .navigationBarsPadding()
