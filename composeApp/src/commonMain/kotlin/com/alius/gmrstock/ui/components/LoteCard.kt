@@ -437,8 +437,7 @@ fun LoteCard(
             }
         }
     }
-
-    // --- Diálogo de reservas con selección de cliente ---
+// --- Diálogo de reservas con selección de cliente ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
@@ -448,7 +447,6 @@ fun LoteCard(
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
         val dialogWidthFraction = 0.9f
-        val dialogMaxHeight = 500.dp
 
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
@@ -459,9 +457,7 @@ fun LoteCard(
 
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
-            modifier = Modifier
-                .fillMaxWidth(dialogWidthFraction)
-                .heightIn(max = dialogMaxHeight),
+            modifier = Modifier.fillMaxWidth(dialogWidthFraction),
             title = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -493,7 +489,7 @@ fun LoteCard(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            text = selectedCliente?.cliNombre ?: "",
+                            text = selectedCliente?.cliNombre ?: "Reservado al cliente",
                             color = if (selectedCliente != null) PrimaryColor
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -566,7 +562,12 @@ fun LoteCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = PrimaryColor, modifier = Modifier.size(20.dp))
+                                Icon(
+                                    Icons.Default.CalendarToday,
+                                    contentDescription = "Calendario",
+                                    tint = PrimaryColor,
+                                    modifier = Modifier.size(20.dp)
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     if (fecha.isNotBlank()) fecha else "Seleccione fecha",
@@ -575,8 +576,12 @@ fun LoteCard(
                                 )
                             }
                             if (fecha.isNotBlank()) {
-                                Icon(Icons.Default.Clear, contentDescription = "Borrar fecha", tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(20.dp).clickable { fecha = "" })
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = "Borrar fecha",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(20.dp).clickable { fecha = "" }
+                                )
                             }
                         }
                     }
@@ -666,7 +671,7 @@ fun LoteCard(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .fillMaxWidth(dialogWidthFraction)
-                        .heightIn(max = dialogMaxHeight),
+                        .heightIn(max = 500.dp), // altura máxima
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
@@ -674,7 +679,6 @@ fun LoteCard(
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp)
                     ) {
-                        // Título
                         Text(
                             text = "Seleccione un cliente",
                             fontWeight = FontWeight.Bold,
@@ -685,7 +689,6 @@ fun LoteCard(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Lista de clientes scrollable
                         val scrollState = rememberScrollState()
                         Column(
                             modifier = Modifier
@@ -706,7 +709,6 @@ fun LoteCard(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Botón siempre visible
                         TextButton(
                             onClick = { showClientesDialog = false },
                             modifier = Modifier.align(Alignment.End)
@@ -717,9 +719,6 @@ fun LoteCard(
                 }
             }
         }
-
-
-
     }
 
 
