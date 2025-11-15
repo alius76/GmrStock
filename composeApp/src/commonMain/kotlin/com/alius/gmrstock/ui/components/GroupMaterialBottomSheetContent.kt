@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import com.alius.gmrstock.data.ClientRepository
@@ -108,20 +109,29 @@ fun GroupMaterialBottomSheetContent(
                     transitionSpec = {
                         fadeIn(
                             animationSpec = tween(
-                                durationMillis = 450,
+                                durationMillis = 400,
                                 easing = FastOutSlowInEasing
                             )
                         ) + scaleIn(
-                            initialScale = 0.96f,
+                            initialScale = 0.9f, // Zoom más marcado
                             animationSpec = tween(
-                                durationMillis = 450,
+                                durationMillis = 400,
                                 easing = FastOutSlowInEasing
                             )
+                        ) + slideInHorizontally(
+                            initialOffsetX = { fullWidth -> if (targetState > initialState) fullWidth else -fullWidth },
+                            animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
                         ) with fadeOut(
                             animationSpec = tween(
                                 durationMillis = 350,
                                 easing = FastOutSlowInEasing
                             )
+                        ) + scaleOut(
+                            targetScale = 0.95f,
+                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                        ) + slideOutHorizontally(
+                            targetOffsetX = { fullWidth -> if (targetState > initialState) -fullWidth else fullWidth },
+                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
                         )
                     }
                 ) { index ->
@@ -134,7 +144,12 @@ fun GroupMaterialBottomSheetContent(
                     }
 
                     Box(
-                        modifier = Modifier.padding(top = 12.dp, bottom = 64.dp)
+                        modifier = Modifier
+                            .padding(top = 12.dp, bottom = 64.dp)
+                            .graphicsLayer {
+                                // Elevación temporal para resaltar la card
+                                shadowElevation = 16f
+                            }
                     ) {
                         LoteCard(
                             lote = lote,
@@ -146,9 +161,7 @@ fun GroupMaterialBottomSheetContent(
                             onViewBigBags = onViewBigBags,
                             databaseUrl = databaseUrl,
                             onRemarkUpdated = { updatedLote ->
-                                lotes = lotes.map {
-                                    if (it.id == updatedLote.id) updatedLote else it
-                                }
+                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
                                 onRemarkUpdated(updatedLote)
                             },
                             clientRepository = clientRepository,
@@ -156,6 +169,8 @@ fun GroupMaterialBottomSheetContent(
                         )
                     }
                 }
+
+
 
                 // Botón izquierda
                 IconButton(
