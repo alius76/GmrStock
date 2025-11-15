@@ -1,6 +1,8 @@
 package com.alius.gmrstock.ui.components
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -49,7 +51,9 @@ fun GroupMaterialBottomSheetContent(
         try {
             val loadedLotes = loteNumbers.mapNotNull { loteRepository.getLoteByNumber(it) }
             lotes = loadedLotes
-            certificados = loadedLotes.associate { it.number to certificadoRepository.getCertificadoByLoteNumber(it.number) }
+            certificados = loadedLotes.associate {
+                it.number to certificadoRepository.getCertificadoByLoteNumber(it.number)
+            }
         } catch (e: Exception) {
             scope.launch {
                 snackbarHostState.showSnackbar("Error cargando lotes: ${e.message}")
@@ -97,10 +101,28 @@ fun GroupMaterialBottomSheetContent(
                     .height(380.dp),
                 contentAlignment = Alignment.Center
             ) {
+
+                // 🚀 FADE + ZOOM SUAVE (ScaleIn)
                 AnimatedContent(
                     targetState = currentIndex,
                     transitionSpec = {
-                        fadeIn() with fadeOut()
+                        fadeIn(
+                            animationSpec = tween(
+                                durationMillis = 450,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + scaleIn(
+                            initialScale = 0.96f,
+                            animationSpec = tween(
+                                durationMillis = 450,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) with fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 350,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
                     }
                 ) { index ->
                     val lote = lotes[index]
@@ -111,7 +133,9 @@ fun GroupMaterialBottomSheetContent(
                         else -> MaterialTheme.colorScheme.onSurfaceVariant
                     }
 
-                    Box(modifier = Modifier.padding(top = 12.dp, bottom = 64.dp)) {
+                    Box(
+                        modifier = Modifier.padding(top = 12.dp, bottom = 64.dp)
+                    ) {
                         LoteCard(
                             lote = lote,
                             certificado = cert,
@@ -122,7 +146,9 @@ fun GroupMaterialBottomSheetContent(
                             onViewBigBags = onViewBigBags,
                             databaseUrl = databaseUrl,
                             onRemarkUpdated = { updatedLote ->
-                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                lotes = lotes.map {
+                                    if (it.id == updatedLote.id) updatedLote else it
+                                }
                                 onRemarkUpdated(updatedLote)
                             },
                             clientRepository = clientRepository,
