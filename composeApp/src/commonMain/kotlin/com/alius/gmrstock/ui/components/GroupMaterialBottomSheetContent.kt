@@ -7,10 +7,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.with
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -28,7 +27,6 @@ import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.CertificadoStatus
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -52,14 +50,11 @@ fun GroupMaterialBottomSheetContent(
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    var currentIndex by remember { mutableStateOf(0) }
-
     val loadLotesAndCertificados: suspend () -> Unit = {
         isLoading = true
         try {
             val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
             lotes = loadedLotes
-
             val certs = loadedLotes.associate { lote ->
                 lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
             }
@@ -74,6 +69,8 @@ fun GroupMaterialBottomSheetContent(
     }
 
     LaunchedEffect(loteNumbers) { loadLotesAndCertificados() }
+
+    var currentIndex by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
@@ -117,67 +114,72 @@ fun GroupMaterialBottomSheetContent(
 
             else -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(360.dp), // altura fija para evitar vibración
                     contentAlignment = Alignment.Center
                 ) {
-                    // Flecha izquierda
-                    IconButton(
-                        onClick = { if (currentIndex > 0) currentIndex-- },
-                        enabled = currentIndex > 0,
-                        modifier = Modifier.align(Alignment.CenterStart)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Anterior"
-                        )
-                    }
-
-                    // Card con animación de transición
-                    val lote = lotes[currentIndex]
-                    val cert = certificados[lote.number]
-                    val certColor = when (cert?.status) {
-                        CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
-                        CertificadoStatus.CORRECTO -> PrimaryColor
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-
-                    AnimatedContent(
-                        targetState = currentIndex,
-                        transitionSpec = {
-                            slideInHorizontally { width -> width } + fadeIn() with
-                                    slideOutHorizontally { width -> -width } + fadeOut()
+                        // Botón anterior
+                        IconButton(
+                            onClick = { if (currentIndex > 0) currentIndex-- },
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Anterior")
                         }
-                    ) { _ ->
-                        LoteCard(
-                            lote = lote,
-                            certificado = cert,
-                            certificadoIconColor = certColor,
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Card animada
+                        AnimatedContent(
+                            targetState = currentIndex,
                             modifier = Modifier
                                 .width(300.dp)
-                                .clickable { onLoteClick(lote) },
-                            scope = scope,
-                            snackbarHostState = snackbarHostState,
-                            onViewBigBags = onViewBigBags,
-                            databaseUrl = databaseUrl,
-                            onRemarkUpdated = { updatedLote ->
-                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                                onRemarkUpdated(updatedLote)
-                            },
-                            clientRepository = clientRepository,
-                            currentUserEmail = currentUserEmail
-                        )
-                    }
+                                .sizeIn(minWidth = 300.dp, minHeight = 360.dp),
+                            transitionSpec = {
+                                slideInHorizontally { width -> width } + fadeIn() with
+                                        slideOutHorizontally { width -> -width } + fadeOut()
+                            }
+                        ) { index ->
+                            val lote = lotes[index]
+                            val cert = certificados[lote.number]
+                            val certColor = when (cert?.status) {
+                                CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                                CertificadoStatus.CORRECTO -> PrimaryColor
+                                else -> MaterialTheme.colorScheme.onSurfaceVariant
+                            }
 
-                    // Flecha derecha
-                    IconButton(
-                        onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
-                        enabled = currentIndex < lotes.size - 1,
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Siguiente"
-                        )
+                            LoteCard(
+                                lote = lote,
+                                certificado = cert,
+                                certificadoIconColor = certColor,
+                                modifier = Modifier.width(300.dp).clickable { onLoteClick(lote) },
+                                scope = scope,
+                                snackbarHostState = snackbarHostState,
+                                onViewBigBags = onViewBigBags,
+                                databaseUrl = databaseUrl,
+                                onRemarkUpdated = { updatedLote ->
+                                    lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                    onRemarkUpdated(updatedLote)
+                                },
+                                clientRepository = clientRepository,
+                                currentUserEmail = currentUserEmail
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Botón siguiente
+                        IconButton(
+                            onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(Icons.Default.ArrowForward, contentDescription = "Siguiente")
+                        }
                     }
                 }
             }
