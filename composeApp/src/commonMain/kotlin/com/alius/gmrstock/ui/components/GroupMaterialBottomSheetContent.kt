@@ -1,9 +1,19 @@
 package com.alius.gmrstock.ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.with
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +31,7 @@ import com.alius.gmrstock.ui.theme.PrimaryColor
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun GroupMaterialBottomSheetContent(
     loteNumbers: List<String>,
@@ -41,6 +51,8 @@ fun GroupMaterialBottomSheetContent(
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
+
+    var currentIndex by remember { mutableStateOf(0) }
 
     val loadLotesAndCertificados: suspend () -> Unit = {
         isLoading = true
@@ -104,55 +116,71 @@ fun GroupMaterialBottomSheetContent(
             }
 
             else -> {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    items(lotes, key = { it.id }) { lote ->
-                        val cert = certificados[lote.number]
-                        val certColor = when (cert?.status) {
-                            CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
-                            CertificadoStatus.CORRECTO -> PrimaryColor
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                    // Flecha izquierda
+                    IconButton(
+                        onClick = { if (currentIndex > 0) currentIndex-- },
+                        enabled = currentIndex > 0,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Anterior"
+                        )
+                    }
 
-                        // ✅ Aquí llamamos a la card de prueba en lugar de LoteCard
-                        PruebaCard(
+                    // Card con animación de transición
+                    val lote = lotes[currentIndex]
+                    val cert = certificados[lote.number]
+                    val certColor = when (cert?.status) {
+                        CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                        CertificadoStatus.CORRECTO -> PrimaryColor
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+
+                    AnimatedContent(
+                        targetState = currentIndex,
+                        transitionSpec = {
+                            slideInHorizontally { width -> width } + fadeIn() with
+                                    slideOutHorizontally { width -> -width } + fadeOut()
+                        }
+                    ) { _ ->
+                        LoteCard(
                             lote = lote,
-                            certificadoColor = certColor,
+                            certificado = cert,
+                            certificadoIconColor = certColor,
                             modifier = Modifier
                                 .width(300.dp)
-                                .clickable { onLoteClick(lote) }
+                                .clickable { onLoteClick(lote) },
+                            scope = scope,
+                            snackbarHostState = snackbarHostState,
+                            onViewBigBags = onViewBigBags,
+                            databaseUrl = databaseUrl,
+                            onRemarkUpdated = { updatedLote ->
+                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                onRemarkUpdated(updatedLote)
+                            },
+                            clientRepository = clientRepository,
+                            currentUserEmail = currentUserEmail
+                        )
+                    }
+
+                    // Flecha derecha
+                    IconButton(
+                        onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
+                        enabled = currentIndex < lotes.size - 1,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Siguiente"
                         )
                     }
                 }
             }
-        }
-    }
-}
-
-// -------------------------------------------------------
-// Card de prueba para reemplazar LoteCard
-// -------------------------------------------------------
-@Composable
-fun PruebaCard(
-    lote: LoteModel,
-    certificadoColor: androidx.compose.ui.graphics.Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.height(200.dp), // altura fija
-        colors = CardDefaults.cardColors(containerColor = certificadoColor)
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = "Lote ${lote.number}",
-                color = MaterialTheme.colorScheme.onPrimary,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
