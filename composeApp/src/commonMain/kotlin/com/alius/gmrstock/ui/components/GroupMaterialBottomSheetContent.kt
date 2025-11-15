@@ -100,13 +100,7 @@ fun GroupMaterialBottomSheetContent(
                 AnimatedContent(
                     targetState = currentIndex,
                     transitionSpec = {
-                        if (targetState > initialState) {
-                            slideInHorizontally { width -> width } + fadeIn() with
-                                    slideOutHorizontally { width -> -width } + fadeOut()
-                        } else {
-                            slideInHorizontally { width -> -width } + fadeIn() with
-                                    slideOutHorizontally { width -> width } + fadeOut()
-                        }
+                        fadeIn() with fadeOut()
                     }
                 ) { index ->
                     val lote = lotes[index]
