@@ -2,7 +2,6 @@ package com.alius.gmrstock.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -47,15 +46,13 @@ fun GroupMaterialBottomSheetContent(
         isLoading = true
         try {
             val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
-            // 🟢 Opcional: Ordenar lotes por número para una mejor visualización en columna
-            lotes = loadedLotes.sortedBy { it.number }
+            lotes = loadedLotes
 
             val certs = loadedLotes.associate { lote ->
                 lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
             }
             certificados = certs
         } catch (e: Exception) {
-            Napier.e("Error loading lotes/certs: ${e.message}", e)
             scope.launch {
                 snackbarHostState.showSnackbar("Error al recargar los detalles del lote: ${e.message}")
             }
@@ -64,17 +61,12 @@ fun GroupMaterialBottomSheetContent(
         }
     }
 
-    // Precarga inicial
-    LaunchedEffect(loteNumbers) {
-        loadLotesAndCertificados()
-    }
+    LaunchedEffect(loteNumbers) { loadLotesAndCertificados() }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            // ❌ Altura fija de 520.dp eliminada o reemplazada por un mínimo,
-            // ya que el ModalBottomSheet ya tiene fillMaxHeight(0.9f) y LazyColumn gestionará el scroll
-            .fillMaxHeight()
+            .height(520.dp)
             .padding(vertical = 14.dp)
             .navigationBarsPadding()
     ) {
@@ -89,7 +81,6 @@ fun GroupMaterialBottomSheetContent(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor
-
             )
         }
 
@@ -113,47 +104,55 @@ fun GroupMaterialBottomSheetContent(
             }
 
             else -> {
-                // 🟢 CAMBIO A LazyColumn (Lista Vertical)
-                LazyColumn(
+                LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f), // Permite que la lista use el espacio restante
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(lotes, key = { it.id }) { lote ->
                         val cert = certificados[lote.number]
-
                         val certColor = when (cert?.status) {
                             CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
                             CertificadoStatus.CORRECTO -> PrimaryColor
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
 
-                        LoteCard(
+                        // ✅ Aquí llamamos a la card de prueba en lugar de LoteCard
+                        PruebaCard(
                             lote = lote,
-                            certificado = cert,
-                            certificadoIconColor = certColor,
-                            // 🟢 Modificadores ajustados para que ocupe el ancho completo
+                            certificadoColor = certColor,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onLoteClick(lote) },
-                            scope = scope,
-                            snackbarHostState = snackbarHostState,
-                            onViewBigBags = onViewBigBags,
-                            databaseUrl = databaseUrl,
-                            onRemarkUpdated = { updatedLote ->
-                                // Actualiza la lista local y notifica al padre
-                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                                onRemarkUpdated(updatedLote)
-                            },
-                            clientRepository = clientRepository,
-                            currentUserEmail = currentUserEmail
+                                .width(300.dp)
+                                .clickable { onLoteClick(lote) }
                         )
                     }
                 }
             }
+        }
+    }
+}
+
+// -------------------------------------------------------
+// Card de prueba para reemplazar LoteCard
+// -------------------------------------------------------
+@Composable
+fun PruebaCard(
+    lote: LoteModel,
+    certificadoColor: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.height(200.dp), // altura fija
+        colors = CardDefaults.cardColors(containerColor = certificadoColor)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = "Lote ${lote.number}",
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

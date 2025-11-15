@@ -581,36 +581,25 @@ fun LoteCard(
     }
 
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    // --- DIALOG DE RESERVAS PROFESIONAL CON TÍTULO CENTRADO Y LISTA FIJA ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
         var showDatePicker by remember { mutableStateOf(false) }
+        // ❌ ELIMINADO: var showClientes by remember { mutableStateOf(false) }
         var userToSave by remember { mutableStateOf(currentUserEmail) }
-
-        // Dropdown Menu States para el ExposedDropdownMenuBox
-        var isExpanded by remember { mutableStateOf(false) }
 
         // Observaciones sincronizadas
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
-        // Usaremos una lista mutable para el Dropdown
-        var clientesList by remember { mutableStateOf<List<Cliente>>(emptyList()) }
-        var isLoadingClients by remember { mutableStateOf(true) } // Estado de carga para el selector
+        var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
-        // 🟢 Carga de clientes y filtrado de "NO OK" para el selector
+        // 🟢 Carga de clientes y filtrado de "NO OK" para el carrusel
         LaunchedEffect(Unit) {
-            isLoadingClients = true
-            try {
-                // Obtenemos todos los clientes
-                val allClients = clientRepository.getAllClientsOrderedByName()
-                // Filtramos la lista visible para el selector (excluimos "NO OK" del dropdown)
-                clientesList = allClients.filter { it.cliNombre != "NO OK" }
-            } catch (e: Exception) {
-                clientesList = emptyList()
-            } finally {
-                isLoadingClients = false
-            }
+            // Obtenemos todos los clientes
+            val allClients = clientRepository.getAllClientsOrderedByName()
+            // Filtramos la lista visible para el carrusel (excluimos "NO OK")
+            clientesList = allClients.filter { it.cliNombre != "NO OK" }
         }
 
         AlertDialog(
@@ -631,17 +620,15 @@ fun LoteCard(
 
                     // Usuario que reservó
                     lote.bookedByUser?.takeIf { it.isNotBlank() }?.let {
-                        // Nota: InfoCard debe estar disponible en el contexto (se definió en la primera parte)
                         InfoCard(label = "Reservado por", value = it)
                     }
 
                     // --- CLIENTE ---
                     if (lote.booked != null) {
-                        // Si ya está reservado, muestra el TextField fijo
                         OutlinedTextField(
                             value = selectedCliente?.cliNombre ?: "",
                             onValueChange = {},
-                            label = { Text("Cliente Reservado") },
+                            label = { Text("Cliente") },
                             readOnly = true,
                             enabled = false,
                             colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -654,54 +641,39 @@ fun LoteCard(
                     } else {
                         Text("Seleccione Cliente", fontWeight = FontWeight.Bold)
 
-                        // 🟢 IMPLEMENTACIÓN DEL SELECTOR VERTICAL (ExposedDropdownMenuBox)
-                        ExposedDropdownMenuBox(
-                            expanded = isExpanded,
-                            onExpandedChange = { isExpanded = it },
-                            modifier = Modifier.fillMaxWidth()
+                        // Contenedor de altura fija para la lista (LazyRow)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp) // Altura fija
+                                .padding(vertical = 0.dp)
                         ) {
-                            OutlinedTextField(
-                                modifier = Modifier
-                                    .menuAnchor()
-                                    .fillMaxWidth(),
-                                readOnly = true,
-                                value = selectedCliente?.cliNombre ?: if (isLoadingClients) "Cargando clientes..." else "Seleccione un cliente",
-                                onValueChange = {},
-                                label = { Text("Cliente") },
-                                trailingIcon = {
-                                    if (isLoadingClients) {
-                                        CircularProgressIndicator(Modifier.size(24.dp), PrimaryColor)
-                                    } else {
-                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
-                                    }
-                                },
-                                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                                    focusedBorderColor = PrimaryColor,
-                                    unfocusedBorderColor = PrimaryColor.copy(alpha = 0.5f),
-                                    focusedLabelColor = PrimaryColor
-                                ),
-                                enabled = !isLoadingClients // Deshabilita mientras carga
-                            )
-
-                            ExposedDropdownMenu(
-                                expanded = isExpanded,
-                                onDismissRequest = { isExpanded = false },
-                                modifier = Modifier.fillMaxWidth()
+                            // 🟢 MOSTRAR EL LAZYROW DIRECTAMENTE
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth().fillMaxHeight(), // Mantiene la altura fija de 80.dp
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                clientesList.forEach { cliente ->
-                                    DropdownMenuItem(
-                                        text = { Text(cliente.cliNombre) },
-                                        onClick = {
-                                            selectedCliente = cliente
-                                            isExpanded = false
-                                        },
-                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
-                                    )
+                                // Muestra solo clientes reales
+                                items(clientesList ?: emptyList()) { cliente ->
+                                    val isSelected = selectedCliente == cliente
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isSelected) PrimaryColor else PrimaryColor.copy(alpha = 0.1f),
+                                        modifier = Modifier.clickable { selectedCliente = cliente }
+                                    ) {
+                                        Text(
+                                            text = cliente.cliNombre,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else PrimaryColor,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
+
                         // -------------------------------------------------------------
-                        // 🟢 SECCIÓN: Bloqueo Interno ("NO OK") separado (Se mantiene)
+                        // 🟢 SECCIÓN: Bloqueo Interno ("NO OK") separado
                         // -------------------------------------------------------------
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -894,6 +866,7 @@ fun LoteCard(
             }
         )
     }
+
 
 }
 
