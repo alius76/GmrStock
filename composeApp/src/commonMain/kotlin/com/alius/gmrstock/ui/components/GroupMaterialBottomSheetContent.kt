@@ -29,7 +29,7 @@ import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupMaterialBottomSheetContent(
     loteNumbers: List<String>,
@@ -49,138 +49,116 @@ fun GroupMaterialBottomSheetContent(
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
+    var currentIndex by remember { mutableStateOf(0) }
 
-    val loadLotesAndCertificados: suspend () -> Unit = {
+    // Carga inicial
+    LaunchedEffect(loteNumbers) {
         isLoading = true
         try {
-            val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
+            val loadedLotes = loteNumbers.mapNotNull { loteRepository.getLoteByNumber(it) }
             lotes = loadedLotes
-            val certs = loadedLotes.associate { lote ->
-                lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
-            }
-            certificados = certs
+            certificados = loadedLotes.associate { it.number to certificadoRepository.getCertificadoByLoteNumber(it.number) }
         } catch (e: Exception) {
             scope.launch {
-                snackbarHostState.showSnackbar("Error al recargar los detalles del lote: ${e.message}")
+                snackbarHostState.showSnackbar("Error cargando lotes: ${e.message}")
             }
         } finally {
             isLoading = false
         }
     }
 
-    LaunchedEffect(loteNumbers) { loadLotesAndCertificados() }
-
-    var currentIndex by remember { mutableStateOf(0) }
-
     Column(
         modifier = Modifier
-            .width(460.dp)
+            .fillMaxWidth()
             .height(520.dp)
             .padding(vertical = 14.dp)
-            .navigationBarsPadding()
+            .navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Lotes disponibles",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryColor
-            )
-        }
+        // --- Título ---
+        Text(
+            text = "Lotes disponibles",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryColor
+        )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        when {
-            isLoading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = PrimaryColor)
-                }
+        if (isLoading) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = PrimaryColor)
             }
+        } else if (lotes.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = "No hay lotes disponibles para este material.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            // --- Contenedor del carrusel ---
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(380.dp), // suficiente para card + botones
+                contentAlignment = Alignment.Center
+            ) {
+                // Card centrada
+                val lote = lotes[currentIndex]
+                val cert = certificados[lote.number]
+                val certColor = when (cert?.status) {
+                    CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                    CertificadoStatus.CORRECTO -> PrimaryColor
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                }
 
-            lotes.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "No hay lotes disponibles para este material.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                LoteCard(
+                    lote = lote,
+                    certificado = cert,
+                    certificadoIconColor = certColor,
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f) // ocupa el 80% del ancho
+                        .align(Alignment.Center),
+                    scope = scope,
+                    snackbarHostState = snackbarHostState,
+                    onViewBigBags = onViewBigBags,
+                    databaseUrl = databaseUrl,
+                    onRemarkUpdated = { updatedLote ->
+                        lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                        onRemarkUpdated(updatedLote)
+                    },
+                    clientRepository = clientRepository,
+                    currentUserEmail = currentUserEmail
+                )
+
+                // Botón izquierda
+                IconButton(
+                    onClick = { if (currentIndex > 0) currentIndex-- },
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Anterior",
+                        tint = PrimaryColor
                     )
                 }
-            }
 
-            else -> {
-                Box(
+                // Botón derecha
+                IconButton(
+                    onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(360.dp), // altura fija para evitar vibración
-                    contentAlignment = Alignment.Center
+                        .align(Alignment.CenterEnd)
+                        .size(48.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // Botón anterior
-                        IconButton(
-                            onClick = { if (currentIndex > 0) currentIndex-- },
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Anterior")
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        // Card animada
-                        AnimatedContent(
-                            targetState = currentIndex,
-                            modifier = Modifier
-                                .width(300.dp)
-                                .sizeIn(minWidth = 300.dp, minHeight = 360.dp),
-                            transitionSpec = {
-                                slideInHorizontally { width -> width } + fadeIn() with
-                                        slideOutHorizontally { width -> -width } + fadeOut()
-                            }
-                        ) { index ->
-                            val lote = lotes[index]
-                            val cert = certificados[lote.number]
-                            val certColor = when (cert?.status) {
-                                CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
-                                CertificadoStatus.CORRECTO -> PrimaryColor
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-
-                            LoteCard(
-                                lote = lote,
-                                certificado = cert,
-                                certificadoIconColor = certColor,
-                                modifier = Modifier.width(300.dp).clickable { onLoteClick(lote) },
-                                scope = scope,
-                                snackbarHostState = snackbarHostState,
-                                onViewBigBags = onViewBigBags,
-                                databaseUrl = databaseUrl,
-                                onRemarkUpdated = { updatedLote ->
-                                    lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                                    onRemarkUpdated(updatedLote)
-                                },
-                                clientRepository = clientRepository,
-                                currentUserEmail = currentUserEmail
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        // Botón siguiente
-                        IconButton(
-                            onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(Icons.Default.ArrowForward, contentDescription = "Siguiente")
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.ArrowForward,
+                        contentDescription = "Siguiente",
+                        tint = PrimaryColor
+                    )
                 }
             }
         }
