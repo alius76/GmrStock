@@ -3,12 +3,8 @@ package com.alius.gmrstock.ui.components
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.ArrowOutward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,7 +42,6 @@ fun GroupMaterialBottomSheetContent(
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     var currentIndex by remember { mutableStateOf(0) }
-    var previousIndex by remember { mutableStateOf(0) }
 
     // Carga inicial
     LaunchedEffect(loteNumbers) {
@@ -95,7 +90,7 @@ fun GroupMaterialBottomSheetContent(
                 )
             }
         } else {
-            // Contenedor del carrusel
+            // Contenedor carrusel
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -106,12 +101,12 @@ fun GroupMaterialBottomSheetContent(
                     targetState = currentIndex,
                     transitionSpec = {
                         if (targetState > initialState) {
-                            slideInHorizontally { width -> width / 4 } + fadeIn() with
-                                    slideOutHorizontally { width -> -width / 4 } + fadeOut()
+                            slideInHorizontally { width -> width } + fadeIn() with
+                                    slideOutHorizontally { width -> -width } + fadeOut()
                         } else {
-                            slideInHorizontally { width -> -width / 4 } + fadeIn() with
-                                    slideOutHorizontally { width -> width / 4 } + fadeOut()
-                        }.using(SizeTransform(clip = false))
+                            slideInHorizontally { width -> -width } + fadeIn() with
+                                    slideOutHorizontally { width -> width } + fadeOut()
+                        }
                     }
                 ) { index ->
                     val lote = lotes[index]
@@ -145,10 +140,7 @@ fun GroupMaterialBottomSheetContent(
                 // Botón izquierda
                 IconButton(
                     onClick = {
-                        if (currentIndex > 0) {
-                            previousIndex = currentIndex
-                            currentIndex--
-                        }
+                        if (currentIndex > 0) currentIndex--
                     },
                     modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
                     enabled = currentIndex > 0
@@ -156,17 +148,15 @@ fun GroupMaterialBottomSheetContent(
                     Icon(
                         imageVector = Icons.Default.ArrowBackIosNew,
                         contentDescription = "Anterior",
-                        tint = if (currentIndex > 0) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        tint = if (currentIndex > 0) PrimaryColor
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
 
                 // Botón derecha
                 IconButton(
                     onClick = {
-                        if (currentIndex < lotes.size - 1) {
-                            previousIndex = currentIndex
-                            currentIndex++
-                        }
+                        if (currentIndex < lotes.size - 1) currentIndex++
                     },
                     modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
                     enabled = currentIndex < lotes.size - 1
@@ -174,7 +164,8 @@ fun GroupMaterialBottomSheetContent(
                     Icon(
                         imageVector = Icons.Default.ArrowForwardIos,
                         contentDescription = "Siguiente",
-                        tint = if (currentIndex < lotes.size - 1) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        tint = if (currentIndex < lotes.size - 1) PrimaryColor
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
             }
