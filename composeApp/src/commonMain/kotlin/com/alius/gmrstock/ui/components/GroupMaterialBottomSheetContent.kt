@@ -2,6 +2,7 @@ package com.alius.gmrstock.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -46,13 +47,15 @@ fun GroupMaterialBottomSheetContent(
         isLoading = true
         try {
             val loadedLotes = loteNumbers.mapNotNull { number -> loteRepository.getLoteByNumber(number) }
-            lotes = loadedLotes
+            // 🟢 Opcional: Ordenar lotes por número para una mejor visualización en columna
+            lotes = loadedLotes.sortedBy { it.number }
 
             val certs = loadedLotes.associate { lote ->
                 lote.number to certificadoRepository.getCertificadoByLoteNumber(lote.number)
             }
             certificados = certs
         } catch (e: Exception) {
+            Napier.e("Error loading lotes/certs: ${e.message}", e)
             scope.launch {
                 snackbarHostState.showSnackbar("Error al recargar los detalles del lote: ${e.message}")
             }
@@ -61,6 +64,7 @@ fun GroupMaterialBottomSheetContent(
         }
     }
 
+    // Precarga inicial
     LaunchedEffect(loteNumbers) {
         loadLotesAndCertificados()
     }
@@ -68,7 +72,9 @@ fun GroupMaterialBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(520.dp)
+            // ❌ Altura fija de 520.dp eliminada o reemplazada por un mínimo,
+            // ya que el ModalBottomSheet ya tiene fillMaxHeight(0.9f) y LazyColumn gestionará el scroll
+            .fillMaxHeight()
             .padding(vertical = 14.dp)
             .navigationBarsPadding()
     ) {
@@ -83,6 +89,7 @@ fun GroupMaterialBottomSheetContent(
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryColor
+
             )
         }
 
@@ -106,13 +113,14 @@ fun GroupMaterialBottomSheetContent(
             }
 
             else -> {
-                LazyRow(
+                // 🟢 CAMBIO A LazyColumn (Lista Vertical)
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .requiredHeight(350.dp) // requiredHeight para evitar relayouts en iOS
-                        .padding(horizontal = 16.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .weight(1f), // Permite que la lista use el espacio restante
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     items(lotes, key = { it.id }) { lote ->
                         val cert = certificados[lote.number]
@@ -127,15 +135,16 @@ fun GroupMaterialBottomSheetContent(
                             lote = lote,
                             certificado = cert,
                             certificadoIconColor = certColor,
+                            // 🟢 Modificadores ajustados para que ocupe el ancho completo
                             modifier = Modifier
-                                .requiredWidth(300.dp)   // ancho obligatorio para iOS estable
-                                .requiredHeight(300.dp)  // alto obligatorio para iOS estable
+                                .fillMaxWidth()
                                 .clickable { onLoteClick(lote) },
                             scope = scope,
                             snackbarHostState = snackbarHostState,
                             onViewBigBags = onViewBigBags,
                             databaseUrl = databaseUrl,
                             onRemarkUpdated = { updatedLote ->
+                                // Actualiza la lista local y notifica al padre
                                 lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
                                 onRemarkUpdated(updatedLote)
                             },
