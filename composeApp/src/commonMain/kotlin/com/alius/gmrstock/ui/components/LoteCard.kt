@@ -10,8 +10,10 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.automirrored.filled.ViewList
@@ -445,6 +447,9 @@ fun LoteCard(
         var userToSave by remember { mutableStateOf(currentUserEmail) }
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
+        val dialogWidthFraction = 0.9f
+        val dialogMaxHeight = 500.dp
+
         LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
 
         LaunchedEffect(Unit) {
@@ -454,6 +459,9 @@ fun LoteCard(
 
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
+            modifier = Modifier
+                .fillMaxWidth(dialogWidthFraction)
+                .heightIn(max = dialogMaxHeight),
             title = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -485,7 +493,7 @@ fun LoteCard(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            text = selectedCliente?.cliNombre ?: "Reservado al cliente",
+                            text = selectedCliente?.cliNombre ?: "",
                             color = if (selectedCliente != null) PrimaryColor
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -651,14 +659,14 @@ fun LoteCard(
             }
         )
 
-        // --- DIALOGO DE SELECCION DE CLIENTE ---
+        // --- DIÁLOGO DE SELECCIÓN DE CLIENTE ---
         if (showClientesDialog) {
             Dialog(onDismissRequest = { showClientesDialog = false }) {
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .wrapContentHeight(),
+                        .fillMaxWidth(dialogWidthFraction)
+                        .heightIn(max = dialogMaxHeight),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
@@ -666,6 +674,7 @@ fun LoteCard(
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp)
                     ) {
+                        // Título
                         Text(
                             text = "Seleccione un cliente",
                             fontWeight = FontWeight.Bold,
@@ -674,20 +683,30 @@ fun LoteCard(
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(18.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        ClientesSelectedDialogContent(
-                            clientes = clientesList ?: emptyList(),
-                            selectedCliente = selectedCliente,
-                            onClienteSelected = { cliente ->
-                                selectedCliente = cliente
-                                showClientesDialog = false
-                            },
-                            onDismiss = { showClientesDialog = false }
-                        )
+                        // Lista de clientes scrollable
+                        val scrollState = rememberScrollState()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .verticalScroll(scrollState)
+                        ) {
+                            ClientesSelectedDialogContent(
+                                clientes = clientesList ?: emptyList(),
+                                selectedCliente = selectedCliente,
+                                onClienteSelected = { cliente ->
+                                    selectedCliente = cliente
+                                    showClientesDialog = false
+                                },
+                                onDismiss = { showClientesDialog = false }
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Botón siempre visible
                         TextButton(
                             onClick = { showClientesDialog = false },
                             modifier = Modifier.align(Alignment.End)
@@ -698,6 +717,9 @@ fun LoteCard(
                 }
             }
         }
+
+
+
     }
 
 
