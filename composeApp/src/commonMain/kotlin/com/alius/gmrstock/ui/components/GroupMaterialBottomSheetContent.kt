@@ -2,6 +2,7 @@ package com.alius.gmrstock.ui.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -29,7 +30,7 @@ import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun GroupMaterialBottomSheetContent(
     loteNumbers: List<String>,
@@ -50,6 +51,7 @@ fun GroupMaterialBottomSheetContent(
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(true) }
     var currentIndex by remember { mutableStateOf(0) }
+    var previousIndex by remember { mutableStateOf(0) }
 
     // Carga inicial
     LaunchedEffect(loteNumbers) {
@@ -70,12 +72,11 @@ fun GroupMaterialBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(520.dp) // altura fija para evitar vibraciones
+            .height(520.dp)
             .padding(vertical = 14.dp)
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- Título ---
         Text(
             text = "Lotes disponibles",
             style = MaterialTheme.typography.headlineMedium,
@@ -98,49 +99,62 @@ fun GroupMaterialBottomSheetContent(
                 )
             }
         } else {
-            // --- Contenedor del carrusel ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(380.dp), // altura fija
+                    .height(380.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Card centrada pero con padding superior para subirla un poco
-                val lote = lotes[currentIndex]
-                val cert = certificados[lote.number]
-                val certColor = when (cert?.status) {
-                    CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
-                    CertificadoStatus.CORRECTO -> PrimaryColor
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                // --- AnimatedContent para transición ---
+                AnimatedContent(
+                    targetState = currentIndex,
+                    transitionSpec = {
+                        if (targetState > previousIndex) {
+                            slideInHorizontally { width -> width } + fadeIn() with
+                                    slideOutHorizontally { width -> -width } + fadeOut()
+                        } else {
+                            slideInHorizontally { width -> -width } + fadeIn() with
+                                    slideOutHorizontally { width -> width } + fadeOut()
+                        }.using(SizeTransform(clip = false))
+                    }
+                ) { index ->
+                    val lote = lotes[index]
+                    val cert = certificados[lote.number]
+                    val certColor = when (cert?.status) {
+                        CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                        CertificadoStatus.CORRECTO -> PrimaryColor
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
 
-                Box(modifier = Modifier.padding(top = 16.dp, bottom = 64.dp)) {
-                    LoteCard(
-                        lote = lote,
-                        certificado = cert,
-                        certificadoIconColor = certColor,
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f) // ocupa el 80% del ancho
-                            .align(Alignment.Center),
-                        scope = scope,
-                        snackbarHostState = snackbarHostState,
-                        onViewBigBags = onViewBigBags,
-                        databaseUrl = databaseUrl,
-                        onRemarkUpdated = { updatedLote ->
-                            lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                            onRemarkUpdated(updatedLote)
-                        },
-                        clientRepository = clientRepository,
-                        currentUserEmail = currentUserEmail
-                    )
+                    Box(modifier = Modifier.padding(top = 12.dp, bottom = 64.dp)) {
+                        LoteCard(
+                            lote = lote,
+                            certificado = cert,
+                            certificadoIconColor = certColor,
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            scope = scope,
+                            snackbarHostState = snackbarHostState,
+                            onViewBigBags = onViewBigBags,
+                            databaseUrl = databaseUrl,
+                            onRemarkUpdated = { updatedLote ->
+                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                onRemarkUpdated(updatedLote)
+                            },
+                            clientRepository = clientRepository,
+                            currentUserEmail = currentUserEmail
+                        )
+                    }
                 }
 
                 // Botón izquierda
                 IconButton(
-                    onClick = { if (currentIndex > 0) currentIndex-- },
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(48.dp),
+                    onClick = {
+                        if (currentIndex > 0) {
+                            previousIndex = currentIndex
+                            currentIndex--
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
                     enabled = currentIndex > 0
                 ) {
                     Icon(
@@ -152,10 +166,13 @@ fun GroupMaterialBottomSheetContent(
 
                 // Botón derecha
                 IconButton(
-                    onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .size(48.dp),
+                    onClick = {
+                        if (currentIndex < lotes.size - 1) {
+                            previousIndex = currentIndex
+                            currentIndex++
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
                     enabled = currentIndex < lotes.size - 1
                 ) {
                     Icon(
