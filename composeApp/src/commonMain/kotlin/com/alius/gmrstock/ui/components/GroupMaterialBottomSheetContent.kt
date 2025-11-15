@@ -29,7 +29,7 @@ import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupMaterialBottomSheetContent(
     loteNumbers: List<String>,
@@ -83,7 +83,7 @@ fun GroupMaterialBottomSheetContent(
             color = PrimaryColor
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         if (isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -98,14 +98,14 @@ fun GroupMaterialBottomSheetContent(
                 )
             }
         } else {
+            // --- Contenedor del carrusel ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
-                    .padding(bottom = 16.dp),
+                    .height(380.dp), // suficiente para card + botones
                 contentAlignment = Alignment.Center
             ) {
-                // --- Card con animación ---
+                // Card centrada
                 val lote = lotes[currentIndex]
                 val cert = certificados[lote.number]
                 val certColor = when (cert?.status) {
@@ -114,78 +114,51 @@ fun GroupMaterialBottomSheetContent(
                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
 
-                AnimatedContent(
-                    targetState = currentIndex,
-                    transitionSpec = {
-                        slideInHorizontally { fullWidth -> if (targetState > initialState) fullWidth else -fullWidth } +
-                                fadeIn() with
-                                slideOutHorizontally { fullWidth -> if (targetState > initialState) -fullWidth else fullWidth } +
-                                fadeOut()
-                    }
-                ) { _ ->
-                    LoteCard(
-                        lote = lote,
-                        certificado = cert,
-                        certificadoIconColor = certColor,
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .align(Alignment.Center),
-                        scope = scope,
-                        snackbarHostState = snackbarHostState,
-                        onViewBigBags = onViewBigBags,
-                        databaseUrl = databaseUrl,
-                        onRemarkUpdated = { updatedLote ->
-                            lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                            onRemarkUpdated(updatedLote)
-                        },
-                        clientRepository = clientRepository,
-                        currentUserEmail = currentUserEmail
-                    )
-                }
+                LoteCard(
+                    lote = lote,
+                    certificado = cert,
+                    certificadoIconColor = certColor,
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f) // ocupa el 80% del ancho
+                        .align(Alignment.Center),
+                    scope = scope,
+                    snackbarHostState = snackbarHostState,
+                    onViewBigBags = onViewBigBags,
+                    databaseUrl = databaseUrl,
+                    onRemarkUpdated = { updatedLote ->
+                        lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                        onRemarkUpdated(updatedLote)
+                    },
+                    clientRepository = clientRepository,
+                    currentUserEmail = currentUserEmail
+                )
 
-                // --- Botón izquierda ---
+                // Botón izquierda
                 IconButton(
                     onClick = { if (currentIndex > 0) currentIndex-- },
-                    modifier = Modifier.align(Alignment.CenterStart)
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .size(48.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Anterior",
-                        tint = if (currentIndex == 0) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) else PrimaryColor
+                        tint = PrimaryColor
                     )
                 }
 
-                // --- Botón derecha ---
+                // Botón derecha
                 IconButton(
                     onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
-                    modifier = Modifier.align(Alignment.CenterEnd)
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(48.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowForward,
                         contentDescription = "Siguiente",
-                        tint = if (currentIndex == lotes.size - 1) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f) else PrimaryColor
+                        tint = PrimaryColor
                     )
-                }
-
-                // --- Indicadores tipo puntos ---
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 8.dp)
-                ) {
-                    lotes.forEachIndexed { index, _ ->
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .padding(4.dp)
-                                .background(
-                                    color = if (index == currentIndex) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                    shape = MaterialTheme.shapes.small
-                                )
-                        )
-                    }
                 }
             }
         }
