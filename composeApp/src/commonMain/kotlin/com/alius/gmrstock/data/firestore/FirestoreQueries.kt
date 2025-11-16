@@ -857,3 +857,43 @@ fun buildCreateBodyForLote(lote: LoteModel): String {
         }
     }.toString()
 }
+
+/**
+ * Construye la query JSON para listar lotes reservados.
+ * Utiliza GREATER_THAN para filtrar lotes donde 'booked.cliNombre' existe y no está vacío.
+ */
+fun buildQueryLotesReservados(orderBy: String, direction: String): String {
+    val fieldPath = when (orderBy) {
+        "booked" -> "booked.cliNombre"
+        "dateBooked" -> "dateBooked"
+        else -> "booked.cliNombre"
+    }
+
+    val orderDirection = if (direction.uppercase() == "ASCENDING") "ASCENDING" else "DESCENDING"
+    val filterPath = "booked.cliNombre"
+
+    val query = """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "lote" }],
+            "where": {
+                "fieldFilter": {
+                    "field": { "fieldPath": "$filterPath" },
+                    "op": "GREATER_THAN",
+                    "value": { "stringValue": "" }
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "$fieldPath" }, "direction": "$orderDirection" }
+            ]
+        }
+    }
+    """.trimIndent()
+
+    // El logging sigue siendo útil fuera del JSON.
+    println("🛠️ [QUERY RESERVAS] Generada (GREATER_THAN): Ordenar por $fieldPath ($orderDirection)")
+    println("🛠️ [QUERY RESERVAS] JSON: $query")
+
+    return query
+}
+

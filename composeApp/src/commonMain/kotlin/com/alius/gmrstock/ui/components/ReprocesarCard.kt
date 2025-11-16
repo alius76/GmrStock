@@ -158,7 +158,7 @@ fun ReprocesarCard(reproceso: Reprocesar) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "BigBags del Reproceso",
+                        text = "BigBags reprocesados",
                         color = PrimaryColor,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp

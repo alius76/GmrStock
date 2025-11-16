@@ -33,6 +33,7 @@ interface LoteRepository {
     ): Boolean
 
     suspend fun listarLotesVertisol(): List<Vertisol>
+    suspend fun listarLotesReservados(orderBy: String = "booked", direction: String = "ASCENDING"): List<LoteModel>
 }
 
 expect fun getLoteRepository(databaseUrl: String): LoteRepository

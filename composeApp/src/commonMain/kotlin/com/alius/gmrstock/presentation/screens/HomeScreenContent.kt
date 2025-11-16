@@ -295,7 +295,7 @@ class HomeScreenContent(
                                     icon = Icons.Default.BookmarkBorder,
                                     onClick = {
                                         showSearchDialog = false
-                                        showUnimplementedDialog = true
+                                        localNavigator.push(ReservasScreen(currentDatabaseUrl))
                                     }
                                 )
                                 MaintenanceOption(
