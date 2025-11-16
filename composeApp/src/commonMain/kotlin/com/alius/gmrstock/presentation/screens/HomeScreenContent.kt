@@ -291,7 +291,7 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Calendario de reseras",
+                                    label = "Planning de reservas",
                                     icon = Icons.Default.BookmarkBorder,
                                     onClick = {
                                         showSearchDialog = false

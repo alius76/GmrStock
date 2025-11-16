@@ -29,7 +29,7 @@ fun ReservaCard(lote: LoteModel, onClick: (LoteModel) -> Unit) {
     // Extraer datos clave para la UI
     val clienteNombre = lote.booked?.cliNombre ?: "Cliente Desconocido"
     val totalWeightNumber = lote.totalWeight.toDoubleOrNull() ?: 0.0
-    val bigBagCount = lote.bigBag.size
+    val bigBagCount = lote.count
     val bookedByUser = lote.bookedByUser
 
     // Lógica para mostrar la fecha
