@@ -666,18 +666,25 @@ fun LoteCard(
 
         // --- DIÁLOGO DE SELECCIÓN DE CLIENTE ---
         if (showClientesDialog) {
-            Dialog(onDismissRequest = { showClientesDialog = false }) {
+            // Estado temporal para la selección
+            var tempCliente by remember { mutableStateOf(selectedCliente) }
+
+            Dialog(onDismissRequest = {
+                showClientesDialog = false
+                tempCliente = selectedCliente // cancelar selección temporal
+            }) {
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
                         .fillMaxWidth(dialogWidthFraction)
-                        .heightIn(max = 500.dp), // altura máxima
+                        .heightIn(max = 500.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp)
+                            .fillMaxHeight()
                     ) {
                         Text(
                             text = "Seleccione un cliente",
@@ -689,36 +696,60 @@ fun LoteCard(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        val scrollState = rememberScrollState()
-                        Column(
+                        // Lista scrollable de clientes
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
                                 .weight(1f)
-                                .verticalScroll(scrollState)
+                                .fillMaxWidth()
                         ) {
                             ClientesSelectedDialogContent(
                                 clientes = clientesList ?: emptyList(),
-                                selectedCliente = selectedCliente,
+                                selectedCliente = tempCliente,
                                 onClienteSelected = { cliente ->
-                                    selectedCliente = cliente
-                                    showClientesDialog = false
+                                    tempCliente = cliente
                                 },
-                                onDismiss = { showClientesDialog = false }
+                                onDismiss = {}
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                        TextButton(
-                            onClick = { showClientesDialog = false },
-                            modifier = Modifier.align(Alignment.End)
+                        // --- BOTONES FIJOS ---
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Cerrar", color = PrimaryColor)
+                            TextButton(onClick = {
+                                showClientesDialog = false
+                                tempCliente = selectedCliente // cancelar cambios
+                            }) {
+                                Text("Cancelar", color = PrimaryColor)
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            TextButton(
+                                onClick = {
+                                    showClientesDialog = false
+                                    selectedCliente = tempCliente // aceptar selección
+                                },
+                                enabled = tempCliente != null
+                            ) {
+                                Text(
+                                    "Aceptar",
+                                    color = if (tempCliente != null) PrimaryColor
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+
     }
 
 

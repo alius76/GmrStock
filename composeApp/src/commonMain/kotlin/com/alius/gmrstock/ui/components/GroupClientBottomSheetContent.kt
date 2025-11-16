@@ -2,6 +2,7 @@ package com.alius.gmrstock.ui.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -31,7 +31,6 @@ fun GroupClientBottomSheetContent(
 ) {
     var isLoading by remember { mutableStateOf(false) }
     var currentIndex by remember { mutableStateOf(0) }
-    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -84,7 +83,7 @@ fun GroupClientBottomSheetContent(
             }
 
             else -> {
-                // Carrusel de clientes con puntos
+                // Carrusel con puntos
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
@@ -142,7 +141,7 @@ fun GroupClientBottomSheetContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Barra de puntos interactiva
+                    // --- Barra de puntos con animación mejorada ---
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
@@ -150,17 +149,25 @@ fun GroupClientBottomSheetContent(
                     ) {
                         ventas.forEachIndexed { index, _ ->
                             val isActive = index == currentIndex
-                            val size = if (isActive) 14.dp else 10.dp
-                            val color = if (isActive) PrimaryColor
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+
+                            val dotSize by animateDpAsState(
+                                targetValue = if (isActive) 14.dp else 10.dp,
+                                animationSpec = tween(250)
+                            )
+
+                            val dotColor by animateColorAsState(
+                                targetValue = if (isActive) PrimaryColor
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                animationSpec = tween(250)
+                            )
 
                             Box(
                                 modifier = Modifier
                                     .padding(horizontal = 4.dp)
-                                    .size(size)
+                                    .size(dotSize)
                                     .clip(CircleShape)
-                                    .background(color)
-                                    .clickable { currentIndex = index } // Permite seleccionar los puntos
+                                    .background(dotColor)
+                                    .clickable { currentIndex = index }
                             )
                         }
                     }
@@ -169,4 +176,3 @@ fun GroupClientBottomSheetContent(
         }
     }
 }
-

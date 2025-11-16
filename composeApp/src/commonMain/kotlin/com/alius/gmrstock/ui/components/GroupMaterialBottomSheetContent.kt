@@ -2,6 +2,7 @@ package com.alius.gmrstock.ui.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,7 +76,6 @@ fun GroupMaterialBottomSheetContent(
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título
         Text(
             text = "Lotes disponibles",
             style = MaterialTheme.typography.headlineMedium,
@@ -98,7 +98,6 @@ fun GroupMaterialBottomSheetContent(
                 )
             }
         } else {
-            // Contenedor carrusel
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
@@ -110,7 +109,6 @@ fun GroupMaterialBottomSheetContent(
                     contentAlignment = Alignment.Center
                 ) {
 
-                    // AnimatedContent para mostrar la card actual
                     AnimatedContent(
                         targetState = currentIndex,
                         transitionSpec = {
@@ -127,27 +125,24 @@ fun GroupMaterialBottomSheetContent(
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
 
-                        Box {
-                            LoteCard(
-                                lote = lote,
-                                certificado = cert,
-                                certificadoIconColor = certColor,
-                                modifier = Modifier.fillMaxWidth(0.8f),
-                                scope = scope,
-                                snackbarHostState = snackbarHostState,
-                                onViewBigBags = onViewBigBags,
-                                databaseUrl = databaseUrl,
-                                onRemarkUpdated = { updatedLote ->
-                                    lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                                    onRemarkUpdated(updatedLote)
-                                },
-                                clientRepository = clientRepository,
-                                currentUserEmail = currentUserEmail
-                            )
-                        }
+                        LoteCard(
+                            lote = lote,
+                            certificado = cert,
+                            certificadoIconColor = certColor,
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            scope = scope,
+                            snackbarHostState = snackbarHostState,
+                            onViewBigBags = onViewBigBags,
+                            databaseUrl = databaseUrl,
+                            onRemarkUpdated = { updatedLote ->
+                                lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+                                onRemarkUpdated(updatedLote)
+                            },
+                            clientRepository = clientRepository,
+                            currentUserEmail = currentUserEmail
+                        )
                     }
 
-                    // Botón izquierda
                     IconButton(
                         onClick = { if (currentIndex > 0) currentIndex-- },
                         modifier = Modifier.align(Alignment.CenterStart).size(48.dp),
@@ -161,7 +156,6 @@ fun GroupMaterialBottomSheetContent(
                         )
                     }
 
-                    // Botón derecha
                     IconButton(
                         onClick = { if (currentIndex < lotes.size - 1) currentIndex++ },
                         modifier = Modifier.align(Alignment.CenterEnd).size(48.dp),
@@ -178,7 +172,7 @@ fun GroupMaterialBottomSheetContent(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Barra de puntos interactiva
+                // Barra puntos interactiva mejorada
                 Row(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
@@ -186,17 +180,25 @@ fun GroupMaterialBottomSheetContent(
                 ) {
                     lotes.forEachIndexed { index, _ ->
                         val isActive = index == currentIndex
-                        val size = if (isActive) 14.dp else 10.dp
-                        val color = if (isActive) PrimaryColor
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+
+                        val dotSize by animateDpAsState(
+                            targetValue = if (isActive) 14.dp else 10.dp,
+                            animationSpec = tween(250)
+                        )
+
+                        val dotColor by animateColorAsState(
+                            targetValue = if (isActive) PrimaryColor
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            animationSpec = tween(250)
+                        )
 
                         Box(
                             modifier = Modifier
                                 .padding(horizontal = 4.dp)
-                                .size(size)
+                                .size(dotSize)
                                 .clip(CircleShape)
-                                .background(color)
-                                .clickable { currentIndex = index } // Permite seleccionar los puntos
+                                .background(dotColor)
+                                .clickable { currentIndex = index }
                         )
                     }
                 }

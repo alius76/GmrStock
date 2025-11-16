@@ -1,5 +1,6 @@
 package com.alius.gmrstock.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,11 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun ClientesSelectedDialogContent(
@@ -37,26 +41,33 @@ fun ClientesSelectedDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 400.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(clientes) { cliente ->
                     val isSelected = selectedCliente == cliente
+
                     Card(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = if (isSelected) null else BorderStroke(1.dp, primaryColor),
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) primaryColor else primaryColor.copy(alpha = 0.05f)
+                            containerColor = if (isSelected) primaryColor else Color.White
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onClienteSelected(cliente); onDismiss() }
+                            .clickable { onClienteSelected(cliente) }
+                            .padding(horizontal = 4.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Column(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
                         ) {
                             Text(
                                 text = cliente.cliNombre,
                                 fontSize = 16.sp,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else primaryColor,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -64,7 +75,8 @@ fun ClientesSelectedDialogContent(
                             Text(
                                 text = cliente.cliObservaciones,
                                 fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                                else TextSecondary,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -75,5 +87,3 @@ fun ClientesSelectedDialogContent(
         }
     }
 }
-
-
