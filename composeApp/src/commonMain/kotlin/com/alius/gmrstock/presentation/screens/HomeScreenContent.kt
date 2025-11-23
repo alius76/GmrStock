@@ -36,6 +36,8 @@ import com.alius.gmrstock.ui.components.MaterialGroupCard
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
+import com.alius.gmrstock.ui.components.LotesBottomSheetContent
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 class HomeScreenContent(
@@ -86,6 +88,9 @@ class HomeScreenContent(
 
         val snackbarHostState = remember { SnackbarHostState() }
         val currentUserEmail = remember(user.email) { user.email.substringBefore("@") }
+
+        var showLotesBottomSheet by remember { mutableStateOf(false) }
+        val sheetStateLotes = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         // --- 2. Carga de Datos (Effect) ---
         LaunchedEffect(currentDatabaseUrl) {
@@ -413,29 +418,51 @@ class HomeScreenContent(
                         LazyColumn(
                             modifier = Modifier.fillMaxSize()
                         ) {
+                            // Encabezado con botón a la derecha
                             item {
-                                Text(
-                                    text = "Materiales en stock",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontSize = 26.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Materiales en stock",
+                                            style = MaterialTheme.typography.titleLarge.copy(
+                                                fontSize = 26.sp,
+                                                fontWeight = FontWeight.Bold
+                                            ),
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
 
-                                Spacer(modifier = Modifier.height(2.dp))
+                                        Spacer(modifier = Modifier.height(2.dp))
 
-                                // Cálculo y visualización del peso total
-                                val totalKilos = materialGroups.sumOf { it.totalWeight.toDoubleOrNull() ?: 0.0 }
-                                Text(
-                                    text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Medium
-                                    ),
-                                    color = TextSecondary,
-                                    modifier = Modifier.padding(bottom = 12.dp)
-                                )
+                                        val totalKilos = materialGroups.sumOf { it.totalWeight.toDoubleOrNull() ?: 0.0 }
+                                        Text(
+                                            text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
+                                            color = TextSecondary
+                                        )
+                                    }
+
+                                    // Botón a la derecha del título
+                                    IconButton(
+                                        onClick = {
+                                            showLotesBottomSheet = true
+                                            coroutineScope.launch { sheetStateLotes.show() }
+                                        },
+                                        modifier = Modifier.size(56.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Inventory,
+                                            contentDescription = "Ver lotes",
+                                            tint = PrimaryColor
+                                        )
+                                    }
+                                }
                             }
+
 
                             items(materialGroups) { group ->
                                 MaterialGroupCard(group = group) { clickedGroup ->
@@ -489,6 +516,37 @@ class HomeScreenContent(
                         )
                     }
                 }
+                // --- 7. NUEVO BottomSheet: LotesBottomSheetContent ---
+                if (showLotesBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            coroutineScope.launch {
+                                sheetStateLotes.hide()
+                                showLotesBottomSheet = false
+                            }
+                        },
+                        sheetState = sheetStateLotes,
+                        modifier = Modifier.fillMaxHeight(0.75f)
+                    ) {
+                        LotesBottomSheetContent(
+                            loteRepository = loteRepository,
+                            clientRepository = clientRepository,
+                            databaseUrl = currentDatabaseUrl,
+                            currentUserEmail = currentUserEmail,
+                            snackbarHostState = snackbarHostState,
+                            onViewBigBags = { bigBagsList ->
+                                println("Mostrando ${bigBagsList.size} BigBags")
+                            },
+                            onRemarkUpdated = { updatedLote ->
+                                val index = lotes.indexOfFirst { it.id == updatedLote.id }
+                                if (index >= 0) {
+                                    lotes[index] = updatedLote
+                                }
+                            }
+                        )
+                    }
+                }
+
             }
         }
     }
