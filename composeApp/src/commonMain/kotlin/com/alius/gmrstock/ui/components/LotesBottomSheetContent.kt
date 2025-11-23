@@ -19,18 +19,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.LoteRepository
 import com.alius.gmrstock.domain.model.BigBags
-import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.CertificadoStatus
+import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.SecondaryColor
-import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
@@ -53,55 +52,53 @@ fun LotesBottomSheetContent(
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    // Búsqueda dinámica con debounce y filtro contains
+    // BUSCADOR con debounce y filtro contains
     LaunchedEffect(searchText) {
         isLoading = true
-        kotlinx.coroutines.delay(300) // debounce
+        kotlinx.coroutines.delay(300)
+
+        // *** CAMBIO CLAVE 1: Si no hay texto, no se busca y se deja la lista vacía ***
+        if (searchText.isBlank()) {
+            lotes = emptyList()
+            isLoading = false
+            return@LaunchedEffect
+        }
+        // *************************************************************************
 
         val allLotes = withContext(Dispatchers.IO) {
             try {
-                loteRepository.listarLotes("") // obtenemos todos los lotes
+                // Aquí deberías optimizar para llamar al repositorio solo con el filtro si es posible.
+                // Si no, se obtienen todos y se filtra localmente.
+                loteRepository.listarLotes("")
             } catch (e: Exception) {
-                emptyList<LoteModel>()
+                emptyList()
             }
         }
 
-        lotes = if (searchText.isBlank()) {
-            allLotes
-        } else {
-            allLotes.filter { it.number.contains(searchText, ignoreCase = true) }
-        }
+        lotes = allLotes.filter { it.number.contains(searchText, ignoreCase = true) }
+
         isLoading = false
     }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .navigationBarsPadding()
     ) {
-        // --- Título centrado ---
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Búsqueda de lotes",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = TextSecondary
-                )
-            )
-        }
 
-        // --- Caja de texto de búsqueda con ancho reducido ---
+        // 🔍 CAJA DE BÚSQUEDA (MODIFICADA PARA ACEPTAR SOLO NÚMEROS)
         OutlinedTextField(
             value = searchText,
-            onValueChange = { searchText = it },
-            placeholder = { Text("Ingrese número de lote...") },
+            onValueChange = { newValue ->
+                // Filtra la entrada para que solo se guarden dígitos
+                searchText = newValue.filter { it.isDigit() }
+            },
+            placeholder = { Text("Busqueda de lote por número...") },
             singleLine = true,
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+            // Muestra el teclado numérico en el dispositivo
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .align(Alignment.CenterHorizontally),
@@ -114,114 +111,149 @@ fun LotesBottomSheetContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = PrimaryColor)
-            }
-        } else if (lotes.isEmpty() && searchText.isNotBlank()) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "No se encontraron lotes para \"$searchText\"",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        } else {
-            val pagerState = rememberPagerState(initialPage = 0) { lotes.size }
-
-            VerticalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(420.dp),
-                contentPadding = PaddingValues(vertical = 60.dp)
-            ) { index ->
-                val lote = lotes[index]
-                val cert: Certificado? = null // integrar tu repositorio de certificados si quieres
-                val certColor = when (cert?.status) {
-                    CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
-                    CertificadoStatus.CORRECTO -> PrimaryColor
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+        when {
+            isLoading -> {
+                Box(Modifier.fillMaxWidth().height(420.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = PrimaryColor)
                 }
+            }
 
-                val pageOffset = pagerState.currentPage - index + pagerState.currentPageOffsetFraction
+            // *** CAMBIO CLAVE 2A: Muestra mensaje si el campo está vacío ***
+            lotes.isEmpty() && searchText.isBlank() -> {
+                Box(Modifier.fillMaxWidth().height(420.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "🔎 Ingrese el número de lote para buscar.",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
+            // ****************************************************************
 
-                val scale by animateFloatAsState(
-                    targetValue = lerp(0.85f, 1f, 1f - abs(pageOffset)),
-                    animationSpec = tween(300)
-                )
+            // *** CAMBIO CLAVE 2B: Muestra mensaje si no hay resultados para la búsqueda ***
+            lotes.isEmpty() && searchText.isNotBlank() -> {
+                Box(Modifier.fillMaxWidth().height(420.dp), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No se encontraron lotes para \"$searchText\"",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
+            // *****************************************************************************
 
-                val alpha by animateFloatAsState(
-                    targetValue = lerp(0.55f, 1f, 1f - abs(pageOffset)),
-                    animationSpec = tween(300)
-                )
+            else -> {
+                // Se ejecuta solo si hay lotes (lotes.isNotEmpty())
+                val pagerState = rememberPagerState(initialPage = 0) { lotes.size }
 
-                val translation by animateFloatAsState(
-                    targetValue = pageOffset * 40f,
-                    animationSpec = tween(300)
-                )
-
+                // 🔥 1. CONTENEDOR PAGER (VerticalPager con altura fija)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                            this.alpha = alpha
-                            translationY = translation
-                        },
+                        .height(420.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    LoteCard(
-                        lote = lote,
-                        certificado = cert,
-                        certificadoIconColor = certColor,
-                        modifier = Modifier.fillMaxWidth(0.85f),
-                        scope = scope,
-                        snackbarHostState = snackbarHostState,
-                        onViewBigBags = onViewBigBags,
-                        databaseUrl = databaseUrl,
-                        onRemarkUpdated = { updatedLote ->
-                            lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
-                            onRemarkUpdated(updatedLote)
-                        },
-                        clientRepository = clientRepository,
-                        currentUserEmail = currentUserEmail
-                    )
+
+                    // 📄 PAGER
+                    VerticalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(vertical = 60.dp)
+                    ) { index ->
+                        val lote = lotes[index]
+                        val cert: Certificado? = null
+
+                        val certColor = when (cert?.status) {
+                            CertificadoStatus.ADVERTENCIA -> MaterialTheme.colorScheme.error
+                            CertificadoStatus.CORRECTO -> PrimaryColor
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+
+                        val pageOffset =
+                            pagerState.currentPage - index + pagerState.currentPageOffsetFraction
+
+                        val scale by animateFloatAsState(
+                            targetValue = lerp(0.85f, 1f, 1f - abs(pageOffset)),
+                            animationSpec = tween(300)
+                        )
+
+                        val alpha by animateFloatAsState(
+                            targetValue = lerp(0.55f, 1f, 1f - abs(pageOffset)),
+                            animationSpec = tween(300)
+                        )
+
+                        val translation by animateFloatAsState(
+                            targetValue = pageOffset * 40f,
+                            animationSpec = tween(300)
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                    this.alpha = alpha
+                                    translationY = translation
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoteCard(
+                                lote = lote,
+                                certificado = cert,
+                                certificadoIconColor = certColor,
+                                modifier = Modifier.fillMaxWidth(0.85f),
+                                scope = scope,
+                                snackbarHostState = snackbarHostState,
+                                onViewBigBags = onViewBigBags,
+                                databaseUrl = databaseUrl,
+                                onRemarkUpdated = { updated ->
+                                    lotes = lotes.map {
+                                        if (it.id == updated.id) updated else it
+                                    }
+                                    onRemarkUpdated(updated)
+                                },
+                                clientRepository = clientRepository,
+                                currentUserEmail = currentUserEmail
+                            )
+                        }
+                    }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-            // Dots pager indicator
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                repeat(lotes.size) { index ->
-                    val isActive = pagerState.currentPage == index
-                    val dotSize by animateDpAsState(
-                        targetValue = if (isActive) 14.dp else 10.dp,
-                        animationSpec = tween(250)
-                    )
-                    val dotColor by animateColorAsState(
-                        targetValue = if (isActive) PrimaryColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                        animationSpec = tween(250)
-                    )
+                // ●●● 2. DOTS (FUERA del Box para la posición correcta)
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    repeat(lotes.size) { index ->
+                        val isActive = pagerState.currentPage == index
 
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(dotSize)
-                            .clip(CircleShape)
-                            .background(dotColor)
-                            .clickable {
-                                scope.launch { pagerState.scrollToPage(index) }
-                            }
-                    )
+                        val dotSize by animateDpAsState(
+                            targetValue = if (isActive) 14.dp else 10.dp,
+                            animationSpec = tween(250)
+                        )
+
+                        val dotColor by animateColorAsState(
+                            targetValue = if (isActive) PrimaryColor
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                            animationSpec = tween(250)
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(dotSize)
+                                .clip(CircleShape)
+                                .background(dotColor)
+                                .clickable {
+                                    scope.launch { pagerState.scrollToPage(index) }
+                                }
+                        )
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
     }

@@ -455,7 +455,7 @@ class HomeScreenContent(
                                         modifier = Modifier.size(56.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.GridView,
+                                            imageVector = Icons.Default.ScreenSearchDesktop,
                                             contentDescription = "Ver lotes",
                                             tint = PrimaryColor
                                         )
