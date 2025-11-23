@@ -44,7 +44,6 @@ class ReprocesarScreen(private val databaseUrl: String) : Screen {
                 try {
                     isLoading = true
                     val data = repository.listarReprocesos()
-                    // 🔹 Ordenar por fecha de reproceso descendente
                     reprocesos = data.sortedByDescending { it.reprocesoDate }
                     totalKilos = reprocesos.sumOf { it.reprocesoLoteWeight.toDoubleOrNull() ?: 0.0 }
                 } catch (e: Exception) {
@@ -60,16 +59,55 @@ class ReprocesarScreen(private val databaseUrl: String) : Screen {
                 .fillMaxSize()
                 .background(BackgroundColor)
         ) {
+            // 🔹 HEADER FIJO
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BackgroundColor)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navigator.pop() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
+                    }
+                    Column(
+                        modifier = Modifier.padding(start = 8.dp),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Reprocesos",
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            // 🔹 Contenido scrollable debajo del header
+            val topPadding = 72.dp // altura aproximada del header
             if (isLoading) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(color = PrimaryColor)
                 }
             } else if (reprocesos.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -82,45 +120,14 @@ class ReprocesarScreen(private val databaseUrl: String) : Screen {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 16.dp)
+                        .padding(top = topPadding),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // 🔹 HEADER (flecha + título + subtítulo) ahora hace scroll
-                    item {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                IconButton(onClick = { navigator.pop() }) {
-                                    Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
-                                }
-                            }
-
-                            Text(
-                                text = "Reprocesos",
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-
-                            Text(
-                                text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                            )
-                        }
-                    }
-
-                    // 🔹 Lista de reprocesos
                     items(reprocesos) { reproceso ->
                         ReprocesarCard(reproceso)
                     }
 
-                    // 🔹 Spacer final
                     item { Spacer(modifier = Modifier.height(80.dp)) }
                 }
             }

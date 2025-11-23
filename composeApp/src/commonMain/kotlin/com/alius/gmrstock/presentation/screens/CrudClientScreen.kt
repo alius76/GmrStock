@@ -45,20 +45,17 @@ class CrudClientScreen(
         var showEditCreateDialog by remember { mutableStateOf(false) }
         var showDeleteConfirmDialog by remember { mutableStateOf(false) }
         var clientToDelete by remember { mutableStateOf<Pair<String, Cliente>?>(null) }
-        // 🚀 Nuevo estado de carga
         var loading by remember { mutableStateOf(true) }
 
         var editingClient by remember { mutableStateOf<Pair<String, Cliente>?>(null) }
         var nameField by remember { mutableStateOf(TextFieldValue("")) }
         var obsField by remember { mutableStateOf(TextFieldValue("")) }
 
-        // 🎨 Definición de colores de TextField para el estado enfocado (SIN CAMBIOS)
         val focusedTextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = PrimaryColor,
             focusedLabelColor = PrimaryColor
         )
 
-        // 🎨 NUEVO: Forma redondeada de 12.dp para TextFields y Cards
         val roundedShape12 = RoundedCornerShape(12.dp)
 
         fun refreshClients() {
@@ -71,206 +68,148 @@ class CrudClientScreen(
 
         LaunchedEffect(databaseUrl) { refreshClients() }
 
-        // 🚨 REEMPLAZO DE SCAFFOLD CON BOX (Estructura de pantalla completa)
+        // --- BOX PANTALLA COMPLETA ---
         Box(modifier = Modifier.fillMaxSize().background(BackgroundColor)) {
 
-            // 🚀 Mostrar CircularProgressIndicator si está cargando
+            // --- HEADER FIJO: Flecha + Título + Subtítulo ---
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BackgroundColor)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navigator.pop() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
+                    }
+                    Column(
+                        modifier = Modifier.padding(start = 8.dp),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Gestión de clientes",
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "Clientes Registrados",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
+                            color = Color.Gray,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
+            }
+
+            val topPadding = 100.dp // Ajusta según altura del header
+
             if (loading) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(color = PrimaryColor)
                 }
+            } else if (clients.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topPadding),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Text("No hay clientes registrados.", color = TextSecondary)
+                }
             } else {
-                // --- Contenido principal solo si NO está cargando ---
-                Column(modifier = Modifier.fillMaxSize()) {
-
-                    // --- Main Content Area (LazyColumn toma el espacio restante) ---
-                    if (clients.isEmpty()) {
-                        // Contenido vacío centrado, manteniendo el padding
-                        Box(
-                            // Este Box ya tiene padding horizontal=16.dp
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(top = topPadding),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(clients) { (documentId, cliente) ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = roundedShape12,
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                         ) {
-                            // Título y Flecha en la parte superior del Box, incluso si la lista está vacía
-                            Column(modifier = Modifier.fillMaxWidth()) {
-
-                                // 1. Botón de Atrás (Top Left - SIN CAMBIOS)
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Start
-                                ) {
-                                    IconButton(onClick = { navigator.pop() }) {
-                                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
-                                    }
-                                }
-
-                                // 2. Título Principal: "Gestión de clientes" (SIN CAMBIOS)
-                                Text(
-                                    text = "Gestión de clientes",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontSize = 26.sp,
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = MaterialTheme.colorScheme.secondary,
-                                )
-
-                                Spacer(modifier = Modifier.height(20.dp))
-                            }
-
-                            // Mensaje central si está vacío
-                            Box(
-                                modifier = Modifier.fillMaxSize().padding(top = 100.dp),
-                                contentAlignment = Alignment.Center
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("No hay clientes registrados.", color = TextSecondary)
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            // MEJORA: Aumentar espaciado entre tarjetas
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-
-                            // --- Área de Títulos Combinada (Encabezado del LazyColumn - SIN CAMBIOS) ---
-                            item {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-
-                                    // 1. Botón de Atrás (Top Left - SIN CAMBIOS)
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(50.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Start
-                                    ) {
-                                        IconButton(onClick = { navigator.pop() }) {
-                                            Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
-                                        }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        cliente.cliNombre,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryColor,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    if (cliente.cliObservaciones.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "Obs: ${cliente.cliObservaciones}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.DarkGray,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
                                     }
-
-                                    // 2. Título Principal: "Gestión de clientes" (SIN CAMBIOS)
-                                    Text(
-                                        text = "Gestión de clientes",
-                                        style = MaterialTheme.typography.titleLarge.copy(
-                                            fontSize = 26.sp,
-                                            fontWeight = FontWeight.Bold
-                                        ),
-                                        color = MaterialTheme.colorScheme.secondary,
-                                    )
-
-                                    // 3. Subtítulo: "Clientes Registrados" (SIN CAMBIOS)
-                                    Text(
-                                        text = "Clientes Registrados",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            fontWeight = FontWeight.Medium
-                                        ),
-                                        color = Color.Gray,
-                                        modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                                    )
                                 }
-                            }
-
-                            // --- Cards de Clientes (MEJORADO) ---
-                            items(clients) { (documentId, cliente) ->
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    // MEJORA: Esquinas redondeadas a 12.dp
-                                    shape = roundedShape12,
-                                    colors = CardDefaults.cardColors(
-                                        // MEJORA: Usar color de fondo estándar de tarjeta para contraste
-                                        containerColor = Color.White
-                                    ),
-                                    // MEJORA: Reducir un poco la elevación para un look más plano
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        // 1. Información del Cliente
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                cliente.cliNombre,
-                                                // MEJORA: Font más grande y negrita para destacar
-                                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
-                                                fontWeight = FontWeight.Bold,
-                                                color = PrimaryColor, // Usar PrimaryColor
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            if (cliente.cliObservaciones.isNotEmpty()) {
-                                                Spacer(modifier = Modifier.height(4.dp))
-                                                Text(
-                                                    "Obs: ${cliente.cliObservaciones}",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = Color.DarkGray, // Un gris más oscuro que TextSecondary
-                                                    maxLines = 2,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
-
-                                        // 2. Botones de Acción (Derecha - SIN CAMBIOS EN COLORES, solo espaciado)
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp), // Aumentar espacio entre iconos
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            IconButton(onClick = {
-                                                editingClient = documentId to cliente
-                                                nameField = TextFieldValue(cliente.cliNombre)
-                                                obsField = TextFieldValue(cliente.cliObservaciones)
-                                                showEditCreateDialog = true
-                                            }) {
-                                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = PrimaryColor)
-                                            }
-                                            IconButton(onClick = {
-                                                clientToDelete = documentId to cliente
-                                                showDeleteConfirmDialog = true
-                                            }) {
-                                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ReservedColor)
-                                            }
-                                        }
+                                    IconButton(onClick = {
+                                        editingClient = documentId to cliente
+                                        nameField = TextFieldValue(cliente.cliNombre)
+                                        obsField = TextFieldValue(cliente.cliObservaciones)
+                                        showEditCreateDialog = true
+                                    }) {
+                                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = PrimaryColor)
+                                    }
+                                    IconButton(onClick = {
+                                        clientToDelete = documentId to cliente
+                                        showDeleteConfirmDialog = true
+                                    }) {
+                                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ReservedColor)
                                     }
                                 }
                             }
-                            // Espacio al final de la lista para el FAB
-                            item { Spacer(Modifier.height(80.dp)) }
                         }
                     }
-                } // Fin Column (Content)
-
-                // 🚨 Floating Action Button (SIN CAMBIOS)
-                FloatingActionButton(
-                    onClick = {
-                        editingClient = null
-                        nameField = TextFieldValue("")
-                        obsField = TextFieldValue("")
-                        showEditCreateDialog = true
-                    },
-                    containerColor = PrimaryColor,
-                    // MEJORA: Asegurar que la forma sea circular (50% de radio)
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(24.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Nuevo cliente", tint = Color.White)
+                    item { Spacer(Modifier.height(80.dp)) }
                 }
-            } // Fin del bloque 'else' (no loading)
+            }
 
-            // 🔹 Dialogo Crear/Editar (MEJORADO)
+            // --- Floating Action Button ---
+            FloatingActionButton(
+                onClick = {
+                    editingClient = null
+                    nameField = TextFieldValue("")
+                    obsField = TextFieldValue("")
+                    showEditCreateDialog = true
+                },
+                containerColor = PrimaryColor,
+                shape = RoundedCornerShape(50),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Nuevo cliente", tint = Color.White)
+            }
+
+            // --- Dialogos de Crear/Editar ---
             if (showEditCreateDialog) {
                 AlertDialog(
                     onDismissRequest = { showEditCreateDialog = false },
@@ -284,8 +223,7 @@ class CrudClientScreen(
                         }
                     },
                     text = {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { // Aumentar espacio
-                            // MEJORA: Aplicar forma redondeada de 12.dp
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             OutlinedTextField(
                                 value = nameField,
                                 onValueChange = { nameField = it },
@@ -294,7 +232,6 @@ class CrudClientScreen(
                                 shape = roundedShape12,
                                 colors = focusedTextFieldColors
                             )
-                            // MEJORA: Aplicar forma redondeada de 12.dp
                             OutlinedTextField(
                                 value = obsField,
                                 onValueChange = { obsField = it },
@@ -323,12 +260,14 @@ class CrudClientScreen(
                         }) { Text("Guardar", fontWeight = FontWeight.SemiBold, color = PrimaryColor) }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showEditCreateDialog = false }) { Text("Cancelar", fontWeight = FontWeight.SemiBold, color = PrimaryColor) }
+                        TextButton(onClick = { showEditCreateDialog = false }) {
+                            Text("Cancelar", fontWeight = FontWeight.SemiBold, color = PrimaryColor)
+                        }
                     }
                 )
             }
 
-            // --- DIÁLOGO DE CONFIRMACIÓN DE ELIMINACIÓN (MEJORADO) ---
+            // --- Dialogo de Confirmación de Eliminación ---
             if (showDeleteConfirmDialog && clientToDelete != null) {
                 val (documentId, cliente) = clientToDelete!!
                 AlertDialog(
@@ -336,11 +275,7 @@ class CrudClientScreen(
                     icon = { Icon(Icons.Default.Warning, contentDescription = "Advertencia", tint = ReservedColor) },
                     title = {
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text(
-                                "Confirmar eliminación",
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryColor
-                            )
+                            Text("Confirmar eliminación", fontWeight = FontWeight.Bold, color = PrimaryColor)
                         }
                     },
                     text = {
@@ -355,7 +290,6 @@ class CrudClientScreen(
                                 refreshClients()
                             }
                         }) {
-                            // MEJORA: Usar ReservedColor para la acción destructiva
                             Text("Eliminar", color = ReservedColor, fontWeight = FontWeight.SemiBold)
                         }
                     },
@@ -369,6 +303,6 @@ class CrudClientScreen(
                     }
                 )
             }
-        } // Fin Box de pantalla completa
+        } // Fin Box pantalla completa
     }
 }

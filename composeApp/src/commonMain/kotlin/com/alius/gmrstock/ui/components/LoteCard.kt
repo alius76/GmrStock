@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -664,91 +665,53 @@ fun LoteCard(
             }
         )
 
-        // --- DIÁLOGO DE SELECCIÓN DE CLIENTE ---
+        // --- DIÁLOGO DE SELECCIÓN DE CLIENTE (estética nueva) ---
         if (showClientesDialog) {
-            // Estado temporal para la selección
             var tempCliente by remember { mutableStateOf(selectedCliente) }
 
-            Dialog(onDismissRequest = {
-                showClientesDialog = false
-                tempCliente = selectedCliente // cancelar selección temporal
-            }) {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(dialogWidthFraction)
-                        .heightIn(max = 500.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp)
-                            .fillMaxHeight()
-                    ) {
-                        Text(
-                            text = "Seleccione un cliente",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = PrimaryColor,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Lista scrollable de clientes
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                        ) {
-                            ClientesSelectedDialogContent(
-                                clientes = clientesList ?: emptyList(),
-                                selectedCliente = tempCliente,
-                                onClienteSelected = { cliente ->
-                                    tempCliente = cliente
-                                },
-                                onDismiss = {}
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // --- BOTONES FIJOS ---
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.End,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            TextButton(onClick = {
-                                showClientesDialog = false
-                                tempCliente = selectedCliente // cancelar cambios
-                            }) {
-                                Text("Cancelar", color = PrimaryColor)
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            TextButton(
-                                onClick = {
-                                    showClientesDialog = false
-                                    selectedCliente = tempCliente // aceptar selección
-                                },
-                                enabled = tempCliente != null
-                            ) {
-                                Text(
-                                    "Aceptar",
-                                    color = if (tempCliente != null) PrimaryColor
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                )
+            AlertDialog(
+                onDismissRequest = { showClientesDialog = false },
+                title = { Text("Seleccione un cliente", fontWeight = FontWeight.Bold, color = PrimaryColor) },
+                text = {
+                    Box(modifier = Modifier.heightIn(max = 400.dp)) {
+                        LazyColumn {
+                            items(clientesList ?: emptyList()) { cliente ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { tempCliente = cliente }
+                                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = tempCliente == cliente,
+                                        onClick = { tempCliente = cliente },
+                                        colors = RadioButtonDefaults.colors(selectedColor = PrimaryColor)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(cliente.cliNombre)
+                                }
                             }
                         }
                     }
-                }
-            }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        selectedCliente = tempCliente
+                        showClientesDialog = false
+                    }) {
+                        Text("Aceptar", color = PrimaryColor)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showClientesDialog = false }) {
+                        Text("Cancelar", color = PrimaryColor)
+                    }
+                },
+                shape = RoundedCornerShape(16.dp)
+            )
         }
+
 
     }
 

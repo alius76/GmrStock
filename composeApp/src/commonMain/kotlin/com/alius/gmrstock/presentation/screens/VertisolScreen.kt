@@ -59,19 +59,55 @@ class VertisolScreen(private val databaseUrl: String) : Screen {
                 .fillMaxSize()
                 .background(BackgroundColor)
         ) {
-            when {
-                isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
+            Column(modifier = Modifier.fillMaxSize()) {
+                // 🔹 Header fijo: flecha + título + subtítulo en la misma fila
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navigator.pop() }) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = PrimaryColor
+                        )
+                    }
+
+                    Column(modifier = Modifier.padding(start = 12.dp)) {
+                        Text(
+                            text = "Lotes en Vertisol",
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        Text(
+                            text = "Total kilos: ${formatWeight(totalKilos)} Kg",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Medium
+                            ),
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                // 🔹 Contenido scrollable
+                when {
+                    isLoading -> Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = PrimaryColor)
                     }
-                }
 
-                vertisolList.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
+                    vertisolList.isEmpty() -> Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -80,58 +116,18 @@ class VertisolScreen(private val databaseUrl: String) : Screen {
                             fontWeight = FontWeight.Medium
                         )
                     }
-                }
 
-                else -> {
-                    // --- LazyColumn con encabezado incluido ---
-                    LazyColumn(
+                    else -> LazyColumn(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // 🔸 Header scrollable
-                        item {
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(50.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    IconButton(onClick = { navigator.pop() }) {
-                                        Icon(
-                                            Icons.Default.ArrowBack,
-                                            contentDescription = "Volver",
-                                            tint = PrimaryColor
-                                        )
-                                    }
-                                }
-
-                                Text(
-                                    text = "Lotes en Vertisol",
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-
-                                Text(
-                                    text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        fontWeight = FontWeight.Medium
-                                    ),
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                                )
-                            }
-                        }
-
-                        // 🔸 Listado de Vertisoles
                         items(vertisolList) { vertisol ->
                             VertisolCard(vertisol = vertisol)
                         }
 
-                        // 🔸 Spacer final
                         item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
                 }

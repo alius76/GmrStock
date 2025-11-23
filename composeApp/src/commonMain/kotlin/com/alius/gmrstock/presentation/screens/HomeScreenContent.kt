@@ -283,6 +283,15 @@ class HomeScreenContent(
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
+                                    label = "Ventas por cliente",
+                                    icon = Icons.Default.EuroSymbol,
+                                    onClick = {
+                                        showSearchDialog = false
+                                        localNavigator.push(VentasClienteScreen(currentDatabaseUrl))
+                                    }
+                                )
+
+                                MaintenanceOption(
                                     label = "Lotes reprocesados",
                                     icon = Icons.Default.Repeat,
                                     onClick = {
@@ -292,7 +301,7 @@ class HomeScreenContent(
                                 )
                                 MaintenanceOption(
                                     label = "Planning de reservas",
-                                    icon = Icons.Default.BookmarkBorder,
+                                    icon = Icons.Default.CalendarMonth,
                                     onClick = {
                                         showSearchDialog = false
                                         localNavigator.push(ReservasScreen(currentDatabaseUrl))
