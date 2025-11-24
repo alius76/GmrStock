@@ -91,7 +91,7 @@ fun LotesBottomSheetContent(
                 val newSearchText = newValue.filter { it.isDigit() }
                 searchText = newSearchText
             },
-            placeholder = { Text("Busqueda de lote por número...") },
+            placeholder = { Text("Buscar lote por número") },
             singleLine = true,
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
