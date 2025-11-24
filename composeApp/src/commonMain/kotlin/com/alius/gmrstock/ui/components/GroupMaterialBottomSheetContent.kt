@@ -1,12 +1,9 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -17,9 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.text.font.FontWeight
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getCertificadoRepository
 import com.alius.gmrstock.data.getLoteRepository
@@ -28,9 +25,9 @@ import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.CertificadoStatus
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import androidx.compose.ui.platform.LocalDensity
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -48,6 +45,7 @@ fun GroupMaterialBottomSheetContent(
     val scope = rememberCoroutineScope()
     val loteRepository = remember { getLoteRepository(databaseUrl) }
     val certificadoRepository = remember { getCertificadoRepository(databaseUrl) }
+    val density = LocalDensity.current
 
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
@@ -90,14 +88,14 @@ fun GroupMaterialBottomSheetContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 14.dp)
+            .padding(horizontal = 16.dp, vertical = 14.dp)
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Lotes disponibles",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = TextSecondary
+            color = PrimaryColor
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -167,40 +165,40 @@ fun GroupMaterialBottomSheetContent(
                     )
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(18.dp))
+            // --- BARRA VERTICAL DE PROGRESO CORREGIDA ---
+            if (lotes.size > 1) {
+                val barWidth = 4.dp
+                val indicatorHeightDp = 420.dp
+                val minThumbHeight = 20.dp
 
-        // --- Indicador inferior de puntos ---
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            repeat(lotes.size) { index ->
-                val isActive = pagerState.currentPage == index
+                val thumbHeight = (indicatorHeightDp / lotes.size.toFloat()).coerceAtLeast(minThumbHeight)
+                val currentPosition = pagerState.currentPage + pagerState.currentPageOffsetFraction
+                val normalizedPosition = currentPosition / (lotes.size - 1).toFloat()
+                val travelRangePx = with(density) { (indicatorHeightDp - thumbHeight).toPx() }
 
-                val dotSize by animateDpAsState(
-                    targetValue = if (isActive) 14.dp else 10.dp,
-                    animationSpec = tween(250)
-                )
-
-                val dotColor by animateColorAsState(
-                    targetValue = if (isActive) PrimaryColor
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                    animationSpec = tween(250)
+                val thumbOffsetPx by animateFloatAsState(
+                    targetValue = normalizedPosition * travelRangePx,
+                    animationSpec = tween(300)
                 )
 
                 Box(
                     modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(dotSize)
+                        .fillMaxHeight()
+                        .width(barWidth)
+                        .align(Alignment.CenterEnd)
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                         .clip(CircleShape)
-                        .background(dotColor)
-                        .clickable {
-                            scope.launch { pagerState.scrollToPage(index) } // ← coroutine seguro
-                        }
-                )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .offset(y = with(density) { thumbOffsetPx.toDp() })
+                            .width(barWidth)
+                            .height(thumbHeight)
+                            .clip(CircleShape)
+                            .background(PrimaryColor)
+                    )
+                }
             }
         }
 

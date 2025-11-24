@@ -1,12 +1,9 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -17,14 +14,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import com.alius.gmrstock.domain.model.Venta
-import com.alius.gmrstock.domain.model.Cliente
-import com.alius.gmrstock.ui.theme.PrimaryColor
+// ------------------------------------------------------------------
+// ------------------------------------------------------------------
+import androidx.compose.ui.text.font.FontWeight
+
+
 import com.alius.gmrstock.ui.theme.TextSecondary
-import kotlinx.coroutines.launch
+import com.alius.gmrstock.domain.model.Cliente
+import com.alius.gmrstock.domain.model.Venta
+import com.alius.gmrstock.ui.theme.PrimaryColor
+
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -34,9 +36,10 @@ fun GroupClientBottomSheetContent(
     ventas: List<Venta>,
     onDismissRequest: () -> Unit
 ) {
+
     if (ventas.isEmpty()) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().height(420.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -49,12 +52,12 @@ fun GroupClientBottomSheetContent(
     }
 
     val pagerState = rememberPagerState(initialPage = 0) { ventas.size }
-    val scope = rememberCoroutineScope() // ← necesario para scrollToPage
+    val density = LocalDensity.current
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 14.dp)
+            .padding(horizontal = 16.dp, vertical = 14.dp)
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -64,7 +67,7 @@ fun GroupClientBottomSheetContent(
         Text(
             text = "Lotes vendidos",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = TextSecondary
+            color = PrimaryColor
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -76,7 +79,7 @@ fun GroupClientBottomSheetContent(
             contentAlignment = Alignment.Center
         ) {
 
-            // === PAGER VERTICAL con padding para mostrar cards vecinas ===
+
             VerticalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
@@ -85,7 +88,7 @@ fun GroupClientBottomSheetContent(
 
                 val pageOffset = (pagerState.currentPage - index + pagerState.currentPageOffsetFraction)
 
-                // Escala proporcional basada en distancia al centro
+                // Efectos de transición de la card
                 val scale by animateFloatAsState(
                     targetValue = lerp(0.85f, 1f, 1f - abs(pageOffset)),
                     animationSpec = tween(300)
@@ -112,49 +115,57 @@ fun GroupClientBottomSheetContent(
                         },
                     contentAlignment = Alignment.Center
                 ) {
+                    // Se asume que ClientCard existe en tu proyecto
                     ClientCard(
                         cliente = cliente,
                         venta = ventas[index],
-                        modifier = Modifier.fillMaxWidth(0.85f)
+                        modifier = Modifier.fillMaxWidth(0.85f) // La tarjeta ahora tiene el ancho adecuado.
                     )
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(18.dp))
+            // ⚙️ BARRA VERTICAL DE PROGRESO (Scrollbar Deslizante)
+            val totalItems = ventas.size
+            if (totalItems > 1) {
+                val barWidth = 4.dp
+                val indicatorHeightDp = 420.dp
+                val minThumbHeight = 20.dp
 
-        // === PUNTOS INFERIORES con función de clickable para navegar ===
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            repeat(ventas.size) { index ->
-                val isActive = pagerState.currentPage == index
+                // Altura del "Pulgar" (Scroll Thumb)
+                val thumbHeight = (indicatorHeightDp / totalItems.toFloat()).coerceAtLeast(minThumbHeight)
 
-                val dotSize by animateDpAsState(
-                    targetValue = if (isActive) 14.dp else 10.dp,
-                    animationSpec = tween(250)
-                )
+                // Posición de desplazamiento normalizada (0.0 al 1.0)
+                val currentPosition = pagerState.currentPage + pagerState.currentPageOffsetFraction
+                val normalizedPosition = currentPosition / (totalItems - 1).toFloat()
 
-                val dotColor by animateColorAsState(
-                    targetValue = if (isActive) PrimaryColor
-                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                    animationSpec = tween(250)
+                // Rango de movimiento del pulgar en Píxeles: (Altura total del Box - Altura del pulgar)
+                val travelRangePx = with(density) { (indicatorHeightDp - thumbHeight).toPx() }
+
+                // Desplazamiento animado (Offset)
+                val thumbOffsetPx by animateFloatAsState(
+                    targetValue = normalizedPosition * travelRangePx,
+                    animationSpec = tween(300)
                 )
 
                 Box(
                     modifier = Modifier
-                        .padding(horizontal = 4.dp)
-                        .size(dotSize)
+                        .fillMaxHeight()
+                        .width(barWidth)
+                        .align(Alignment.CenterEnd)
+                        .padding(vertical = 10.dp) // <--- 2. CORRECCIÓN: ELIMINADO padding horizontal extra (horizontal = 4.dp)
                         .clip(CircleShape)
-                        .background(dotColor)
-                        .clickable {
-                            scope.launch {
-                                pagerState.scrollToPage(index) // ← mover a la card correspondiente
-                            }
-                        }
-                )
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                ) {
+                    // Pulgar Indicador
+                    Box(
+                        modifier = Modifier
+                            .offset(y = with(density) { thumbOffsetPx.toDp() })
+                            .width(barWidth)
+                            .height(thumbHeight)
+                            .clip(CircleShape)
+                            .background(PrimaryColor)
+                    )
+                }
             }
         }
 
