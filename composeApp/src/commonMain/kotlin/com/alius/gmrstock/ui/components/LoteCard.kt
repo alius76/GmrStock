@@ -145,12 +145,7 @@ fun LoteCard(
 
                     // Certificado
                     IconButton(
-                        onClick = {
-                            if (certificado != null) showCertificadoDialog = true
-                            else scope.launch {
-                                snackbarHostState.showSnackbar("No se encontró certificado para el lote ${lote.number}")
-                            }
-                        },
+                        onClick = { showCertificadoDialog = true },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
@@ -379,54 +374,99 @@ fun LoteCard(
     }
 
     // --- Diálogo Certificado ---
-    if (showCertificadoDialog && certificado != null) {
+    if (showCertificadoDialog) {
         Dialog(onDismissRequest = { showCertificadoDialog = false }) {
             Card(
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                modifier = Modifier.fillMaxWidth(0.95f).padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth(0.95f)
+                    .padding(16.dp)
             ) {
                 Column(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(20.dp),
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val (icon, estadoText, estadoColor) = when (certificado.status) {
-                        CertificadoStatus.ADVERTENCIA -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
-                        CertificadoStatus.CORRECTO -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
-                        else -> Triple(Icons.Default.Description, "Sin Datos", MaterialTheme.colorScheme.onSurfaceVariant)
+                    val (icon, estadoText, estadoColor) = if (certificado != null) {
+                        when (certificado.status) {
+                            CertificadoStatus.ADVERTENCIA -> Triple(Icons.Default.Warning, "Advertencia", MaterialTheme.colorScheme.error)
+                            CertificadoStatus.CORRECTO -> Triple(Icons.Default.CheckCircle, "Correcto", PrimaryColor)
+                            else -> Triple(Icons.Default.Description, "Sin Datos", MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    } else {
+                        Triple(Icons.Default.Description, "Sin Datos", MaterialTheme.colorScheme.onSurfaceVariant)
                     }
 
                     Icon(icon, contentDescription = estadoText, tint = estadoColor, modifier = Modifier.size(48.dp))
-                    Text("Certificado de ${lote.number}", color = PrimaryColor, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, textAlign = TextAlign.Center)
-                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        certificado.parametros.forEach { parametro ->
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(parametro.descripcion, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End) {
-                                        if (parametro.warning) {
-                                            Icon(Icons.Default.Warning, contentDescription = "Advertencia", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                        }
-                                        Text(parametro.valor, color = if (parametro.warning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
-                                    }
-                                }
+                    Text(
+                        "Certificado de ${lote.number}",
+                        color = PrimaryColor,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 22.sp,
+                        textAlign = TextAlign.Center
+                    )
 
-                                val rangoTexto = parametro.rango?.let { rango ->
-                                    if (rango.valorMin != null && rango.valorMax != null) {
-                                        val min = if (rango.valorMin % 1.0 == 0.0) rango.valorMin.toInt() else rango.valorMin
-                                        val max = if (rango.valorMax % 1.0 == 0.0) rango.valorMax.toInt() else rango.valorMax
-                                        "Rango: ($min - $max ${parametro.unidad})"
-                                    } else "Rango: N/A"
-                                } ?: "Rango: N/A"
-                                Text(rangoTexto, color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                    Divider(color = MaterialTheme.colorScheme.outlineVariant)
+
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (certificado != null) {
+                            certificado.parametros.forEach { parametro ->
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            parametro.descripcion,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.weight(1f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.End
+                                        ) {
+                                            if (parametro.warning) {
+                                                Icon(
+                                                    Icons.Default.Warning,
+                                                    contentDescription = "Advertencia",
+                                                    tint = MaterialTheme.colorScheme.error,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                            }
+                                            Text(
+                                                parametro.valor,
+                                                color = if (parametro.warning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                    }
+
+                                    val rangoTexto = parametro.rango?.let { rango ->
+                                        if (rango.valorMin != null && rango.valorMax != null) {
+                                            val min = if (rango.valorMin % 1.0 == 0.0) rango.valorMin.toInt() else rango.valorMin
+                                            val max = if (rango.valorMax % 1.0 == 0.0) rango.valorMax.toInt() else rango.valorMax
+                                            "Rango: ($min - $max ${parametro.unidad})"
+                                        } else "Rango: N/A"
+                                    } ?: "Rango: N/A"
+                                    Text(rangoTexto, color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                                }
                             }
+                        } else {
+                            // Mensaje cuando no existe certificado
+                            Text(
+                                "No se encontraron datos del certificado.",
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
 
@@ -438,6 +478,7 @@ fun LoteCard(
             }
         }
     }
+
 // --- Diálogo de reservas con selección de cliente ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }

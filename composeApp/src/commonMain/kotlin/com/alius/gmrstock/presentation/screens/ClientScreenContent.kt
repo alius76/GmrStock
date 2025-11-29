@@ -55,21 +55,18 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
         .groupBy { it.ventaCliente }
         .map { (clienteNombre, ventasCliente) ->
 
-            // 1. Calcular Kilos (Simplificamos ya que ahora sabemos que 'ventaPesoTotal' es el que se usa y puede ser Int/String)
             val totalKilos = ventasCliente.sumOf { venta ->
-
                 venta.ventaPesoTotal?.toIntOrNull()
                     ?: venta.ventaBigbags.sumOf { it.ventaBbWeight.toIntOrNull() ?: 0 }
             }
 
-            // 2. Calcular BigBags: Suma el tamaño de la lista de BigBags de cada venta
-            val totalBigBags = ventasCliente.sumOf { it.ventaBigbags.size } // ⬅️ Nuevo cálculo
+            val totalBigBags = ventasCliente.sumOf { it.ventaBigbags.size }
 
             ClientGroupSell(
                 cliente = com.alius.gmrstock.domain.model.Cliente(cliNombre = clienteNombre),
                 totalVentasMes = ventasCliente.size,
-                totalKilosVendidos = totalKilos, // Usamos el cálculo de Kilos
-                totalBigBags = totalBigBags // ⬅️ Asignamos el valor calculado
+                totalKilosVendidos = totalKilos,
+                totalBigBags = totalBigBags
             ) to ventasCliente
         }
         .sortedByDescending { it.first.totalKilosVendidos }
@@ -91,7 +88,6 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // --- Título y subtítulo ---
                 item {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Spacer(modifier = Modifier.height(50.dp))
@@ -118,7 +114,6 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                     }
                 }
 
-                // --- Cards de clientes ---
                 items(grouped) { group ->
                     ClientGroupSellCard(group = group.first) { clickedGroup ->
                         selectedClientGroup = clickedGroup
@@ -132,7 +127,6 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                 }
             }
 
-            // --- BottomSheet con detalle ---
             selectedClientGroup?.let { clientGroup ->
                 ModalBottomSheet(
                     onDismissRequest = {
@@ -145,6 +139,7 @@ fun ClientScreenContent(user: User, databaseUrl: String) {
                     GroupClientBottomSheetContent(
                         cliente = clientGroup.cliente,
                         ventas = selectedClientVentas,
+                        databaseUrl = databaseUrl, // <-- CORRECCIÓN: Pasamos databaseUrl
                         onDismissRequest = {
                             coroutineScope.launch { bottomSheetState.hide() }
                             selectedClientGroup = null

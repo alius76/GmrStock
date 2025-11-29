@@ -17,16 +17,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-// ------------------------------------------------------------------
-// ------------------------------------------------------------------
 import androidx.compose.ui.text.font.FontWeight
-
-
-import com.alius.gmrstock.ui.theme.TextSecondary
+import com.alius.gmrstock.data.getCertificadoRepository
+import com.alius.gmrstock.domain.model.Certificado
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.Venta
 import com.alius.gmrstock.ui.theme.PrimaryColor
-
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -34,12 +30,41 @@ import kotlin.math.abs
 fun GroupClientBottomSheetContent(
     cliente: Cliente,
     ventas: List<Venta>,
+    databaseUrl: String,             // <-- agregado
     onDismissRequest: () -> Unit
 ) {
+    // Inicializamos el repositorio con la URL de la base de datos
+    val certificadoRepository = remember(databaseUrl) { getCertificadoRepository(databaseUrl) }
+
+    var certificados by remember { mutableStateOf<Map<String, Certificado?>>(emptyMap()) }
+    var loading by remember { mutableStateOf(true) }
+
+    // --- CARGA DE CERTIFICADOS UNA SOLA VEZ ---
+    LaunchedEffect(ventas) {
+        loading = true
+        certificados = ventas.associate { venta ->
+            venta.ventaLote to certificadoRepository.getCertificadoByLoteNumber(venta.ventaLote)
+        }
+        loading = false
+    }
+
+    if (loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .height(420.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = PrimaryColor)
+        }
+        return
+    }
 
     if (ventas.isEmpty()) {
         Box(
-            modifier = Modifier.fillMaxSize().height(420.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .height(420.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -63,7 +88,6 @@ fun GroupClientBottomSheetContent(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Título fijo ---
         Text(
             text = "Lotes vendidos",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -79,16 +103,16 @@ fun GroupClientBottomSheetContent(
             contentAlignment = Alignment.Center
         ) {
 
-
             VerticalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 60.dp)
             ) { index ->
+                val venta = ventas[index]
+                val certificado = certificados[venta.ventaLote]
 
                 val pageOffset = (pagerState.currentPage - index + pagerState.currentPageOffsetFraction)
 
-                // Efectos de transición de la card
                 val scale by animateFloatAsState(
                     targetValue = lerp(0.85f, 1f, 1f - abs(pageOffset)),
                     animationSpec = tween(300)
@@ -115,33 +139,27 @@ fun GroupClientBottomSheetContent(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    // Se asume que ClientCard existe en tu proyecto
                     ClientCard(
                         cliente = cliente,
-                        venta = ventas[index],
-                        modifier = Modifier.fillMaxWidth(0.85f) // La tarjeta ahora tiene el ancho adecuado.
+                        venta = venta,
+                        certificado = certificado,       // <-- pasamos el certificado cargado
+                        databaseUrl = databaseUrl,       // <-- pasamos la URL a ClientCard
+                        modifier = Modifier.fillMaxWidth(0.85f)
                     )
                 }
             }
 
-            // ⚙️ BARRA VERTICAL DE PROGRESO (Scrollbar Deslizante)
+            // Barra vertical de progreso
             val totalItems = ventas.size
             if (totalItems > 1) {
                 val barWidth = 4.dp
                 val indicatorHeightDp = 420.dp
                 val minThumbHeight = 20.dp
 
-                // Altura del "Pulgar" (Scroll Thumb)
                 val thumbHeight = (indicatorHeightDp / totalItems.toFloat()).coerceAtLeast(minThumbHeight)
-
-                // Posición de desplazamiento normalizada (0.0 al 1.0)
                 val currentPosition = pagerState.currentPage + pagerState.currentPageOffsetFraction
                 val normalizedPosition = currentPosition / (totalItems - 1).toFloat()
-
-                // Rango de movimiento del pulgar en Píxeles: (Altura total del Box - Altura del pulgar)
                 val travelRangePx = with(density) { (indicatorHeightDp - thumbHeight).toPx() }
-
-                // Desplazamiento animado (Offset)
                 val thumbOffsetPx by animateFloatAsState(
                     targetValue = normalizedPosition * travelRangePx,
                     animationSpec = tween(300)
@@ -152,11 +170,10 @@ fun GroupClientBottomSheetContent(
                         .fillMaxHeight()
                         .width(barWidth)
                         .align(Alignment.CenterEnd)
-                        .padding(vertical = 10.dp) // <--- 2. CORRECCIÓN: ELIMINADO padding horizontal extra (horizontal = 4.dp)
+                        .padding(vertical = 10.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                 ) {
-                    // Pulgar Indicador
                     Box(
                         modifier = Modifier
                             .offset(y = with(density) { thumbOffsetPx.toDp() })
