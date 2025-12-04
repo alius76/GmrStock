@@ -106,7 +106,7 @@ class ComandasPlanningScreen(private val databaseUrl: String) : Screen {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Planning de reservas activas",
+                        "Planning de comandas",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.secondary
