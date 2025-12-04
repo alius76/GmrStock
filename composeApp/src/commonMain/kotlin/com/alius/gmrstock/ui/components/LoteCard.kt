@@ -6,15 +6,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.automirrored.filled.ViewList
@@ -25,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,6 +39,12 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
+import com.alius.gmrstock.data.getComandaRepository
+import com.alius.gmrstock.domain.model.Comanda
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.clip
+import com.alius.gmrstock.ui.theme.TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
@@ -482,24 +482,81 @@ fun LoteCard(
 // --- Diálogo de reservas con selección de cliente ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
-        var fecha by remember { mutableStateOf(formatInstant(lote.dateBooked)) }
-        var showDatePicker by remember { mutableStateOf(false) }
         var showClientesDialog by remember { mutableStateOf(false) }
         var userToSave by remember { mutableStateOf(currentUserEmail) }
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
+        // 🆕 ESTADOS PARA COMANDAS
+        var selectedComanda by remember { mutableStateOf<Comanda?>(null) }
+        var comandasList by remember { mutableStateOf<List<Comanda>>(emptyList()) }
+        var isComandasLoading by remember { mutableStateOf(false) }
+        var currentBookedRemark by remember { mutableStateOf(lote.bookedRemark?.trim() ?: "") }
+
+        // REPOSITORIOS (Asume que están definidos en LoteCard)
+        val comandaRepository = remember { getComandaRepository(databaseUrl) }
+
         val dialogWidthFraction = 0.95f
+        val noOkCliente = Cliente(cliNombre = "NO OK")
+        val errorColor = MaterialTheme.colorScheme.error
+        val cardShape = RoundedCornerShape(12.dp)
 
-        LaunchedEffect(lote.id) { currentBookedRemark = lote.bookedRemark?.trim() ?: "" }
+        // Banderas de estado
+        val isLoteReservedByRealClient = lote.booked != null && lote.booked.cliNombre != "NO OK"
+        val isNoOkSelected = selectedCliente?.cliNombre == "NO OK"
+        val isLoteReservedOrBlocked = lote.booked != null
+        val isBloqueoClickable = !isLoteReservedOrBlocked || isNoOkSelected
+        val isRealClientSelected = selectedCliente != null && selectedCliente!!.cliNombre != "NO OK"
 
+        // 1. CARGAR Y FILTRAR CLIENTES
         LaunchedEffect(Unit) {
             val allClients = clientRepository.getAllClientsOrderedByName()
             clientesList = allClients.filter { it.cliNombre != "NO OK" }
         }
 
+        // 2. CARGAR Y FILTRAR COMANDAS (Lógica Modificada para Excluir Vendidas)
+        LaunchedEffect(selectedCliente) {
+            comandasList = emptyList()
+            selectedComanda = null
+            val cliente = selectedCliente
+
+            // Solo cargar comandas si es un cliente real
+            if (cliente != null && cliente.cliNombre != "NO OK") {
+                isComandasLoading = true
+                try {
+                    val allComandas = comandaRepository.getPendingComandasByClient(cliente.cliNombre)
+
+                    // 🔑 PASO 1: Excluir Comandas que ya fueron vendidas.
+                    val activeComandas = allComandas.filter { !it.fueVendidoComanda }
+
+                    // 🔑 PASO 2: Encontrar la comanda previamente asignada (si aún está activa)
+                    val previouslyAssignedComanda = activeComandas.firstOrNull { it.numberLoteComanda == lote.number }
+
+                    // 🔑 PASO 3: Filtrar solo las comandas que están disponibles para este lote
+                    val availableComandas = activeComandas.filter { comanda ->
+                        val isUnassigned = comanda.numberLoteComanda.isNullOrBlank() || comanda.numberLoteComanda == "0"
+                        val isAssignedToThisLote = comanda.numberLoteComanda == lote.number
+                        isUnassigned || isAssignedToThisLote
+                    }
+
+                    comandasList = availableComandas
+
+                    // 🔑 PASO 4: Pre-seleccionar la comanda si la reserva del lote es del cliente actual y tiene una comanda activa asociada.
+                    if (lote.booked?.cliNombre == cliente.cliNombre) {
+                        selectedComanda = previouslyAssignedComanda
+                    }
+
+                } catch (e: Exception) {
+                    scope.launch { snackbarHostState.showSnackbar("Error al cargar comandas: ${e.message}") }
+                } finally {
+                    isComandasLoading = false
+                }
+            }
+        }
+
+        // 3. DIÁLOGO PRINCIPAL (AlertDialog)
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
-            modifier = Modifier.fillMaxWidth(dialogWidthFraction),
+            modifier = Modifier.fillMaxWidth(dialogWidthFraction).fillMaxHeight(0.9f),
             title = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -515,7 +572,7 @@ fun LoteCard(
                         InfoCard(label = "Reservado por", value = it)
                     }
 
-                    // --- CLIENTE ---
+                    // --- 1. CLIENTE ---
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -524,32 +581,112 @@ fun LoteCard(
                                 width = 1.dp,
                                 color = if (selectedCliente != null) PrimaryColor
                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                shape = RoundedCornerShape(4.dp)
+                                shape = cardShape
                             )
-                            .clickable { showClientesDialog = true }
+                            .clip(cardShape)
+                            // Deshabilitamos el selector si ya hay reserva/bloqueo
+                            .clickable(enabled = !isLoteReservedOrBlocked) { showClientesDialog = true }
                             .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            text = selectedCliente?.cliNombre ?: "Reservado al cliente",
-                            color = if (selectedCliente != null) PrimaryColor
+                            text = selectedCliente?.cliNombre ?: "Seleccione cliente",
+                            color = if (selectedCliente != null && !isLoteReservedOrBlocked) PrimaryColor
+                            else if (isLoteReservedOrBlocked) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }
 
-                    // Bloqueo "NO OK"
+                    // --- 2. SECCIÓN DE COMANDAS PENDIENTES ---
+                    Text("Comandas activas (${selectedCliente?.cliNombre ?: "No Seleccionado"})", fontWeight = FontWeight.Bold)
+
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, cardShape)
+                        .padding(4.dp)) {
+
+                        if (isComandasLoading) {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(30.dp), color = PrimaryColor)
+                        } else if (isRealClientSelected && comandasList.isEmpty()) {
+                            Text("No hay comandas pendientes para este cliente disponibles para este lote.", modifier = Modifier.align(Alignment.Center).padding(16.dp), color = TextSecondary)
+                        } else if (!isRealClientSelected) {
+                            Text("Lista de comandas del cliente.", modifier = Modifier.align(Alignment.Center).padding(16.dp), color = TextSecondary)
+                        } else { // Mostrar la lista si hay cliente real y comandas
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
+                                items(comandasList) { comanda ->
+
+                                    // 🔑 LÓGICA DE INTERACTIVIDAD (CORREGIDA):
+                                    // Es clickeable si NO hay cliente real reservando,
+                                    // O si el cliente seleccionado actualmente es el que tiene la reserva del lote.
+                                    // Esto permite reasignar una nueva comanda al mismo cliente después de una venta.
+                                    val isComandaClickable = !isLoteReservedByRealClient || (selectedCliente?.cliNombre == lote.booked?.cliNombre)
+
+                                    ComandaLoteCard(
+                                        comanda = comanda,
+                                        isSelected = comanda.idComanda == selectedComanda?.idComanda,
+                                        onClick = if (isComandaClickable) { clickedComanda ->
+                                            selectedComanda = if (selectedComanda?.idComanda == clickedComanda.idComanda) null else clickedComanda
+                                        } else { _: Comanda -> }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    // ---------------------------------------------------
+
+                    // --- 3. OBSERVACIONES ---
+                    OutlinedTextField(
+                        value = currentBookedRemark,
+                        onValueChange = { currentBookedRemark = it },
+                        label = { Text("Observaciones de reserva") },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp, max = 150.dp),
+                        singleLine = false,
+                        shape = cardShape,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = PrimaryColor,
+                            focusedLabelColor = PrimaryColor,
+                            cursorColor = PrimaryColor
+                        )
+                    )
+
+                    // --- 4. BLOQUEO INTERNO (Botón) ---
                     Spacer(modifier = Modifier.height(8.dp))
-                    val noOkCliente = Cliente(cliNombre = "NO OK")
-                    val isNoOkSelected = selectedCliente?.cliNombre == "NO OK"
-                    val errorColor = MaterialTheme.colorScheme.error
+
+                    val bloqueoBackgroundColor = when {
+                        isNoOkSelected -> errorColor
+                        isLoteReservedOrBlocked && !isNoOkSelected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                        isBloqueoClickable -> errorColor.copy(alpha = 0.15f)
+                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                    }
+
+                    val bloqueoIconColor = when {
+                        isNoOkSelected -> Color.LightGray
+                        isLoteReservedOrBlocked && !isNoOkSelected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        isBloqueoClickable -> errorColor
+                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    }
+                    val bloqueoTextColor = bloqueoIconColor
+
 
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isNoOkSelected) errorColor else errorColor.copy(alpha = 0.15f),
+                        shape = cardShape,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
-                            .clickable { selectedCliente = noOkCliente }
+                            .clip(cardShape)
+                            .background(bloqueoBackgroundColor)
+                            .then(
+                                if (isBloqueoClickable) Modifier.clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    selectedCliente = noOkCliente
+                                    selectedComanda = null
+                                }
+                                else Modifier
+                            ),
+                        shadowElevation = if (isBloqueoClickable) 2.dp else 0.dp
                     ) {
                         Row(
                             modifier = Modifier
@@ -561,98 +698,54 @@ fun LoteCard(
                             Icon(
                                 Icons.Default.Lock,
                                 contentDescription = "Bloquear",
-                                tint = if (isNoOkSelected) Color.White else errorColor,
+                                tint = bloqueoIconColor,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 "BLOQUEO INTERNO",
-                                color = if (isNoOkSelected) Color.White else errorColor,
+                                color = bloqueoTextColor,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             )
                         }
                     }
-
-                    // --- OBSERVACIONES ---
-                    OutlinedTextField(
-                        value = currentBookedRemark,
-                        onValueChange = { currentBookedRemark = it },
-                        label = { Text("Observaciones de reserva") },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp, max = 150.dp),
-                        singleLine = false,
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = PrimaryColor,
-                            focusedLabelColor = PrimaryColor,
-                            cursorColor = PrimaryColor
-                        )
-                    )
-
-                    // --- FECHA ---
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Fecha estimada", fontWeight = FontWeight.Bold)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .clickable { showDatePicker = true }
-                            .padding(horizontal = 16.dp, vertical = 14.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    Icons.Default.CalendarToday,
-                                    contentDescription = "Calendario",
-                                    tint = PrimaryColor,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    if (fecha.isNotBlank()) fecha else "Seleccione fecha",
-                                    color = if (fecha.isNotBlank()) MaterialTheme.colorScheme.onSurface
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                            }
-                            if (fecha.isNotBlank()) {
-                                Icon(
-                                    Icons.Default.Clear,
-                                    contentDescription = "Borrar fecha",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(20.dp).clickable { fecha = "" }
-                                )
-                            }
-                        }
-                    }
-
-                    if (showDatePicker) {
-                        UniversalDatePickerDialog(
-                            initialDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
-                            onDateSelected = { selected ->
-                                fecha = "${selected.dayOfMonth.toString().padStart(2,'0')}-${selected.monthNumber.toString().padStart(2,'0')}-${selected.year}"
-                                showDatePicker = false
-                            },
-                            onDismiss = { showDatePicker = false },
-                            primaryColor = PrimaryColor
-                        )
-                    }
                 }
             },
+            // --- 5. Botones de Acción (ConfirmButton) ---
             confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Botón Anular
                     if (lote.booked != null || lote.dateBooked != null) {
                         TextButton(onClick = {
                             showReservedDialog = false
                             scope.launch {
-                                val success = loteRepository.updateLoteBooked(lote.id, null, null, null, null)
-                                if (success) onRemarkUpdated(lote.copy(booked = null, dateBooked = null, bookedByUser = null, bookedRemark = null))
+                                var success = true
+
+                                // Buscamos la comanda ACTIVA vinculada a ESTE LOTE (si existe)
+                                val linkedComanda = comandasList.firstOrNull { it.numberLoteComanda == lote.number }
+
+                                if (linkedComanda != null) {
+                                    val comandaCleanSuccess = comandaRepository.updateComandaLoteNumber(linkedComanda.idComanda, "")
+                                    if (!comandaCleanSuccess) {
+                                        snackbarHostState.showSnackbar("Error al limpiar la Comanda asociada.")
+                                        success = false
+                                    }
+                                }
+
+                                val loteCleanSuccess = loteRepository.updateLoteBooked(lote.id, null, null, null, null)
+                                if (!loteCleanSuccess) {
+                                    snackbarHostState.showSnackbar("Error al anular la reserva del Lote.")
+                                    success = false
+                                }
+
+                                if (success) {
+                                    onRemarkUpdated(lote.copy(booked = null, dateBooked = null, bookedByUser = null, bookedRemark = null))
+                                }
                                 snackbarHostState.showSnackbar(if (success) "Reserva anulada" else "Error al anular la reserva")
                             }
                         }) { Text("Anular", color = MaterialTheme.colorScheme.error) }
@@ -660,45 +753,76 @@ fun LoteCard(
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { showReservedDialog = false }) { Text("Cancelar", color = PrimaryColor) }
+
+                        // Botón Guardar (Lógica Modificada)
                         TextButton(
                             onClick = {
+                                // Validaciones
                                 if (selectedCliente == null) {
                                     scope.launch { snackbarHostState.showSnackbar("Debe seleccionar un cliente") }
                                     return@TextButton
                                 }
+                                if (isLoteReservedOrBlocked && selectedCliente?.cliNombre != lote.booked?.cliNombre) {
+                                    scope.launch { snackbarHostState.showSnackbar("Debe anular la reserva/bloqueo existente antes de seleccionar otro cliente.") }
+                                    return@TextButton
+                                }
 
-                                val parsedDate = try {
-                                    if (fecha.isNotBlank()) {
-                                        val parts = fecha.split("-")
-                                        if (parts.size == 3) {
-                                            val day = parts[0].toInt()
-                                            val month = parts[1].toInt()
-                                            val year = parts[2].toInt()
-                                            kotlinx.datetime.LocalDate(year, month, day)
-                                                .atStartOfDayIn(TimeZone.currentSystemDefault())
-                                        } else null
-                                    } else null
-                                } catch (e: Exception) { null }
+                                // Lógica de la fecha de reserva (usa fecha de Comanda si existe, si no, usa la actual o la existente)
+                                val newDateBooked = if (selectedComanda != null) {
+                                    selectedComanda!!.dateBookedComanda
+                                } else if (lote.booked == null) {
+                                    kotlinx.datetime.Clock.System.now() // Nueva reserva, usa fecha actual
+                                } else {
+                                    lote.dateBooked // Mantiene la fecha de la reserva existente
+                                }
 
                                 showReservedDialog = false
                                 val remarkToSave = currentBookedRemark.trim().ifBlank { null }
 
                                 scope.launch {
-                                    val success = loteRepository.updateLoteBooked(
-                                        lote.id, selectedCliente, parsedDate ?: lote.dateBooked, userToSave, remarkToSave
+                                    var comandaSuccess = true
+
+                                    // Paso 1: Desvincular la comanda anterior (si el usuario cambió la selección o deseleccionó)
+                                    // Usamos 'comandasList' que contiene las comandas activas del cliente actual, excluyendo la que se selecciona ahora.
+                                    val oldLinkedComanda = comandasList.firstOrNull { it.numberLoteComanda == lote.number && it.idComanda != selectedComanda?.idComanda }
+
+                                    if (oldLinkedComanda != null) {
+                                        comandaSuccess = comandaRepository.updateComandaLoteNumber(oldLinkedComanda.idComanda, "")
+                                        if (!comandaSuccess) {
+                                            snackbarHostState.showSnackbar("Error al desvincular la Comanda anterior.")
+                                        }
+                                    }
+
+                                    // Paso 2: Actualizar la reserva del lote
+                                    val loteSuccess = loteRepository.updateLoteBooked(
+                                        lote.id, selectedCliente, newDateBooked, userToSave, remarkToSave
                                     )
-                                    if (success) {
+
+                                    // Paso 3: Vincular la nueva comanda (si se seleccionó una y la reserva del lote fue exitosa)
+                                    if (loteSuccess && selectedComanda != null && comandaSuccess) {
+                                        comandaSuccess = comandaRepository.updateComandaLoteNumber(
+                                            selectedComanda!!.idComanda, lote.number
+                                        )
+                                    }
+
+                                    if (loteSuccess && comandaSuccess) {
                                         val updatedLote = lote.copy(
                                             booked = selectedCliente,
-                                            dateBooked = parsedDate ?: lote.dateBooked,
+                                            dateBooked = newDateBooked,
                                             bookedByUser = userToSave,
                                             bookedRemark = remarkToSave
                                         )
                                         onRemarkUpdated(updatedLote)
-                                        snackbarHostState.showSnackbar("Reserva guardada correctamente")
-                                    } else snackbarHostState.showSnackbar("Error al guardar la reserva")
+
+                                        val msg = if (selectedComanda != null) "Reserva y Comanda asociadas correctamente"
+                                        else "Reserva del lote guardada (sin Comanda asociada)"
+                                        snackbarHostState.showSnackbar(msg)
+                                    } else {
+                                        snackbarHostState.showSnackbar("Error al guardar la reserva. Lote: $loteSuccess, Comanda: $comandaSuccess")
+                                    }
                                 }
                             },
+                            // Habilitación: Solo requiere que se haya seleccionado un cliente
                             enabled = selectedCliente != null
                         ) { Text("Guardar", color = PrimaryColor) }
                     }
@@ -706,7 +830,7 @@ fun LoteCard(
             }
         )
 
-        // --- DIÁLOGO DE SELECCIÓN DE CLIENTE (estética nueva) ---
+        // --- DIÁLOGO DE SELECCIÓN DE CLIENTE ---
         if (showClientesDialog) {
             var tempCliente by remember { mutableStateOf(selectedCliente) }
 
@@ -753,9 +877,7 @@ fun LoteCard(
             )
         }
 
-
     }
-
 
 }
 

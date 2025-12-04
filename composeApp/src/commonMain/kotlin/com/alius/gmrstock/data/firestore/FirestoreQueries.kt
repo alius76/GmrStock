@@ -2,6 +2,7 @@ package com.alius.gmrstock.data.firestore
 
 import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.Cliente
+import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.domain.model.Devolucion
 import com.alius.gmrstock.domain.model.LoteModel
 import kotlinx.datetime.Instant
@@ -895,5 +896,99 @@ fun buildQueryLotesReservados(orderBy: String, direction: String): String {
     println("🛠️ [QUERY RESERVAS] JSON: $query")
 
     return query
+}
+
+fun buildPostBodyForComanda(comanda: Comanda): String {
+    val jsonBody = buildJsonObject {
+        putJsonObject("fields") {
+
+            putJsonObject("numeroDeComanda") {
+                put("integerValue", comanda.numeroDeComanda.toString())
+            }
+
+            putJsonObject("numberLoteComanda") {
+                put("stringValue", comanda.numberLoteComanda)
+            }
+
+            putJsonObject("descriptionLoteComanda") {
+                put("stringValue", comanda.descriptionLoteComanda)
+            }
+
+            putJsonObject("dateBookedComanda") {
+                if (comanda.dateBookedComanda != null) {
+                    put("timestampValue", comanda.dateBookedComanda.toString())
+                } else {
+                    put("nullValue", JsonNull)
+                }
+            }
+
+            putJsonObject("totalWeightComanda") {
+                put("stringValue", comanda.totalWeightComanda)
+            }
+
+            // Cliente reservado
+            if (comanda.bookedClientComanda != null) {
+                putJsonObject("bookedClientComanda") {
+                    putJsonObject("mapValue") {
+                        putJsonObject("fields") {
+                            putJsonObject("cliNombre") {
+                                put("stringValue", comanda.bookedClientComanda.cliNombre)
+                            }
+                            putJsonObject("cliObservaciones") {
+                                put("stringValue", comanda.bookedClientComanda.cliObservaciones)
+                            }
+                        }
+                    }
+                }
+            } else {
+                putJsonObject("bookedClientComanda") {
+                    put("nullValue", JsonNull)
+                }
+            }
+
+            putJsonObject("remarkComanda") {
+                put("stringValue", comanda.remarkComanda)
+            }
+
+            putJsonObject("fueVendidoComanda") {
+                put("booleanValue", comanda.fueVendidoComanda)
+            }
+        }
+    }.toString()
+
+    return jsonBody
+}
+fun buildQueryPendingComandasByClient(clientName: String): String {
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "comanda" }],
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "bookedClientComanda.cliNombre" },
+                                "op": "EQUAL",
+                                "value": { "stringValue": "$clientName" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "fueVendidoComanda" },
+                                "op": "EQUAL",
+                                "value": { "booleanValue": false }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "dateBookedComanda" }, "direction": "ASCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
 }
 

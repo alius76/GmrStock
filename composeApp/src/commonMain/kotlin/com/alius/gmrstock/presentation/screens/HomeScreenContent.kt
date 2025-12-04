@@ -258,6 +258,14 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
+                                    label = "Gestión de comandas",
+                                    icon = Icons.Default.CalendarMonth,
+                                    onClick = {
+                                        showMaintenanceDialog = false
+                                        localNavigator.push(ComandaScreen(currentDatabaseUrl))
+                                    }
+                                )
+                                MaintenanceOption(
                                     label = "Devoluciones",
                                     icon = Icons.Default.AssignmentReturn,
                                     onClick = {
@@ -306,7 +314,7 @@ class HomeScreenContent(
                                 )
                                 MaintenanceOption(
                                     label = "Planning de reservas",
-                                    icon = Icons.Default.CalendarMonth,
+                                    icon = Icons.Default.Bookmark,
                                     onClick = {
                                         showSearchDialog = false
                                         localNavigator.push(ReservasScreen(currentDatabaseUrl))

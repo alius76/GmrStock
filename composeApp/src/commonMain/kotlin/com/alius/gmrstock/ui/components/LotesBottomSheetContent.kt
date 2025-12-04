@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction // Necesario
+import androidx.compose.foundation.text.KeyboardActions // Necesario
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.LoteRepository
 import com.alius.gmrstock.domain.model.BigBags
@@ -96,7 +98,19 @@ fun LotesBottomSheetContent(
             singleLine = true,
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
             shape = RoundedCornerShape(12.dp),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+
+            // 🔑 CORRECCIÓN PARA EL TECLADO NUMÉRICO EN IOS:
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done // Esto fuerza el botón 'Intro' o 'Done'
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    // Opcional: Cerrar el teclado si no se cierra automáticamente
+                    // defaultKeyboardAction(ImeAction.Done)
+                }
+            ),
+
             modifier = Modifier
                 .fillMaxWidth(0.85f)
                 .align(Alignment.CenterHorizontally),
