@@ -68,18 +68,26 @@ class HomeScreenContent(
             onChangeDatabase()
         }
 
-        // Estados principales de datos y UI
-        val lotes = remember { mutableStateListOf<LoteModel>() }
+        // 🔑 CAMBIO 1: Estados principales de datos (Inmutables/Seguros)
+        var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
         var materialGroups by remember { mutableStateOf<List<MaterialGroup>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
         var errorMessage by remember { mutableStateOf<String?>(null) }
+
+        // 🔑 CAMBIO 2: Función centralizada de actualización inmutable de Lotes/Grupos
+        val updateLoteState: (LoteModel) -> Unit = { updatedLote ->
+            // Actualiza la lista de lotes de forma inmutable
+            lotes = lotes.map { if (it.id == updatedLote.id) updatedLote else it }
+            // Recalcula los grupos con la nueva lista de lotes
+            materialGroups = agruparPorMaterial(lotes)
+        }
+
 
         // Estados de diálogos y BottomSheet
         var showLogoutDialog by remember { mutableStateOf(false) }
         var showUnimplementedDialog by remember { mutableStateOf(false) }
         var showMaintenanceDialog by remember { mutableStateOf(false) }
         var showSearchDialog by remember { mutableStateOf(false) }
-        // NUEVO: Estado para el diálogo de Vertisol
         var showVertisolDialog by remember { mutableStateOf(false) }
 
         val sheetStateGroup = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -96,11 +104,17 @@ class HomeScreenContent(
         LaunchedEffect(currentDatabaseUrl) {
             isLoading = true
             errorMessage = null
+
+            // 🔑 CAMBIO 3: Limpieza inmutable antes de la carga
+            lotes = emptyList()
+            materialGroups = emptyList()
+
             try {
                 // Se corrigió para listar lotes con status 's' (Stock) o manteniéndolo en vacío
                 val loadedLotes = loteRepository.listarLotes("")
-                lotes.clear()
-                lotes.addAll(loadedLotes)
+
+                // 🔑 CAMBIO 3: Asignación inmutable directa
+                lotes = loadedLotes
                 materialGroups = agruparPorMaterial(loadedLotes)
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Error desconocido al cargar lotes"
@@ -402,7 +416,7 @@ class HomeScreenContent(
                                 label = "Consulta",
                                 onClick = { showSearchDialog = true }
                             )
-                            // 🔑 NUEVO BOTÓN: VERTISOL
+                            // 🔑 BOTÓN: VERTISOL
                             ActionButton(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Apartment,
@@ -512,13 +526,8 @@ class HomeScreenContent(
                                 println("Mostrando ${bigBagsList.size} BigBags")
                             },
                             databaseUrl = currentDatabaseUrl,
-                            onRemarkUpdated = { updatedLote ->
-                                val index = lotes.indexOfFirst { it.id == updatedLote.id }
-                                if (index >= 0) {
-                                    lotes[index] = updatedLote
-                                    materialGroups = agruparPorMaterial(lotes)
-                                }
-                            },
+                            // 🔑 CAMBIO 4: Pasar la función centralizada inmutable
+                            onRemarkUpdated = updateLoteState,
                             clientRepository = clientRepository,
                             currentUserEmail = currentUserEmail
                         )
@@ -545,12 +554,8 @@ class HomeScreenContent(
                             onViewBigBags = { bigBagsList ->
                                 println("Mostrando ${bigBagsList.size} BigBags")
                             },
-                            onRemarkUpdated = { updatedLote ->
-                                val index = lotes.indexOfFirst { it.id == updatedLote.id }
-                                if (index >= 0) {
-                                    lotes[index] = updatedLote
-                                }
-                            }
+                            // 🔑 CAMBIO 4: Pasar la función centralizada inmutable
+                            onRemarkUpdated = updateLoteState
                         )
                     }
                 }

@@ -10,7 +10,12 @@ import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -24,14 +29,20 @@ class ComandaRepositoryImpl(
     // ------------------ Helpers ------------------
 
     private suspend fun ejecutarQuery(query: String): List<Comanda> = withContext(Dispatchers.IO) {
+        println(">>> [REPO] Ejecutando Query en Firestore...")
         try {
             val response: HttpResponse = client.post(baseUrl) {
                 headers { append("Content-Type", "application/json") }
                 setBody(query)
             }
+            val responseBody = response.bodyAsText()
+
             // Asumo que parseRunQueryResponseComanda está definido en firestore.*
-            parseRunQueryResponseComanda(response.bodyAsText())
-        } catch (_: Exception) {
+            val comandasList = parseRunQueryResponseComanda(responseBody)
+            println(">>> [REPO] Query exitosa. Documentos parseados: ${comandasList.size}")
+            return@withContext comandasList
+        } catch (e: Exception) {
+            println(">>> [REPO] ❌ ERROR al ejecutar/parsear Query: ${e.message}")
             emptyList()
         }
     }
@@ -44,6 +55,7 @@ class ComandaRepositoryImpl(
     private suspend fun obtenerSiguienteNumeroDeComanda(): Long = withContext(Dispatchers.IO) {
 
         val url = "${buildDocumentBaseUrl()}/metadata/comanda_counter"
+        println(">>> [REPO] Intentando obtener siguiente número de comanda desde: $url")
 
         try {
             val response = client.get(url)
@@ -59,6 +71,8 @@ class ComandaRepositoryImpl(
 
             val ultimo = ultimoStr?.toLongOrNull() ?: 0L
             val nuevo = ultimo + 1
+
+            println(">>> [REPO] Último número: $ultimo. Nuevo número: $nuevo")
 
             // Actualizamos contador
             val patchBody = """
@@ -76,10 +90,12 @@ class ComandaRepositoryImpl(
                 headers { append("Content-Type", "application/json") }
                 setBody(patchBody)
             }
+            println(">>> [REPO] Contador de comanda actualizado a $nuevo.")
 
             nuevo
 
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println(">>> [REPO] ❌ ERROR al obtener/actualizar contador de comanda: ${e.message}")
             1L // fallback seguro
         }
     }
@@ -123,9 +139,24 @@ class ComandaRepositoryImpl(
         """.trimIndent()
     }
 
+    // 🔑 FUNCIÓN MODIFICADA: TRAE TODAS LAS COMANDAS SIN FILTRO 'WHERE'
+    private fun buildQueryTodasComandasActivas(): String {
+        println(">>> [REPO] ✅ Ejecutando Query: TODAS LAS COMANDAS (Sin filtro WHERE).")
+        return """
+        {
+            "structuredQuery": {
+                "from": [{ "collectionId": "comanda" }],
+                "orderBy": [
+                    { "field": { "fieldPath": "dateBookedComanda" }, "direction": "ASCENDING" }
+                ]
+            }
+        }
+        """.trimIndent()
+    }
+
     // 🆕 FUNCIÓN DE CONSULTA DE COMANDAS PENDIENTES
-    // NOTA: Esta función requiere que 'buildQueryPendingComandasByClient' esté definida en tu módulo 'com.alius.gmrstock.data.firestore'
     override suspend fun getPendingComandasByClient(clientName: String): List<Comanda> {
+        // Asumiendo que esta función existe en tu capa de datos Firestore
         val query = buildQueryPendingComandasByClient(clientName)
         return ejecutarQuery(query)
     }
@@ -135,12 +166,17 @@ class ComandaRepositoryImpl(
     override suspend fun listarComandas(filter: String): List<Comanda> =
         ejecutarQuery(buildQueryPorFecha(filter))
 
+    // 🔑 Implementación de listarTodasComandas()
+    override suspend fun listarTodasComandas(): List<Comanda> =
+        ejecutarQuery(buildQueryTodasComandasActivas())
+
     override suspend fun getComandaByNumber(number: String): Comanda? =
         ejecutarQuery(buildQueryPorNumeroExacto(number, collection = "comanda")).firstOrNull()
 
     override suspend fun addComanda(comanda: Comanda): Boolean = withContext(Dispatchers.IO) {
         try {
             val numeroNuevo = obtenerSiguienteNumeroDeComanda()
+            println(">>> [REPO] Intentando agregar Comanda #${numeroNuevo}...")
 
             val docUrl = "${buildDocumentBaseUrl()}/comanda"
 
@@ -153,8 +189,11 @@ class ComandaRepositoryImpl(
                 setBody(requestBody)
             }
 
-            response.status.isSuccess()
-        } catch (_: Exception) {
+            val success = response.status.isSuccess()
+            println(">>> [REPO] Resultado addComanda: $success (Status: ${response.status})")
+            success
+        } catch (e: Exception) {
+            println(">>> [REPO] ❌ ERROR en addComanda: ${e.message}")
             false
         }
     }
@@ -164,14 +203,18 @@ class ComandaRepositoryImpl(
             try {
                 val docUrl = "${buildDocumentBaseUrl()}/comanda/$comandaId"
                 val requestBody = buildPatchBodyForRemark(newRemark)
+                println(">>> [REPO] Intentando actualizar remark para $comandaId...")
 
                 val response: HttpResponse = client.patch(docUrl) {
                     url.parameters.append("updateMask.fieldPaths", "remarkComanda")
                     headers { append("Content-Type", "application/json") }
                     setBody(requestBody)
                 }
-                response.status.isSuccess()
-            } catch (_: Exception) {
+                val success = response.status.isSuccess()
+                println(">>> [REPO] Resultado updateComandaRemark: $success (Status: ${response.status})")
+                success
+            } catch (e: Exception) {
+                println(">>> [REPO] ❌ ERROR en updateComandaRemark: ${e.message}")
                 false
             }
         }
@@ -186,6 +229,8 @@ class ComandaRepositoryImpl(
             val docUrl = "${buildDocumentBaseUrl()}/comanda/$comandaId"
             val requestBody =
                 buildPatchBodyForBooked(cliente, dateBooked, null, bookedRemark)
+            println(">>> [REPO] Intentando actualizar booked data para $comandaId...")
+
 
             val response: HttpResponse = client.patch(docUrl) {
                 url.parameters.append("updateMask.fieldPaths", "bookedClientComanda")
@@ -194,8 +239,11 @@ class ComandaRepositoryImpl(
                 headers { append("Content-Type", "application/json") }
                 setBody(requestBody)
             }
-            response.status.isSuccess()
-        } catch (_: Exception) {
+            val success = response.status.isSuccess()
+            println(">>> [REPO] Resultado updateComandaBooked: $success (Status: ${response.status})")
+            success
+        } catch (e: Exception) {
+            println(">>> [REPO] ❌ ERROR en updateComandaBooked: ${e.message}")
             false
         }
     }
@@ -213,6 +261,7 @@ class ComandaRepositoryImpl(
                 }
             }
         """.trimIndent()
+            println(">>> [REPO] Intentando actualizar fecha para $comandaId a $dateBooked...")
 
             val response: HttpResponse = client.patch(docUrl) {
                 url.parameters.append("updateMask.fieldPaths", "dateBookedComanda")
@@ -220,17 +269,21 @@ class ComandaRepositoryImpl(
                 setBody(requestBody)
             }
 
-            response.status.isSuccess()
-        } catch (_: Exception) {
+            val success = response.status.isSuccess()
+            println(">>> [REPO] Resultado updateComandaDate: $success (Status: ${response.status})")
+            success
+        } catch (e: Exception) {
+            println(">>> [REPO] ❌ ERROR en updateComandaDate: ${e.message}")
             false
         }
     }
 
     // 🆕 IMPLEMENTACIÓN: Asignación del número de lote a la comanda
-    override suspend fun updateComandaLoteNumber(comandaId: String, loteNumber: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val docUrl = "${buildDocumentBaseUrl()}/comanda/$comandaId"
-            val requestBody = """
+    override suspend fun updateComandaLoteNumber(comandaId: String, loteNumber: String): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val docUrl = "${buildDocumentBaseUrl()}/comanda/$comandaId"
+                val requestBody = """
             {
                 "fields": {
                     "numberLoteComanda": { "stringValue": "$loteNumber" }
@@ -238,33 +291,38 @@ class ComandaRepositoryImpl(
             }
             """.trimIndent()
 
-            val response: HttpResponse = client.patch(docUrl) {
-                url.parameters.append("updateMask.fieldPaths", "numberLoteComanda")
-                headers { append("Content-Type", "application/json") }
-                setBody(requestBody)
-            }
+                val response: HttpResponse = client.patch(docUrl) {
+                    url.parameters.append("updateMask.fieldPaths", "numberLoteComanda")
+                    headers { append("Content-Type", "application/json") }
+                    setBody(requestBody)
+                }
 
-            println("✅ [PATCH Comanda] Lote $loteNumber asignado a comanda $comandaId. Status: ${response.status}")
-            response.status.isSuccess()
-        } catch (e: Exception) {
-            println("❌ Error en updateComandaLoteNumber: ${e.message}")
-            false
+                println("✅ [PATCH Comanda] Lote $loteNumber asignado a comanda $comandaId. Status: ${response.status}")
+                response.status.isSuccess()
+            } catch (e: Exception) {
+                println("❌ Error en updateComandaLoteNumber: ${e.message}")
+                false
+            }
         }
-    }
 
 
     override suspend fun deleteComanda(comandaId: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
                 val docUrl = "${buildDocumentBaseUrl()}/comanda/$comandaId"
+                println(">>> [REPO] Intentando eliminar comanda $comandaId...")
 
                 val response: HttpResponse = client.delete(docUrl) {
                     headers { append("Content-Type", "application/json") }
                 }
 
-                response.status.isSuccess()
-            } catch (_: Exception) {
+                val success = response.status.isSuccess()
+                println(">>> [REPO] Resultado deleteComanda: $success (Status: ${response.status})")
+                success
+            } catch (e: Exception) {
+                println(">>> [REPO] ❌ ERROR en deleteComanda: ${e.message}")
                 false
             }
         }
+
 }

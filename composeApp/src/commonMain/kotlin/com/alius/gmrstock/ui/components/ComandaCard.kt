@@ -120,12 +120,25 @@ fun ComandaCard(
                         color = MaterialTheme.colorScheme.secondary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Asignado",
-                        tint = iconTint,
-                        modifier = Modifier.size(24.dp)
-                    )
+
+                    // 🔑 LÓGICA MODIFICADA
+                    if (comanda.fueVendidoComanda) {
+                        // ✅ Si está vendida, mostramos el texto "Vendido"
+                        Text(
+                            text = "Vendido",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = ReservedColor // Usamos ReservedColor para el texto
+                        )
+                    } else {
+                        // ❌ Si no está vendida, mantenemos el icono de CheckCircle
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Asignado",
+                            tint = iconTint,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }

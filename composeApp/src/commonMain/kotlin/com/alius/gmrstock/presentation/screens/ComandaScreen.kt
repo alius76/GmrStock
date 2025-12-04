@@ -7,18 +7,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions // Importación necesaria
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ListAlt // 🔑 NUEVA IMPORTACIÓN
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType // Importación necesaria
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -59,7 +60,7 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
             )
         }
 
-        // --- Estados clientes/materiales ---
+        // ... (el resto de los estados se mantienen iguales) ...
         var clients by remember { mutableStateOf<List<Cliente>>(emptyList()) }
         var selectedCliente by remember { mutableStateOf<Cliente?>(null) }
         var showClientesDialog by remember { mutableStateOf(false) }
@@ -68,20 +69,16 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
         var selectedMaterial by remember { mutableStateOf<Material?>(null) }
         var showMaterialDialog by remember { mutableStateOf(false) }
 
-        // --- Estados agregar comanda ---
         var showAgregarDialog by remember { mutableStateOf(false) }
         var totalWeightComanda by remember { mutableStateOf("") }
         var remarkComanda by remember { mutableStateOf("") }
 
-        // --- Estados validación ---
         var errorCliente by remember { mutableStateOf(false) }
         var errorDescripcion by remember { mutableStateOf(false) }
         var errorPeso by remember { mutableStateOf(false) }
 
-        // --- Card seleccionada ---
         var selectedComanda by remember { mutableStateOf<Comanda?>(null) }
 
-        // --- DatePicker ---
         var showDatePicker by remember { mutableStateOf(false) }
         var comandaToUpdateDate by remember { mutableStateOf<Comanda?>(null) }
 
@@ -126,7 +123,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
         }
 
         fun guardarComanda() {
-            // CORRECCIÓN 1: Usar TimeZone.UTC para evitar problemas de deslizamiento de fecha.
             val instantToSave = fechaSeleccionada.atStartOfDayIn(TimeZone.UTC)
 
             val nuevaComanda = Comanda(
@@ -158,7 +154,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
         }
 
         suspend fun updateComandaDate(comanda: Comanda, newDate: LocalDate) {
-            // CORRECCIÓN 1: Usar TimeZone.UTC para evitar problemas de deslizamiento de fecha.
             val newInstant = newDate.atStartOfDayIn(TimeZone.UTC)
             comanda.idComanda.takeIf { it.isNotEmpty() }?.let { id ->
                 val exito = comandaRepository.updateComandaDate(id, newInstant)
@@ -179,18 +174,28 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
 
-                // --- Header con fecha y agregar ---
+                // --- Header con flecha, planning, título y fecha ---
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(BackgroundColor)
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // 1. Flecha de volver
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
                         }
-                        Column(modifier = Modifier.padding(start = 8.dp)) {
+
+                        // 2. Título y subtítulo (MODIFICADO para ocupar espacio y empujar)
+                        Column(
+                            modifier = Modifier
+                                .weight(1f) // ⬅️ HACEMOS QUE ESTE ELEMENTO OCUPE EL ESPACIO CENTRAL
+                                .padding(start = 8.dp)
+                        ) {
                             Text(
                                 "Gestión de comandas",
                                 fontSize = 26.sp,
@@ -204,10 +209,19 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
                                 modifier = Modifier.padding(top = 2.dp)
                             )
                         }
+
+                        // 3. Botón para ir a Planning (MOVEMOS AL FINAL)
+                        IconButton(
+                            onClick = { navigator.push(ComandasPlanningScreen(databaseUrl)) },
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Icon(Icons.Default.ListAlt, contentDescription = "Planning Reservas", tint = PrimaryColor)
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    // ... (El botón de selección de fecha del calendario sigue aquí) ...
                     OutlinedButton(
                         onClick = { comandaToUpdateDate = null; showDatePicker = true },
                         modifier = Modifier
@@ -262,6 +276,8 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
                     }
                 }
             }
+
+            // ... (Resto de los diálogos y DatePicker) ...
 
             // --- Dialog Agregar Comanda ---
             if (showAgregarDialog) {
@@ -335,7 +351,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
                             OutlinedTextField(
                                 value = totalWeightComanda,
                                 onValueChange = { input ->
-                                    // ✅ CORRECCIÓN FINAL: Filtrar solo dígitos (sin punto)
                                     totalWeightComanda = input.filter { it.isDigit() };
                                     errorPeso = false
                                 },
@@ -344,7 +359,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp),
-                                // ✅ CORRECCIÓN FINAL: Usar KeyboardType.Number
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 colors = TextFieldDefaults.outlinedTextFieldColors(
                                     focusedBorderColor = PrimaryColor,
@@ -380,7 +394,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
                                     var valid = true
                                     if (selectedCliente == null) { errorCliente = true; valid = false }
                                     if (selectedMaterial == null) { errorDescripcion = true; valid = false }
-                                    // La validación de peso debe ser solo para Int si el campo es solo para números enteros
                                     val pesoValido = totalWeightComanda.toIntOrNull()?.takeIf { it > 0 } != null
                                     if (!pesoValido) { errorPeso = true; valid = false }
                                     if (!valid) return@TextButton
@@ -462,7 +475,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
 
             // --- DatePicker ---
             if (showDatePicker) {
-                // CORRECCIÓN 2: Se usa un scope local para envolver la llamada suspendida
                 val datePickerScope = rememberCoroutineScope()
 
                 UniversalDatePickerDialog(
@@ -475,7 +487,6 @@ class ComandaScreen(private val databaseUrl: String) : Screen {
                         comandaToUpdateDate = null
 
                         if (comandaToReassign != null) {
-                            // CORRECCIÓN 2: Llamada a la función suspendida dentro del scope.launch
                             datePickerScope.launch {
                                 updateComandaDate(comandaToReassign, selected)
                             }
