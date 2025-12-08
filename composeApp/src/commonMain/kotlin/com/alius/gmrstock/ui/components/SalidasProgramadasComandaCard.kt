@@ -8,16 +8,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,12 +39,18 @@ fun SalidasProgramadasComandaCard(
     // Determinar si fue vendida/cargada
     val isCargada = comanda.fueVendidoComanda
 
-    // Colores para el estado
-    val statusColor = if (isCargada) Color(0xFF388E3C) else PrimaryColor
-    val backgroundColor = if (isCargada) Color(0xFFE8F5E9) else Color.White
+    // Color de fondo (Tu lógica original, se mantiene)
+    val backgroundColor = if (isCargada) Color.White else Color.White
 
-    // --- Efecto Visual de Selección ---
-    val borderColor = if (isSelected) statusColor else Color.LightGray.copy(alpha = 0.5f)
+    // --- Colores Definidos ---
+    // 1. Color para el número de comanda (siempre PrimaryColor)
+    val comandaNumberColor = PrimaryColor
+
+    // 2. Color para el ElevatedCard de estado (CARGADO vs PENDIENTE)
+    val statusCardColor = if (isCargada) PrimaryColor else MaterialTheme.colorScheme.secondary
+
+    // 3. Color para el borde de selección (Usando PrimaryColor para consistencia en la selección)
+    val borderColor = if (isSelected) PrimaryColor else Color.LightGray.copy(alpha = 0.5f)
     val borderWidth = if (isSelected) 3.dp else 1.dp
 
     Card(
@@ -69,19 +70,20 @@ fun SalidasProgramadasComandaCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 🆕 Título de la Comanda formateado
+                // Título de la Comanda formateado
                 val formattedComandaNumber = comanda.numeroDeComanda.toString().padStart(6, '0')
                 Text(
-                    text = "#$formattedComandaNumber", // Usamos el formato deseado
+                    text = "#$formattedComandaNumber",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = statusColor
+                    color = comandaNumberColor // 1. Siempre PrimaryColor
                 )
 
                 // Estado (Cargado / Pendiente)
                 ElevatedCard(
                     colors = CardDefaults.cardColors(
-                        containerColor = statusColor.copy(alpha = 0.8f)
+                        // 2. Color definido por el estado
+                        containerColor = statusCardColor.copy(alpha = 0.8f)
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -96,7 +98,8 @@ fun SalidasProgramadasComandaCard(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            Divider(color = statusColor.copy(alpha = 0.3f))
+            // 🔑 MODIFICACIÓN: Primer Divider siempre de PrimaryColor con transparencia
+            Divider(color = PrimaryColor.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(12.dp))
 
             // FILA 2: Cliente
@@ -122,7 +125,7 @@ fun SalidasProgramadasComandaCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val weight = comanda.totalWeightComanda.toDoubleOrNull() ?: 0.0
                 Text(
-                    text = "Peso total: ${formatWeight(weight)} Kg", // Separado en su propia línea
+                    text = "Peso total: ${formatWeight(weight)} Kg",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -136,13 +139,15 @@ fun SalidasProgramadasComandaCard(
                     text = "Lote: ${comanda.numberLoteComanda}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = statusColor
+                    // Lote Asignado -> MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else if (!isCargada) {
                 Text(
                     text = "Lote: SIN ASIGNAR",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
+                    // Lote No Asignado -> ReservedColor
                     color = ReservedColor
                 )
             }
