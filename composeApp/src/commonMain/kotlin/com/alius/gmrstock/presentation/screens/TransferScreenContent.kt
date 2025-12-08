@@ -21,29 +21,66 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.data.getVentaRepository
+import com.alius.gmrstock.data.getDevolucionRepository
 import com.alius.gmrstock.domain.model.User
 import com.alius.gmrstock.domain.model.Venta
+import com.alius.gmrstock.domain.model.Devolucion
 import com.alius.gmrstock.ui.components.*
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TransferScreenContent(user: User, databaseUrl: String) {
     val ventaRepository = remember(databaseUrl) { getVentaRepository(databaseUrl) }
+    val devolucionRepository = remember(databaseUrl) { getDevolucionRepository(databaseUrl) }
 
-    // Estados
+    // Estados de Ventas
     var ventasHoy by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ultimasVentas by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ventasDelMes by remember { mutableStateOf<List<Venta>>(emptyList()) }
     var ventasDelAnio by remember { mutableStateOf<List<Venta>>(emptyList()) }
+
+    // Estados de Devoluciones
+    var devolucionesDelMes by remember { mutableStateOf<List<Devolucion>>(emptyList()) }
+    var devolucionesDelAnio by remember { mutableStateOf<List<Devolucion>>(emptyList()) } // Todas las devoluciones del año
+
+    // Estados de UI y control
     var ventaDataList by remember { mutableStateOf<List<VentaData>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var isAnnual by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val hoyListState = rememberLazyListState()
+
+    // Helper para obtener peso total de una lista de devoluciones
+    fun calculateTotalDevoluciones(devoluciones: List<Devolucion>): Double {
+        var total = 0.0
+        println("\n--- INICIO CÁLCULO DEVOLUCIONES ---")
+        devoluciones.forEachIndexed { index, devolucion ->
+            val pesoString = devolucion.devolucionPesoTotal
+            val pesoDoble = pesoString?.replace(",", ".")?.toDoubleOrNull() ?: 0.0
+            total += pesoDoble
+            println("DEVOLUCIÓN #${index + 1}: Fecha=${devolucion.devolucionFecha}, Peso String='$pesoString', Peso Double=$pesoDoble")
+        }
+        println("TOTAL CALCULADO: $total")
+        println("--- FIN CÁLCULO DEVOLUCIONES ---\n")
+        return total
+    }
+
+    // --- Métrica Derivada para el Peso Devuelto ACTUAL ---
+    val totalKilosDevueltosActual by derivedStateOf {
+        val listaUsada = if (isAnnual) "DEVOLUCIONES DEL AÑO" else "DEVOLUCIONES DEL MES"
+        val kilos = if (isAnnual) {
+            calculateTotalDevoluciones(devolucionesDelAnio)
+        } else {
+            calculateTotalDevoluciones(devolucionesDelMes)
+        }
+        println("RENDERIZANDO: Selector en ${if (isAnnual) "AÑO" else "MES"}. Usando lista: $listaUsada. Kilos mostrados: $kilos Kg")
+        kilos
+    }
 
     // --- Actualización de los datos del gráfico ---
     fun updateVentaDataList() {
@@ -54,16 +91,30 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
         }
     }
 
-    // Total kilos derivado
-    val totalKilos by derivedStateOf { ventaDataList.sumOf { it.totalWeight.toDouble() } }
+    // Total kilos derivados (de ventas)
+    val totalKilosVentas by derivedStateOf { ventaDataList.sumOf { it.totalWeight.toDouble() } }
 
     LaunchedEffect(databaseUrl) {
         loading = true
         scope.launch {
+            // Cargar datos de Ventas
             ventasHoy = ventaRepository.mostrarLasVentasDeHoy()
             ultimasVentas = ventaRepository.mostrarLasUltimasVentas()
             ventasDelMes = ventaRepository.mostrarVentasDelMes()
             ventasDelAnio = ventaRepository.mostrarVentasPorCliente("") // todas del año
+
+            // 3. CARGAR DATOS DE DEVOLUCIONES
+            devolucionesDelMes = devolucionRepository.obtenerDevolucionesDelMes()
+            println("DEBUG LOAD: devolucionesDelMes cargadas: ${devolucionesDelMes.size} elementos.")
+
+            devolucionesDelAnio = devolucionRepository.obtenerTodasLasDevoluciones()
+            println("DEBUG LOAD: devolucionesDelAnio (Todas las devoluciones) cargadas: ${devolucionesDelAnio.size} elementos.")
+
+            // Inspección del contenido cargado
+            devolucionesDelAnio.firstOrNull()?.let {
+                println("DEBUG INSPECCIÓN: Primer Devolución del Año -> Fecha: ${it.devolucionFecha}, Peso: ${it.devolucionPesoTotal}")
+            }
+
             updateVentaDataList()
             loading = false
         }
@@ -154,7 +205,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 🔹 Solo el título en su propia línea
+                    // 🔹 Título
                     Text(
                         text = "Gráfico de ventas",
                         style = MaterialTheme.typography.titleLarge.copy(
@@ -166,20 +217,33 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 🔹 Fila con Total kilos a la izquierda y botones Mes/Año a la derecha
+                    // 🔹 Fila de Métricas y Selector (Mes/Año)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Medium
-                            ),
-                            color = TextSecondary
-                        )
+                        // Métrica de Ventas y Devoluciones agrupadas
+                        Column {
+                            // 🔹 Subtítulo de Ventas
+                            Text(
+                                text = "Total kilos: ${formatWeight(totalKilosVentas)} Kg",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                color = TextSecondary
+                            )
+                            // 🔹 Nuevo subtítulo de Devoluciones
+                            Text(
+                                text = "Devoluciones: ${formatWeight(totalKilosDevueltosActual)} Kg",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                color = Color.Gray
+                            )
+                        }
 
+                        // Selector Mes/Año
                         MySegmentedButton(
                             options = listOf("Mes", "Año"),
                             selectedIndex = if (isAnnual) 1 else 0,
@@ -203,7 +267,6 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
                 )
             }
 
-
             // --- Últimas Ventas ---
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -224,4 +287,3 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
         }
     }
 }
-

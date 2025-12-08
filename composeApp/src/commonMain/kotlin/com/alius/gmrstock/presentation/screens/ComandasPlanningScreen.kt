@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,75 +26,71 @@ import com.alius.gmrstock.ui.theme.BackgroundColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
+import com.alius.gmrstock.data.getClientRepository
+import com.alius.gmrstock.ui.components.PlanningAssignmentBottomSheet
 
 
-class ComandasPlanningScreen(private val databaseUrl: String) : Screen {
+@OptIn(ExperimentalMaterial3Api::class)
+class ComandasPlanningScreen(
+    private val databaseUrl: String,
+    private val currentUserEmail: String
+) : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val comandaRepository = remember(databaseUrl) { getComandaRepository(databaseUrl) }
+        val coroutineScope = rememberCoroutineScope()
 
-        // Estado de la lista completa de comandas activas
+        // --- Repositorios, Estados, Loaders, Grouping, Sorting (Se mantienen igual) ---
+        val comandaRepository = remember(databaseUrl) { getComandaRepository(databaseUrl) }
+        val clientRepository = remember(databaseUrl) { getClientRepository(databaseUrl) }
         var comandasActivas by remember { mutableStateOf<List<Comanda>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
+        var showAssignmentBottomSheet by remember { mutableStateOf(false) }
+        var selectedComandaForAssignment by remember { mutableStateOf<Comanda?>(null) }
+        val assignmentSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val snackbarHostState = remember { SnackbarHostState() }
 
-        // Optimización: Calcular la fecha de hoy una sola vez en Compose
+        fun loadComandasActivas() {
+            coroutineScope.launch {
+                isLoading = true
+                try {
+                    val result = comandaRepository.listarTodasComandas()
+                    comandasActivas = result
+                } catch (e: Exception) {
+                    comandasActivas = emptyList()
+                } finally {
+                    isLoading = false
+                }
+            }
+        }
+
         val todayDate = remember {
             Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         }
 
-        // Función de agrupamiento
         val groupedComandas by remember(comandasActivas) {
             derivedStateOf {
-                println(">>> [PLANNING] 2. Ejecutando agrupamiento. Total de comandasActivas: ${comandasActivas.size}")
-
-                val filtered = comandasActivas
-                    .filter { !it.fueVendidoComanda }
-
-                println(">>> [PLANNING] 3. Comandas no vendidas (fueVendidoComanda=false): ${filtered.size}")
-
-                val grouped = filtered
-                    .groupBy { comanda: Comanda ->
-                        comanda.dateBookedComanda
-                            ?.toLocalDateTime(TimeZone.currentSystemDefault())
-                            ?.date
-                    }
-
-                println(">>> [PLANNING] 4. Grupos de comandas creados (Map size): ${grouped.size}")
-                grouped
+                val filtered = comandasActivas.filter { !it.fueVendidoComanda }
+                filtered.groupBy { comanda: Comanda ->
+                    comanda.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+                }
             }
         }
 
-        // NUEVO: Ordenar las entradas del mapa (LocalDate a List<Comanda>)
         val sortedComandaEntries by remember(groupedComandas) {
             derivedStateOf {
-                val sorted = groupedComandas.entries.sortedBy { it.key }
-                println(">>> [PLANNING] 5. Entradas ordenadas. Total de entradas: ${sorted.size}")
-                sorted
+                groupedComandas.entries.sortedBy { it.key }
             }
         }
 
+        LaunchedEffect(databaseUrl) { loadComandasActivas() }
+        // ---------------------------------------------------------------------------------
 
-        // Carga de datos
-        LaunchedEffect(databaseUrl) {
-            println(">>> [PLANNING] 1. Iniciando carga de datos...")
-            isLoading = true
-            try {
-                val result = comandaRepository.listarTodasComandas()
-                println(">>> [PLANNING] 1b. Repositorio devolvió ${result.size} comandas.")
-                comandasActivas = result
-            } catch (e: Exception) {
-                println(">>> [PLANNING] ❌ ERROR al cargar comandas: ${e.message}")
-                comandasActivas = emptyList()
-            } finally {
-                isLoading = false
-                println(">>> [PLANNING] 1c. Carga finalizada. isLoading = false")
-            }
-        }
 
         Scaffold(
             containerColor = BackgroundColor,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 Row(
                     modifier = Modifier
@@ -123,54 +121,116 @@ class ComandasPlanningScreen(private val databaseUrl: String) : Screen {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryColor)
                 }
                 else if (sortedComandaEntries.isEmpty()) {
-                    println(">>> [PLANNING] 6. Mostrando: No hay reservas activas pendientes. (Lista vacía)")
                     Text(
                         "No hay reservas activas pendientes.",
                         modifier = Modifier.align(Alignment.Center).padding(16.dp),
                         color = Color.Gray
                     )
                 } else {
-                    println(">>> [PLANNING] 6. Mostrando: Lista de comandas. Total de grupos: ${sortedComandaEntries.size}")
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
+                        // Reducimos el padding horizontal aquí ya que la Card del día tiene el suyo.
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp) // Más espacio entre días
                     ) {
                         sortedComandaEntries.forEach { entry ->
                             val date = entry.key
                             val comandasList = entry.value
-
-                            // 🌟 Encabezado de Fecha
-                            item {
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                val dateText = when (date) {
-                                    todayDate -> "HOY"
-                                    null -> "Fecha Desconocida"
-                                    else -> "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
-                                }
-
-                                println(">>> [PLANNING] Mostrando grupo: $dateText con ${comandasList.size} items")
-
-                                Text(
-                                    dateText,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = PrimaryColor,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                )
-                                Divider(color = PrimaryColor.copy(alpha = 0.5f))
+                            val dateText = when (date) {
+                                todayDate -> "HOY"
+                                null -> "Fecha Desconocida"
+                                else -> "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                             }
 
-                            // 🌟 Items de Comanda
-                            items(comandasList) { comanda ->
-                                // Solo imprimir IDs si es necesario, si no, solo la existencia del loop
-                                // println(">>> [PLANNING] Mostrando item: ${comanda.idComanda}")
-                                PlanningItemCard(comanda = comanda)
-                                Spacer(modifier = Modifier.height(8.dp))
+                            // 🔥 Contenedor de Día (Card)
+                            item {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                                ) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        // 1. Encabezado de Fecha (Banner dentro del contenedor)
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                dateText,
+                                                fontSize = 18.sp,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = PrimaryColor,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Text(
+                                                "Comandas: ${comandasList.size}",
+                                                fontSize = 16.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.secondary
+                                                //color = MaterialTheme.colorScheme.onBackground
+                                            )
+                                        }
+
+                                        // 2. Separador
+                                        Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
+
+                                        // 3. Lista de Comandas (Dentro del Contenedor)
+                                        Column(
+                                            modifier = Modifier.padding(12.dp),
+                                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            comandasList.forEach { comanda ->
+                                                PlanningItemCard(
+                                                    comanda = comanda,
+                                                    onClick = { clickedComanda ->
+                                                        selectedComandaForAssignment = clickedComanda
+                                                        showAssignmentBottomSheet = true
+                                                        coroutineScope.launch { assignmentSheetState.show() }
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                }
+            }
+
+            // 🔑 ModalBottomSheet (Se mantiene igual)
+            if (showAssignmentBottomSheet && selectedComandaForAssignment != null) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        coroutineScope.launch {
+                            assignmentSheetState.hide()
+                            showAssignmentBottomSheet = false
+                            selectedComandaForAssignment = null
+                        }
+                    },
+                    sheetState = assignmentSheetState,
+                    modifier = Modifier.fillMaxHeight(0.75f)
+                ) {
+                    PlanningAssignmentBottomSheet(
+                        selectedComanda = selectedComandaForAssignment!!,
+                        databaseUrl = databaseUrl,
+                        currentUserEmail = currentUserEmail,
+                        clientRepository = clientRepository,
+                        snackbarHostState = snackbarHostState,
+                        onLoteAssignmentSuccess = {
+                            coroutineScope.launch {
+                                assignmentSheetState.hide()
+                                showAssignmentBottomSheet = false
+                                selectedComandaForAssignment = null
+                                loadComandasActivas()
+                            }
+                        }
+                    )
                 }
             }
         }

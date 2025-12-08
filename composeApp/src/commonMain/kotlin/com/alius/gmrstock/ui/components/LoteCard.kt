@@ -560,7 +560,7 @@ fun LoteCard(
             title = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Reserva del Lote", fontWeight = FontWeight.Bold, color = PrimaryColor)
+                        Text("Reserva del lote", fontWeight = FontWeight.Bold, color = PrimaryColor)
                         Text(lote.number, fontWeight = FontWeight.Bold, color = PrimaryColor)
                     }
                 }

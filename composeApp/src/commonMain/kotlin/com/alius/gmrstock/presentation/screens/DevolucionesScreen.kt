@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -77,7 +78,10 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                     .background(BackgroundColor.copy(alpha = 0.95f))
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth() // Asegura que el Row ocupe todo el ancho
+                ) {
                     IconButton(onClick = { navigator.pop() }) {
                         Icon(
                             Icons.Default.ArrowBack,
@@ -85,7 +89,10 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                             tint = PrimaryColor
                         )
                     }
-                    Column(modifier = Modifier.padding(start = 8.dp)) {
+
+                    Column(
+                        modifier = Modifier.padding(start = 8.dp).weight(1f)
+                    ) {
                         Text(
                             text = "Devoluciones",
                             fontSize = 26.sp,
@@ -97,6 +104,17 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
                             color = Color.Gray,
                             modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+
+                    // 🆕 NUEVO BOTÓN: Historial de Devoluciones
+                    IconButton(
+                        onClick = { navigator.push(ListaDevolucionesScreen(databaseUrl)) }
+                    ) {
+                        Icon(
+                            Icons.Default.List,
+                            contentDescription = "Historial de devoluciones",
+                            tint = PrimaryColor
                         )
                     }
                 }
@@ -371,7 +389,7 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                                             devolucionLote = loteActivo.number,
                                             devolucionMaterial = loteActivo.description,
                                             devolucionFecha = Clock.System.now(),
-                                            devolucionPesoTotal = formattedWeight,
+                                            devolucionPesoTotal = totalWeightNumber.toLong().toString(),
                                             devolucionBigbags = devolucionBigbagsList
                                         )
                                         val firestoreSuccess = devolucionRepository.agregarDevolucion(devolucion)

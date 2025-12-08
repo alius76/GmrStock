@@ -3,7 +3,6 @@ package com.alius.gmrstock.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,112 +17,125 @@ import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import androidx.compose.foundation.clickable
+import com.alius.gmrstock.ui.theme.ReservedColor
+
 
 @Composable
-fun PlanningItemCard(comanda: Comanda) {
-
+fun PlanningItemCard(
+    comanda: Comanda,
+    onClick: (Comanda) -> Unit
+) {
     val lotNumber = comanda.numberLoteComanda.ifBlank { "SIN ASIGNAR" }
     val isAssigned = lotNumber != "SIN ASIGNAR"
-
-    // 1. SOLUCIÓN BORDE CONSISTENTE: Eliminamos el color de fondo condicional
-    // y usamos Color.White para evitar cualquier efecto visual que simule un borde grueso.
-    val cardColor = Color.White
-    val lotColor = if (isAssigned) PrimaryColor else Color.DarkGray
-
-    // Formatear número de comanda a 6 dígitos (000008)
     val formattedComandaNumber = comanda.numeroDeComanda.toString().padStart(6, '0')
 
-    Card(
+
+    val indicatorColor = if (isAssigned) PrimaryColor else ReservedColor
+
+    // Usamos Box para superponer el indicador lateral
+    Box(
         modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        // ✅ Borde fino consistente de 1.dp
-        border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
+            .fillMaxWidth()
+            .clickable { onClick(comanda) }
     ) {
-        Row(
+        // --- Indicador lateral prominente (La Clave Visual) ---
+        Spacer(
+            modifier = Modifier
+                .width(6.dp) // Ancho del indicador
+                .fillMaxHeight()
+                .align(Alignment.CenterStart)
+                .background(indicatorColor, shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+        )
+
+        // --- Card Principal ---
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(start = 6.dp), // Compensamos el ancho del indicador
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
         ) {
-            // --- Columna 1: Cliente, Material y Peso ---
-            Column(modifier = Modifier.weight(1f)) {
-                // Cliente (Principal)
-                Text(
-                    text = comanda.bookedClientComanda?.cliNombre ?: "Cliente Desconocido",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.secondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(4.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
 
-                // Material
-                Text(
-                    text = comanda.descriptionLoteComanda,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                // 2. SOLUCIÓN ETIQUETA DE PESO: Añadimos "Peso total: "
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Peso total: ${formatWeight(comanda.totalWeightComanda.toDoubleOrNull() ?: 0.0)} Kg",
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                    color = Color.Gray
-                )
-            }
-
-            // --- Columna 2: Lote y Comanda Badge ---
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.padding(start = 12.dp)
-            ) {
-                // Lote (Tamaño ajustado)
-                Text(
-                    text = lotNumber,
-                    fontSize = 18.sp,
-                    fontWeight = if (isAssigned) FontWeight.Bold else FontWeight.Medium,
-                    color = lotColor
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-
-                // Comanda Badge
-                Box(
+                // 1. Cabecera Lote/Comanda y Botón
+                Row(
                     modifier = Modifier
-                        .background(color = PrimaryColor.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                        .fillMaxWidth()
+                        .background(Color.LightGray.copy(alpha = 0.1f))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    // Estado de Asignación (Más prominente)
                     Text(
-                        text = "#$formattedComandaNumber",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = "Lote: $lotNumber",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = indicatorColor
+                    )
+
+                    // Comanda Badge
+                    Box(
+                        modifier = Modifier
+                            .background(color = PrimaryColor.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "#$formattedComandaNumber",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                // 2. Detalles del Cuerpo (Cliente, Material, Peso)
+                Column(modifier = Modifier.padding(16.dp)) {
+                    // Cliente (Principal)
+                    Text(
+                        text = comanda.bookedClientComanda?.cliNombre ?: "Cliente Desconocido",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Material
+                    Text(
+                        text = comanda.descriptionLoteComanda,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    // Peso
+                    Text(
+                        text = "Peso total: ${formatWeight(comanda.totalWeightComanda.toDoubleOrNull() ?: 0.0)} Kg",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = Color.Gray
+                    )
+                }
+
+                // --- Observaciones (si existen) ---
+                if (comanda.remarkComanda.isNotBlank()) {
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(alpha = 0.3f))
+                    Text(
+                        text = "Obs: ${comanda.remarkComanda}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
-        }
-
-        // --- Observaciones (si existen) ---
-        if (comanda.remarkComanda.isNotBlank()) {
-            Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(alpha = 0.3f))
-            Text(
-                text = "Obs: ${comanda.remarkComanda}",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }

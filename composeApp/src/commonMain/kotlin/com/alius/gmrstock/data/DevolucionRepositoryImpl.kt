@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.datetime.* // ⬅️ IMPORTACIÓN NECESARIA PARA FECHAS
 
 class DevolucionRepositoryImpl(
     private val client: HttpClient,
@@ -23,8 +24,10 @@ class DevolucionRepositoryImpl(
 
     override suspend fun obtenerTodasLasDevoluciones(): List<Devolucion> = withContext(Dispatchers.IO) {
         try {
-            val url = "$databaseBaseUrl/documents:runQuery"
-            println("🌐 Consultando todas las devoluciones con URL: $url")
+            // 🔑 CORRECCIÓN: Usamos databaseBaseUrl directamente.
+            // Si databaseBaseUrl ya es "BASE_URL/documents:runQuery", no necesitamos añadirlo de nuevo.
+            val url = databaseBaseUrl
+            println("🌐 Consultando todas las devoluciones con URL CORREGIDA: $url")
 
             val body = """
                 {
@@ -42,6 +45,7 @@ class DevolucionRepositoryImpl(
             val responseText = response.bodyAsText()
             println("📥 Respuesta cruda de obtenerTodasLasDevoluciones: $responseText")
 
+            // Si la respuesta es HTML (404), esto fallará, pero ahora la URL está correcta.
             val jsonArray = json.parseToJsonElement(responseText).jsonArray
             jsonArray.mapNotNull { element ->
                 try {
@@ -97,9 +101,35 @@ class DevolucionRepositoryImpl(
         }
     }
 
-
     override suspend fun obtenerDevolucionesPorLote(loteNumber: String): List<Devolucion> {
         // Filtrado en memoria; si quieres, podemos construir una query específica en Firestore
         return obtenerTodasLasDevoluciones().filter { it.devolucionLote == loteNumber }
+    }
+
+    /**
+     * 🔑 NUEVA IMPLEMENTACIÓN: Obtiene las devoluciones del mes actual filtrando en memoria.
+     * Esto asume que obtenerTodasLasDevoluciones es rápido. Si la colección es grande,
+     * se debería crear una StructuredQuery específica en Firestore.
+     */
+    override suspend fun obtenerDevolucionesDelMes(): List<Devolucion> {
+        // Obtener la zona horaria del sistema para la hora actual
+        val systemTimeZone = TimeZone.currentSystemDefault()
+
+        // Obtener la fecha y hora actual en la zona horaria del sistema
+        val now = Clock.System.now().toLocalDateTime(systemTimeZone)
+
+        // Obtener el mes y año actual
+        val currentMonth = now.month
+        val currentYear = now.year
+
+        return obtenerTodasLasDevoluciones().filter { devolucion ->
+            devolucion.devolucionFecha?.let { instant ->
+                // Convertir el Instant de la devolución a LocalDateTime
+                val devolucionDateTime = instant.toLocalDateTime(systemTimeZone)
+
+                // Comparar el mes y el año
+                devolucionDateTime.month == currentMonth && devolucionDateTime.year == currentYear
+            } ?: false
+        }
     }
 }

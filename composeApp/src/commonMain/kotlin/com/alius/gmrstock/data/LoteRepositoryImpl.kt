@@ -3,6 +3,7 @@ package com.alius.gmrstock.data
 import com.alius.gmrstock.data.firestore.buildPatchBodyForRemark
 import com.alius.gmrstock.data.firestore.buildPatchBodyForBooked
 import com.alius.gmrstock.data.firestore.buildQueryLotesReservados
+import com.alius.gmrstock.data.firestore.buildQueryPorDescripcion
 import com.alius.gmrstock.data.firestore.buildQueryPorFecha
 import com.alius.gmrstock.data.firestore.buildQueryPorNumero
 import com.alius.gmrstock.data.firestore.buildQueryPorNumeroExacto
@@ -238,6 +239,12 @@ class LoteRepositoryImpl(
     }
     override suspend fun listarLotesReservados(orderBy: String, direction: String): List<LoteModel> {
         val query = buildQueryLotesReservados(orderBy, direction)
+        return ejecutarQuery(query)
+    }
+
+    override suspend fun listarLotesPorDescripcion(descripcion: String): List<LoteModel> {
+        // ⚠️ Se necesita crear o usar una función que busque en el campo 'description'
+        val query = buildQueryPorDescripcion(descripcion)
         return ejecutarQuery(query)
     }
 

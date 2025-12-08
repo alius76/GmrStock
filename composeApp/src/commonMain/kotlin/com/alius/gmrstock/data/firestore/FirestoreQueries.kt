@@ -230,6 +230,58 @@ fun buildQueryPorFecha(inicio: Instant, fin: Instant): String {
 
 }
 
+/**
+ * Construye la query JSON para listar lotes cuya descripción comience con el valor 'data'.
+ * Utiliza el campo 'description' y la técnica de rango para simular un LIKE/StartsWith.
+ */
+fun buildQueryPorDescripcion(data: String): String {
+    return if (data.isNotBlank()) {
+        """
+        {
+            "structuredQuery": {
+                "from": [{ "collectionId": "lote" }],
+                "where": {
+                    "compositeFilter": {
+                        "op": "AND",
+                        "filters": [
+                            {
+                                "fieldFilter": {
+                                    "field": { "fieldPath": "description" },
+                                    "op": "GREATER_THAN_OR_EQUAL",
+                                    "value": { "stringValue": "$data" }
+                                }
+                            },
+                            {
+                                "fieldFilter": {
+                                    "field": { "fieldPath": "description" },
+                                    "op": "LESS_THAN",
+                                    "value": { "stringValue": "${data}\uf8ff" }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "orderBy": [
+                    { "field": { "fieldPath": "description" }, "direction": "ASCENDING" }
+                ]
+            }
+        }
+        """.trimIndent()
+    } else {
+        // Si no hay filtro, devuelve todos los lotes
+        """
+        {
+            "structuredQuery": {
+                "from": [{ "collectionId": "lote" }],
+                "orderBy": [
+                    { "field": { "fieldPath": "number" }, "direction": "ASCENDING" }
+                ]
+            }
+        }
+        """.trimIndent()
+    }
+}
+
 fun buildQueryUltimosLotes(limit: Int = 5): String {
     return """
     {

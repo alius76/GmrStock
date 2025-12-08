@@ -10,15 +10,11 @@ import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.time.Duration.Companion.days
 
 
 class ComandaRepositoryImpl(
@@ -139,13 +135,21 @@ class ComandaRepositoryImpl(
         """.trimIndent()
     }
 
-    // 🔑 FUNCIÓN MODIFICADA: TRAE TODAS LAS COMANDAS SIN FILTRO 'WHERE'
-    private fun buildQueryTodasComandasActivas(): String {
-        println(">>> [REPO] ✅ Ejecutando Query: TODAS LAS COMANDAS (Sin filtro WHERE).")
+    // 🔥 NUEVA FUNCIÓN DE QUERY: Filtra por una fecha límite inferior
+    private fun buildQueryComandasDesdeFecha(fechaLimite: Instant): String {
+        val fechaIso = fechaLimite.toString()
+        println(">>> [REPO] ✅ Ejecutando Query: Comandas desde $fechaIso (hace 1 mes).")
         return """
         {
             "structuredQuery": {
                 "from": [{ "collectionId": "comanda" }],
+                "where": {
+                    "fieldFilter": {
+                        "field": { "fieldPath": "dateBookedComanda" },
+                        "op": "GREATER_THAN_OR_EQUAL",
+                        "value": { "timestampValue": "$fechaIso" }
+                    }
+                },
                 "orderBy": [
                     { "field": { "fieldPath": "dateBookedComanda" }, "direction": "ASCENDING" }
                 ]
@@ -166,9 +170,25 @@ class ComandaRepositoryImpl(
     override suspend fun listarComandas(filter: String): List<Comanda> =
         ejecutarQuery(buildQueryPorFecha(filter))
 
-    // 🔑 Implementación de listarTodasComandas()
-    override suspend fun listarTodasComandas(): List<Comanda> =
-        ejecutarQuery(buildQueryTodasComandasActivas())
+    override suspend fun listarTodasComandas(): List<Comanda> {
+        // 1. Obtener la fecha de hoy en la zona horaria del sistema
+        val now = Clock.System.now()
+        val today = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+        // 2. Calcular el primer día del mes anterior (estricto "día 1")
+        val monthAgo = today.minus(DatePeriod(months = 1))
+        val firstDayOfMonthAgo = LocalDate(
+            year = monthAgo.year,
+            monthNumber = monthAgo.monthNumber,
+            dayOfMonth = 1
+        )
+
+        // 3. Convertir el inicio de ese día a Instant (usando la medianoche UTC)
+        val fechaLimite = firstDayOfMonthAgo.atStartOfDayIn(TimeZone.UTC)
+
+        // 4. Ejecutar la query con el nuevo límite
+        return ejecutarQuery(buildQueryComandasDesdeFecha(fechaLimite))
+    }
 
     override suspend fun getComandaByNumber(number: String): Comanda? =
         ejecutarQuery(buildQueryPorNumeroExacto(number, collection = "comanda")).firstOrNull()
@@ -202,10 +222,19 @@ class ComandaRepositoryImpl(
         withContext(Dispatchers.IO) {
             try {
                 val docUrl = "${buildDocumentBaseUrl()}/comanda/$comandaId"
-                val requestBody = buildPatchBodyForRemark(newRemark)
-                println(">>> [REPO] Intentando actualizar remark para $comandaId...")
+
+                val requestBody = """
+                {
+                    "fields": {
+                        "remarkComanda": { "stringValue": "$newRemark" }
+                    }
+                }
+            """.trimIndent()
+
+                println(">>> [REPO] Intentando actualizar remark para $comandaId. Body: $requestBody")
 
                 val response: HttpResponse = client.patch(docUrl) {
+                    // 🔑 IMPORTANTE: Solo actualizamos el campo 'remarkComanda'
                     url.parameters.append("updateMask.fieldPaths", "remarkComanda")
                     headers { append("Content-Type", "application/json") }
                     setBody(requestBody)
@@ -306,6 +335,7 @@ class ComandaRepositoryImpl(
         }
 
 
+
     override suspend fun deleteComanda(comandaId: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
@@ -324,5 +354,4 @@ class ComandaRepositoryImpl(
                 false
             }
         }
-
 }

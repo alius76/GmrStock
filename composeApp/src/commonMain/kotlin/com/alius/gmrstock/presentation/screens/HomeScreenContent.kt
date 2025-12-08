@@ -31,12 +31,15 @@ import com.alius.gmrstock.domain.model.BigBags
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.MaterialGroup
 import com.alius.gmrstock.domain.model.User
+import com.alius.gmrstock.domain.model.Comanda
+import com.alius.gmrstock.ui.components.DailyScheduleFAB
 import com.alius.gmrstock.ui.components.GroupMaterialBottomSheetContent
 import com.alius.gmrstock.ui.components.MaterialGroupCard
+import com.alius.gmrstock.ui.components.LotesBottomSheetContent
+import com.alius.gmrstock.ui.components.SalidasProgramadasBottomSheet
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
-import com.alius.gmrstock.ui.components.LotesBottomSheetContent
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,6 +93,7 @@ class HomeScreenContent(
         var showSearchDialog by remember { mutableStateOf(false) }
         var showVertisolDialog by remember { mutableStateOf(false) }
 
+        // Estados para GroupMaterialBottomSheet
         val sheetStateGroup = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         var showGroupMaterialBottomSheet by remember { mutableStateOf(false) }
         var selectedGroupForSheet by remember { mutableStateOf<MaterialGroup?>(null) }
@@ -97,8 +101,16 @@ class HomeScreenContent(
         val snackbarHostState = remember { SnackbarHostState() }
         val currentUserEmail = remember(user.email) { user.email.substringBefore("@") }
 
+        // Estados para LotesBottomSheetContent
         var showLotesBottomSheet by remember { mutableStateOf(false) }
         val sheetStateLotes = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+        // 🆕 ESTADOS PARA SALIDAS PROGRAMADAS
+        var showSalidasBottomSheet by remember { mutableStateOf(false) }
+        val sheetStateSalidas = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        // 🆕 Estado opcional para manejar la comanda si se hace clic en SalidasProgramadas
+        var selectedComandaForAssignment by remember { mutableStateOf<Comanda?>(null) }
+
 
         // --- 2. Carga de Datos (Effect) ---
         LaunchedEffect(currentDatabaseUrl) {
@@ -123,7 +135,7 @@ class HomeScreenContent(
             }
         }
 
-        // --- 3. Componentes Reutilizables ---
+        // --- 3. Componentes Reutilizables (ActionButton y MaintenanceOption) ---
         @Composable
         fun ActionButton(
             modifier: Modifier = Modifier,
@@ -204,8 +216,24 @@ class HomeScreenContent(
 
         // --- 4. Estructura Scaffold y Diálogos ---
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) }
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+
+            floatingActionButton = {
+                if (!isLoading && errorMessage == null) {
+                    DailyScheduleFAB(
+                        onClick = {
+                            // 🆕 Abrir el BottomSheet de Salidas Programadas
+                            showSalidasBottomSheet = true
+                            coroutineScope.launch { sheetStateSalidas.show() }
+                        }
+                    )
+                }
+            },
+            floatingActionButtonPosition = FabPosition.End
         ) { paddingValues ->
+
+            // 🔑 CORRECCIÓN: Eliminar .padding(paddingValues) de aquí.
+            // Esto asegura que la Columna se alinee con el borde superior de la pantalla.
             Box(modifier = Modifier.fillMaxSize()) {
 
                 // Diálogo de Funcionalidad No Implementada
@@ -276,7 +304,7 @@ class HomeScreenContent(
                                     icon = Icons.Default.CalendarMonth,
                                     onClick = {
                                         showMaintenanceDialog = false
-                                        localNavigator.push(ComandaScreen(currentDatabaseUrl))
+                                        localNavigator.push(ComandaScreen(currentDatabaseUrl,currentUserEmail))
                                     }
                                 )
                                 MaintenanceOption(
@@ -412,8 +440,8 @@ class HomeScreenContent(
                             )
                             ActionButton(
                                 modifier = Modifier.weight(1f),
-                                icon = Icons.Default.Search,
-                                label = "Consulta",
+                                icon = Icons.Default.ScreenSearchDesktop,
+                                label = "Consultar",
                                 onClick = { showSearchDialog = true }
                             )
                             // 🔑 BOTÓN: VERTISOL
@@ -438,6 +466,12 @@ class HomeScreenContent(
 
                         // Lista de Grupos de Materiales
                         LazyColumn(
+                            // 🔑 IMPORTANTE: Aplicamos el padding superior y/o inferior aquí
+                            // para manejar la barra del sistema, pero en este caso, la falta de TopBar
+                            // hace que queramos usarlo principalmente para el FAB.
+                            // Aquí solo nos enfocaremos en que la LazyColumn evite solaparse con el FAB.
+                            // El padding superior ya lo hemos corregido al quitarlo del Box.
+                            contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding() + 80.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
                             // Encabezado con botón a la derecha
@@ -477,8 +511,8 @@ class HomeScreenContent(
                                         modifier = Modifier.size(56.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.ScreenSearchDesktop,
-                                            contentDescription = "Ver lotes",
+                                            imageVector = Icons.Filled.Search,
+                                            contentDescription = "Buscar",
                                             tint = PrimaryColor
                                         )
                                     }
@@ -533,7 +567,8 @@ class HomeScreenContent(
                         )
                     }
                 }
-                // --- 7. NUEVO BottomSheet: LotesBottomSheetContent ---
+
+                // --- 7. BottomSheet de Lotes (Global Search) ---
                 if (showLotesBottomSheet) {
                     ModalBottomSheet(
                         onDismissRequest = {
@@ -556,6 +591,37 @@ class HomeScreenContent(
                             },
                             // 🔑 CAMBIO 4: Pasar la función centralizada inmutable
                             onRemarkUpdated = updateLoteState
+                        )
+                    }
+                }
+
+                // --- 8. 🆕 BottomSheet: Salidas Programadas (FAB) ---
+                if (showSalidasBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            coroutineScope.launch {
+                                sheetStateSalidas.hide()
+                                showSalidasBottomSheet = false
+                                selectedComandaForAssignment = null
+                            }
+                        },
+                        sheetState = sheetStateSalidas,
+                        modifier = Modifier.fillMaxHeight(0.7f)
+                    ) {
+                        SalidasProgramadasBottomSheet(
+                            databaseUrl = currentDatabaseUrl,
+                            snackbarHostState = snackbarHostState,
+                            onComandaClick = { comanda ->
+                                coroutineScope.launch {
+                                    sheetStateSalidas.hide()
+                                    showSalidasBottomSheet = false
+                                }
+                                selectedComandaForAssignment = comanda
+
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Comanda #${comanda.numeroDeComanda} seleccionada.")
+                                }
+                            }
                         )
                     }
                 }

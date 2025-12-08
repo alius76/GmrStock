@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,9 +32,9 @@ fun ComandaCard(
     isSelected: Boolean = false,
     onClick: (Comanda) -> Unit = {},
     onDelete: (() -> Unit)? = null,
-    onReassign: (() -> Unit)? = null
+    onReassign: (() -> Unit)? = null,
+    onEditRemark: (() -> Unit)? = null
 ) {
-
     val cardBackground = if (comanda.fueVendidoComanda) ReservedColor.copy(alpha = 0.02f) else Color.Transparent
     val bookedClientColor = if (comanda.fueVendidoComanda) Color.LightGray else MaterialTheme.colorScheme.secondary
 
@@ -46,10 +47,9 @@ fun ComandaCard(
         else -> PrimaryColor
     }
 
-    // 🌟 NUEVA LÓGICA: Determinar el color del badge
-    val badgeColor = if (comanda.fueVendidoComanda) ReservedColor else PrimaryColor
+    // Color del badge para Vendida -> Gris Oscuro
+    val badgeColor = if (comanda.fueVendidoComanda) Color.DarkGray else PrimaryColor
 
-    // 🌟 NUEVA LÓGICA: Formatear el número de comanda a 6 dígitos (000008)
     val formattedComandaNumber = comanda.numeroDeComanda.toString().padStart(6, '0')
 
     Box(
@@ -61,7 +61,7 @@ fun ComandaCard(
                 interactionSource = remember { MutableInteractionSource() }
             )
     ) {
-        // --- Card principal (Sin cambios aquí) ---
+        // --- Card principal (Estructura de la comanda) ---
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -72,7 +72,9 @@ fun ComandaCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(12.dp)
+                    // 🔥 PEQUEÑO AJUSTE DE PADDING SUPERIOR para dar más espacio
+                    .padding(top = 4.dp),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -121,17 +123,14 @@ fun ComandaCard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // 🔑 LÓGICA MODIFICADA
                     if (comanda.fueVendidoComanda) {
-                        // ✅ Si está vendida, mostramos el texto "Vendido"
                         Text(
                             text = "Vendido",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = ReservedColor // Usamos ReservedColor para el texto
+                            color = ReservedColor
                         )
                     } else {
-                        // ❌ Si no está vendida, mantenemos el icono de CheckCircle
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "Asignado",
@@ -148,13 +147,12 @@ fun ComandaCard(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .offset(x = 8.dp, y = (-8).dp)
-                    // 🌟 MODIFICADO: Usar badgeColor
+                    // 🔥 CORRECCIÓN: Aumentamos el desplazamiento vertical para separarlo del contenido
+                    .offset(x = 8.dp, y = (-12).dp)
                     .background(color = badgeColor, shape = CircleShape)
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
-                    // 🌟 MODIFICADO: Usar el número formateado
                     text = "#$formattedComandaNumber",
                     color = Color.White,
                     fontSize = 12.sp,
@@ -163,7 +161,7 @@ fun ComandaCard(
             }
         }
 
-        // --- Overlay botones eliminar / reasignar (Sin cambios aquí) ---
+        // --- Overlay de Botones de Acción ---
         if (isSelected && !comanda.fueVendidoComanda) {
             Box(
                 modifier = Modifier
@@ -174,19 +172,32 @@ fun ComandaCard(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (comanda.numberLoteComanda.isBlank()) {
-                        onDelete?.let {
-                            Button(
-                                onClick = { it() },
-                                colors = ButtonDefaults.buttonColors(containerColor = ReservedColor)
-                            ) { Text("Eliminar") }
-                        }
-                    }
-                    onReassign?.let {
+                    // 1. Botón de Eliminar/Anular (Solo si no tiene lote asignado)
+                    if (comanda.numberLoteComanda.isBlank() && onDelete != null) {
                         Button(
-                            onClick = { it() },
+                            onClick = onDelete,
+                            colors = ButtonDefaults.buttonColors(containerColor = ReservedColor)
+                        ) { Text("Anular") }
+                    }
+
+                    // 2. Botón de Reasignar
+                    if (onReassign != null) {
+                        Button(
+                            onClick = onReassign,
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
                         ) { Text("Reasignar") }
+                    }
+
+                    // 3. Botón de Observaciones
+                    onEditRemark?.let {
+                        Button(
+                            onClick = it,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF09A00))
+                        ) {
+                            Icon(Icons.Default.Notes, contentDescription = "Editar observaciones", tint = Color.White)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Obs.")
+                        }
                     }
                 }
             }

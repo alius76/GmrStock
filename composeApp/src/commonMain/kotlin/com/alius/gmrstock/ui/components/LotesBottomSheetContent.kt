@@ -16,14 +16,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.ImeAction // Necesario
-import androidx.compose.foundation.text.KeyboardActions // Necesario
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
 import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.LoteRepository
 import com.alius.gmrstock.domain.model.BigBags
@@ -33,7 +32,7 @@ import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
@@ -52,6 +51,7 @@ fun LotesBottomSheetContent(
     var lotes by remember { mutableStateOf<List<LoteModel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // BUSCADOR con debounce y filtro contains
     LaunchedEffect(searchText) {
@@ -99,15 +99,14 @@ fun LotesBottomSheetContent(
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
             shape = RoundedCornerShape(12.dp),
 
-            // 🔑 CORRECCIÓN PARA EL TECLADO NUMÉRICO EN IOS:
+
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done // Esto fuerza el botón 'Intro' o 'Done'
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    // Opcional: Cerrar el teclado si no se cierra automáticamente
-                    // defaultKeyboardAction(ImeAction.Done)
+                    keyboardController?.hide() // Cierra el teclado
                 }
             ),
 

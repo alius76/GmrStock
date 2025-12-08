@@ -6,6 +6,11 @@ interface DevolucionRepository {
     suspend fun obtenerTodasLasDevoluciones(): List<Devolucion>
     suspend fun agregarDevolucion(devolucion: Devolucion): Boolean
     suspend fun obtenerDevolucionesPorLote(loteNumber: String): List<Devolucion>
+
+    /**
+     * Obtiene todas las devoluciones registradas en el mes y año actual.
+     */
+    suspend fun obtenerDevolucionesDelMes(): List<Devolucion> // ⬅️ NUEVA FUNCIÓN
 }
 
 /**
