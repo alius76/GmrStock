@@ -114,7 +114,8 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                         Icon(
                             Icons.Default.List,
                             contentDescription = "Historial de devoluciones",
-                            tint = PrimaryColor
+                            tint = PrimaryColor,
+                            modifier = Modifier.size(56.dp)
                         )
                     }
                 }
