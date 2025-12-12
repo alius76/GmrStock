@@ -23,6 +23,7 @@ import com.alius.gmrstock.presentation.screens.LoginScreen
 import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.FirestoreUrls
 import kotlinx.coroutines.launch
+import com.alius.gmrstock.getPlatform
 
 class BottomBarScreen(
     private val user: User,
@@ -37,6 +38,7 @@ class BottomBarScreen(
         val coroutineScope = rememberCoroutineScope()
         var homeRefreshKey by remember { mutableStateOf(0) }
         val databaseUrl = LocalDatabaseUrl.current
+        val platform = getPlatform()
 
         val identificadorFabrica = when (databaseUrl) {
             FirestoreUrls.DB1_URL -> "P07"
@@ -79,31 +81,32 @@ class BottomBarScreen(
                         contentColor = colors.topBarContent,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding()), // un poco más alto
+                            .height(
+                                64.dp + if (platform.isMobile) WindowInsets.statusBars.asPaddingValues()
+                                    .calculateTopPadding() else 0.dp
+                            ),
                         title = {
-                            Box(
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 36.dp), // margen superior para alinear
-                                contentAlignment = Alignment.Center
+                                    .padding(top = if (platform.isMobile) 28.dp else 8.dp), // <-- Ajuste móvil
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "GMR Stock - $identificadorFabrica",
-                                        fontSize = 26.sp,
-                                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                        color = colors.topBarContent
-                                    )
-                                    Text(
-                                        text = "Gestión de stock en tiempo real",
-                                        fontSize = 14.sp,
-                                        color = colors.topBarContent.copy(alpha = 0.8f)
-                                    )
-                                }
+                                Text(
+                                    text = "GMR Stock - $identificadorFabrica",
+                                    fontSize = 26.sp,
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    color = colors.topBarContent
+                                )
+                                Text(
+                                    text = "Gestión de stock en tiempo real",
+                                    fontSize = 14.sp,
+                                    color = colors.topBarContent.copy(alpha = 0.8f)
+                                )
                             }
                         }
                     )
-
                 },
                 bottomBar = {
                     BottomNavigation(

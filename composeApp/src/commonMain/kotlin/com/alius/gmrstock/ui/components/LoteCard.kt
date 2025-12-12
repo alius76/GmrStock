@@ -34,15 +34,9 @@ import com.alius.gmrstock.data.ClientRepository
 import com.alius.gmrstock.data.getLoteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import com.alius.gmrstock.data.getComandaRepository
 import com.alius.gmrstock.domain.model.Comanda
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.draw.clip
 import com.alius.gmrstock.ui.theme.TextSecondary
 

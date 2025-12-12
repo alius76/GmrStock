@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,16 +43,22 @@ fun ReprocesarCard(reproceso: Reprocesar) {
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
 
-            // --- 1️⃣ Título principal ---
+        ) {
+
+            // --- 1️⃣ Título principal centrado ---
             Text(
-                text = "Reproceso ${reproceso.reprocesoNumber}",
-                style = MaterialTheme.typography.headlineSmall,
+                text = reproceso.reprocesoNumber,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = PrimaryColor,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Start
             )
 
             Spacer(modifier = Modifier.height(8.dp))

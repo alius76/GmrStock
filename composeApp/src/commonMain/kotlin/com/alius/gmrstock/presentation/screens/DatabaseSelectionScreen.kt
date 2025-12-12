@@ -110,7 +110,7 @@ class DatabaseSelectionScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Conéctese a la planta deseada",
+                        text = "Conexión a la planta de producción",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = TextSecondary
@@ -155,7 +155,7 @@ class DatabaseSelectionScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "GMR Stock v1.1 build 1 | © 2025",
+                        text = "GMR Stock v1.1.0 build 19 | © 2025",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Light,
                         color = TextSecondary.copy(alpha = 0.7f)

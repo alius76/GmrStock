@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material.icons.filled.Verified
@@ -16,10 +15,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alius.gmrstock.core.utils.formatInstant
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.domain.model.Vertisol
 import com.alius.gmrstock.ui.theme.PrimaryColor
@@ -44,17 +43,19 @@ fun VertisolCard(vertisol: Vertisol) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+                .fillMaxWidth() // importante para centrar el título
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // centra todos los hijos horizontalmente
         ) {
-            // --- 1️⃣ Título principal ---
+            // --- 1️⃣ Título principal centrado ---
             Text(
-                text = "Lote ${vertisol.vertisolNumber}",
-                style = MaterialTheme.typography.headlineSmall,
+                text = vertisol.vertisolNumber, // solo el número, sin prefijo "Lote"
+                style = MaterialTheme.typography.headlineMedium, // misma referencia que usamos en LoteCard
                 fontWeight = FontWeight.ExtraBold,
                 color = PrimaryColor,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(8.dp))

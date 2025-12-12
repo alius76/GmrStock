@@ -4,8 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
@@ -32,7 +30,6 @@ import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.ReservedColor
-import com.alius.gmrstock.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @Composable
@@ -132,7 +129,7 @@ fun PlanningLoteCard(
                 // Lote Number
                 Text(
                     text = lote.number,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 28.sp),
+                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 24.sp),
                     fontWeight = FontWeight.ExtraBold,
                     color = PrimaryColor,
                     maxLines = 1,

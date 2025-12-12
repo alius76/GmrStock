@@ -36,6 +36,7 @@ zxingAndroidEmbedded = "4.3.0"
 googleServices = "4.4.2"
 skiko = "0.9.23"
 coil3 = "3.3.0"
+foundationDesktop = "1.7.0"
 
 [libraries]
 core = { module = "com.google.zxing:core", version.ref = "core" }
@@ -90,6 +91,7 @@ zxing-javase = { module = "com.google.zxing:javase", version.ref = "javase" }
 
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil3" }
 skiko = { module = "org.jetbrains.skiko:skiko-jetbrains-runtime", version.ref = "skiko" }
+androidx-foundation-desktop = { group = "androidx.compose.foundation", name = "foundation-desktop", version.ref = "foundationDesktop" }
 
 
 

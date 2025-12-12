@@ -151,7 +151,7 @@ class LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
-                    text = "Version: 1.0.0",
+                    text = "Version: 1.1.0",
                     fontSize = 14.sp,
                     color = TextSecondary
                 )

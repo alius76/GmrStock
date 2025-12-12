@@ -1,3 +1,4 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -31,9 +32,12 @@ kotlin {
         }
     }
 
+    jvm("desktop")
 
 
     sourceSets {
+
+        val desktopMain by getting
 
         androidMain.dependencies {
             implementation(compose.preview)
@@ -41,14 +45,15 @@ kotlin {
 
             // ✅ Firebase Auth (Android)
             implementation(project.dependencies.platform(libs.android.firebase.bom))
-            implementation(libs.firebase.auth.ktx) // 👈 NUEVO
+            implementation(libs.firebase.auth.ktx)
             implementation(libs.firebase.analytics.ktx)
             implementation(libs.firebase.firestore.ktx)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.itextpdf)
             implementation(libs.zxing.android.embedded)
 
-            implementation(libs.ktor.client.okhttp)
+            // Ya estaba dos veces
+            // implementation(libs.ktor.client.okhttp)
 
         }
 
@@ -80,10 +85,8 @@ kotlin {
 
             implementation(libs.gitlive.firebase.firestore)
             implementation(libs.gitlive.firebase.auth)
-
-
-
         }
+
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.ktor.client.ios)
@@ -93,6 +96,22 @@ kotlin {
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+        }
+
+        desktopMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            implementation(libs.ktor.client.okhttp)
+
+            // ⭐️ Solución al error 'Module with the Main dispatcher is missing'
+            implementation(libs.kotlinx.coroutines.swing)
+
+            // ⭐️ Solución al error 'Duplicate class' (conflicto entre Google/Android Compose y JetBrains/Desktop Compose)
+            configurations.findByName("compileClasspath")?.exclude(group = "androidx.compose.foundation")
+            configurations.findByName("runtimeClasspath")?.exclude(group = "androidx.compose.foundation")
+
+            // Añadir exclusión de UI si el error persiste, aunque Foundation es el más problemático
+            configurations.findByName("compileClasspath")?.exclude(group = "androidx.compose.ui")
+            configurations.findByName("runtimeClasspath")?.exclude(group = "androidx.compose.ui")
         }
 
     }
@@ -126,6 +145,18 @@ android {
 }
 
 dependencies {
+    // ❌ ELIMINADO: Esta dependencia 'implementation(libs.androidx.foundation.desktop)' en el bloque global
+    // causaba el conflicto de la clase duplicada al inyectar versiones redundantes de Compose Foundation.
     debugImplementation(compose.uiTooling)
 }
 
+compose.desktop {
+    application {
+        mainClass = "com.alius.gmrstock.MainKt"
+        nativeDistributions {
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
+            packageName = "com.alius.gmrstock"
+            packageVersion = "1.1.0"
+        }
+    }
+}

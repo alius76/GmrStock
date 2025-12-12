@@ -1,5 +1,7 @@
 package com.alius.gmrstock.presentation.screens
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
 import cafe.adriel.voyager.core.screen.Screen
@@ -11,6 +13,12 @@ import com.alius.gmrstock.core.LocalDatabaseUrl
 import com.alius.gmrstock.data.getAuthRepository
 import com.alius.gmrstock.domain.model.User
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.getPlatform
+
 
 class RootScreen : Screen {
 
@@ -24,17 +32,18 @@ class RootScreen : Screen {
         var user by remember { mutableStateOf<User?>(null) }
         var selectedDbUrl by remember { mutableStateOf<String?>(null) }
 
+        // 🔐 Estado interno para controlar el acceso por PIN en Desktop
+        var isDesktopPinValidated by remember { mutableStateOf(false) }
+
         // Mostrar splash al iniciar
         LaunchedEffect(Unit) {
-            println("📌 [RootScreen] Mostrando SplashScreen")
-            delay(2000) // Splash de 2 segundos
+            delay(2000)
             showingSplash = false
         }
 
         // Comprobar usuario solo después del splash
         LaunchedEffect(showingSplash) {
             if (!showingSplash) {
-                println("📌 [RootScreen] Comprobando usuario...")
                 user = authRepository.getCurrentUser()
                 checkingUser = false
             }
@@ -44,23 +53,40 @@ class RootScreen : Screen {
             showingSplash -> {
                 SplashScreen()
             }
+
             checkingUser -> {
-                println("📌 [RootScreen] Comprobando usuario...")
-                CircularProgressIndicator()
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryColor)
+                }
             }
+
             user == null -> {
-                println("📌 [RootScreen] Usuario no logueado, navegando a LoginScreen")
                 navigator.replace(LoginScreen(authRepository))
             }
+
             selectedDbUrl == null -> {
-                println("📌 [RootScreen] Mostrando selección de base de datos")
-                DatabaseSelectionScreen { url ->
-                    println("📌 [RootScreen] Base de datos seleccionada: $url")
-                    selectedDbUrl = url
-                }.Content()
+
+                // 🔐 SOLO DESKTOP PEDIR PIN
+                if (!getPlatform().isMobile && !isDesktopPinValidated) {
+                    DesktopFullPinScreen(
+                        onSuccess = {
+                            isDesktopPinValidated = true
+                        }
+                    )
+                    return
+                }
+
+                if (isDesktopPinValidated || getPlatform().isMobile) {
+                    DatabaseSelectionScreen { url ->
+                        selectedDbUrl = url
+                    }.Content()
+                }
             }
+
             else -> {
-                println("📌 [RootScreen] Usuario logueado, base de datos seleccionada: $selectedDbUrl")
                 CompositionLocalProvider(
                     LocalDatabaseUrl provides selectedDbUrl!!
                 ) {
@@ -69,8 +95,8 @@ class RootScreen : Screen {
                         authRepository = authRepository,
                         colors = BottomBarColors(),
                         onChangeDatabase = {
-                            println("📌 [RootScreen] Cambiando base de datos")
                             selectedDbUrl = null
+                            isDesktopPinValidated = false
                         }
                     ).Content()
                 }

@@ -2,8 +2,6 @@ package com.alius.gmrstock.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -14,13 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.core.utils.formatInstant
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.domain.model.Devolucion
-import com.alius.gmrstock.domain.model.DevolucionBigbag
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.SecondaryColor
 import com.alius.gmrstock.ui.theme.TextPrimary
@@ -30,7 +28,6 @@ import com.alius.gmrstock.ui.theme.TextSecondary
 fun DevolucionCard(devolucion: Devolucion) {
     var showBigBagsDialog by remember { mutableStateOf(false) }
 
-    // Usamos ?.toDoubleOrNull() en el String guardado para el cálculo
     val totalWeightNumber = devolucion.devolucionPesoTotal?.toDoubleOrNull() ?: 0.0
     val bigBagCount = devolucion.devolucionBigbags.size
 
@@ -43,16 +40,22 @@ fun DevolucionCard(devolucion: Devolucion) {
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
 
-            // --- 1️⃣ Título principal ---
+        ) {
+
+            // --- 1️⃣ Título principal centrado ---
             Text(
-                text = "Dev. Lote ${devolucion.devolucionLote}",
-                style = MaterialTheme.typography.headlineSmall,
+                text = devolucion.devolucionLote,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = PrimaryColor,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Start
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -126,7 +129,7 @@ fun DevolucionCard(devolucion: Devolucion) {
                     )
                 }
 
-                // Fecha de la devolución
+                // Fecha de devolución
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.CalendarToday,
@@ -146,7 +149,7 @@ fun DevolucionCard(devolucion: Devolucion) {
         }
     }
 
-    // --- 🧩 Diálogo con BigBags Devueltos ---
+    // --- 4️⃣ Diálogo de BigBags ---
     if (showBigBagsDialog) {
         AlertDialog(
             onDismissRequest = { showBigBagsDialog = false },
@@ -156,10 +159,7 @@ fun DevolucionCard(devolucion: Devolucion) {
                 }
             },
             title = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
                         text = "BigBags devueltos",
                         color = PrimaryColor,
@@ -174,5 +174,3 @@ fun DevolucionCard(devolucion: Devolucion) {
         )
     }
 }
-
-
