@@ -43,19 +43,19 @@ fun VertisolCard(vertisol: Vertisol) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth() // importante para centrar el título
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally // centra todos los hijos horizontalmente
+                .fillMaxWidth()
+                .padding(16.dp)
+
         ) {
             // --- 1️⃣ Título principal centrado ---
             Text(
-                text = vertisol.vertisolNumber, // solo el número, sin prefijo "Lote"
-                style = MaterialTheme.typography.headlineMedium, // misma referencia que usamos en LoteCard
+                text = vertisol.vertisolNumber,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = PrimaryColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Start
             )
 
             Spacer(modifier = Modifier.height(8.dp))
