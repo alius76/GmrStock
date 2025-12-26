@@ -11,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,6 +32,7 @@ import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.domain.model.Material
 import com.alius.gmrstock.ui.components.ComandaCard
+import com.alius.gmrstock.ui.components.InlineCalendarSelector
 import com.alius.gmrstock.ui.components.UniversalDatePickerDialog
 import com.alius.gmrstock.ui.theme.BackgroundColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
@@ -62,6 +62,7 @@ class ComandaScreen(
                 Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             )
         }
+        var todasLasComandas by remember { mutableStateOf(listOf<Comanda>()) }
 
         // --- Estados para Añadir Comanda ---
         var clients by remember { mutableStateOf<List<Cliente>>(emptyList()) }
@@ -86,36 +87,43 @@ class ComandaScreen(
         var showDatePicker by remember { mutableStateOf(false) }
         var comandaToUpdateDate by remember { mutableStateOf<Comanda?>(null) }
 
-        // 🌟 NUEVOS ESTADOS PARA CONFIRMACIÓN Y EDICIÓN (CORREGIDOS) 🌟
+        // --- Diálogos y Modificaciones ---
         var showConfirmDeleteDialog by remember { mutableStateOf(false) }
-        // Se reemplaza showConfirmReassignDialog por showConfirmReassignDateDialog
         var showConfirmReassignDateDialog by remember { mutableStateOf(false) }
         var showEditRemarkDialog by remember { mutableStateOf(false) }
         var comandaToModify by remember { mutableStateOf<Comanda?>(null) }
         var newRemark by remember { mutableStateOf("") }
-        // NUEVO ESTADO: Guarda la fecha seleccionada en el DatePicker antes de confirmar
         var newDateSelected by remember { mutableStateOf<LocalDate?>(null) }
 
+        // --- Función Maestra de Refresco ---
+        fun refrescarDatos() {
+            scope.launch {
+                try {
+                    val listaDia = comandaRepository.listarComandas(fechaSeleccionada.toString())
+                    val listaGlobal = comandaRepository.listarTodasComandas()
+                    comandasDelDia = listaDia
+                    todasLasComandas = listaGlobal
+                } catch (e: Exception) {
+                    println("Error al refrescar datos: ${e.message}")
+                }
+            }
+        }
 
-        // --- Cargar clientes ---
+        // --- Cargas iniciales ---
+        LaunchedEffect(fechaSeleccionada) {
+            refrescarDatos()
+        }
+
         LaunchedEffect(databaseUrl) {
             clients = try {
                 clientRepository.getAllClientsOrderedByName().filter { it.cliNombre != "NO OK" }
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
+            } catch (e: Exception) { emptyList() }
 
-        // --- Cargar materiales ---
-        LaunchedEffect(databaseUrl) {
             materials = try {
                 materialRepository.getAllMaterialsOrderedByName()
-            } catch (e: Exception) {
-                emptyList()
-            }
+            } catch (e: Exception) { emptyList() }
         }
 
-        // 🌟 FUNCIÓN: Restablecer todos los estados del formulario de nueva comanda
         fun resetFormStates() {
             selectedCliente = null
             selectedMaterial = null
@@ -126,20 +134,9 @@ class ComandaScreen(
             errorPeso = false
         }
 
-        // --- Funciones principales ---
-        fun loadComandasPorFecha(fecha: LocalDate) {
-            scope.launch {
-                try {
-                    comandasDelDia = comandaRepository.listarComandas(fecha.toString())
-                } catch (e: Exception) {
-                    comandasDelDia = emptyList()
-                }
-            }
-        }
-
+        // --- Lógica CRUD ---
         fun guardarComanda() {
             val instantToSave = fechaSeleccionada.atStartOfDayIn(TimeZone.UTC)
-
             val nuevaComanda = Comanda(
                 idComanda = "",
                 bookedClientComanda = selectedCliente,
@@ -149,40 +146,29 @@ class ComandaScreen(
                 totalWeightComanda = totalWeightComanda,
                 remarkComanda = remarkComanda
             )
-
             scope.launch {
                 val exito = comandaRepository.addComanda(nuevaComanda)
                 if (exito) {
-                    loadComandasPorFecha(fechaSeleccionada)
+                    refrescarDatos()
                     resetFormStates()
                 }
             }
         }
 
-        // 🌟 FUNCIÓN: Actualizar Observaciones 🌟
-        fun actualizarObservaciones(comanda: Comanda, newRemark: String) {
+        fun actualizarObservaciones(comanda: Comanda, text: String) {
             scope.launch {
                 comanda.idComanda.takeIf { it.isNotEmpty() }?.let { id ->
-                    val exito = comandaRepository.updateComandaRemark(id, newRemark)
-                    if (exito) {
-                        loadComandasPorFecha(fechaSeleccionada)
-                    }
+                    val exito = comandaRepository.updateComandaRemark(id, text)
+                    if (exito) refrescarDatos()
                 }
             }
-        }
-
-        // La función eliminarComanda ahora abre un diálogo de confirmación
-        fun confirmarEliminar(comanda: Comanda) {
-            comandaToModify = comanda
-            showConfirmDeleteDialog = true
-            selectedComanda = null
         }
 
         fun ejecutarEliminar(comanda: Comanda) {
             scope.launch {
                 comanda.idComanda.takeIf { it.isNotEmpty() }?.let {
                     val exito = comandaRepository.deleteComanda(it)
-                    if (exito) loadComandasPorFecha(fechaSeleccionada)
+                    if (exito) refrescarDatos()
                 }
                 comandaToModify = null
                 showConfirmDeleteDialog = false
@@ -190,45 +176,17 @@ class ComandaScreen(
             }
         }
 
-
-        // 🎯 MODIFICACIÓN 1 (Con Debug)
-        suspend fun updateComandaDate(comanda: Comanda, newDate: LocalDate): Boolean {
-            val newInstant = newDate.atStartOfDayIn(TimeZone.UTC)
-            comanda.idComanda.takeIf { it.isNotEmpty() }?.let { id ->
-                val exito = comandaRepository.updateComandaDate(id, newInstant)
-                return exito
-            }
-            return false
-        }
-
-        // 🌟 MODIFICADO: Esta función solo abre el DatePicker y prepara el estado.
-        fun confirmarReasignar(comanda: Comanda) {
-            comandaToModify = comanda // Prepara la comanda para la confirmación posterior
-            comandaToUpdateDate = comanda // Prepara la comanda para el DatePicker
-            selectedComanda = null
-            showDatePicker = true
-        }
-
-        // 🌟 NUEVA FUNCIÓN: Ejecuta la reasignación después de la confirmación de fecha
         fun ejecutarReasignacionFinal() {
             val comandaToReassign = comandaToModify
-            val selectedDate = newDateSelected
-
-            if (comandaToReassign != null && selectedDate != null) {
+            val targetDate = newDateSelected
+            if (comandaToReassign != null && targetDate != null) {
                 scope.launch {
-                    val exito = updateComandaDate(comandaToReassign, selectedDate)
-
+                    val newInstant = targetDate.atStartOfDayIn(TimeZone.UTC)
+                    val exito = comandaRepository.updateComandaDate(comandaToReassign.idComanda, newInstant)
                     if (exito) {
-                        // 1. Refresca la lista actual (fecha de origen)
-                        loadComandasPorFecha(fechaSeleccionada)
-
-                        // 2. Si la nueva fecha es diferente a la actual, cambia el estado de visualización
-                        if (selectedDate != fechaSeleccionada) {
-                            fechaSeleccionada = selectedDate
-                        }
+                        fechaSeleccionada = targetDate
+                        refrescarDatos()
                     }
-
-                    // Limpieza final
                     comandaToModify = null
                     newDateSelected = null
                     showConfirmReassignDateDialog = false
@@ -236,7 +194,19 @@ class ComandaScreen(
             }
         }
 
-        // 🌟 NUEVA FUNCIÓN: Editar Observaciones (abre el diálogo) 🌟
+        fun confirmarEliminar(comanda: Comanda) {
+            comandaToModify = comanda
+            showConfirmDeleteDialog = true
+            selectedComanda = null
+        }
+
+        fun confirmarReasignar(comanda: Comanda) {
+            comandaToModify = comanda
+            comandaToUpdateDate = comanda
+            selectedComanda = null
+            showDatePicker = true
+        }
+
         fun editarObservaciones(comanda: Comanda) {
             comandaToModify = comanda
             newRemark = comanda.remarkComanda
@@ -244,107 +214,52 @@ class ComandaScreen(
             selectedComanda = null
         }
 
-
         // --- UI Principal ---
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundColor)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().background(BackgroundColor)) {
             Column(modifier = Modifier.fillMaxWidth()) {
-
-                // --- Header con flecha, planning, título y fecha ---
+                // Header
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(BackgroundColor)
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // 1. Flecha de volver
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = PrimaryColor)
                         }
-
-                        // 2. Título y subtítulo
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 8.dp)
-                        ) {
-                            Text(
-                                "Gestión de comandas",
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Text(
-                                "Seleccione fecha",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                                color = Color.Gray,
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
+                        Column(modifier = Modifier.weight(1f).padding(start = 8.dp)) {
+                            Text("Gestión de comandas", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                            Text("Seleccione fecha", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium), color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
                         }
-
-                        // 3. Botón para ir a Planning
-                        IconButton(
-                            onClick = { navigator.push(ComandasPlanningScreen(databaseUrl, currentUserEmail)) },
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.ListAlt,
-                                contentDescription = "Planning reservas",
-                                tint = PrimaryColor,
-
-                                modifier = Modifier.size(32.dp)
-                            )
+                        IconButton(onClick = { navigator.push(ComandasPlanningScreen(databaseUrl, currentUserEmail)) }) {
+                            Icon(Icons.Default.ListAlt, contentDescription = "Planning", tint = PrimaryColor, modifier = Modifier.size(32.dp))
                         }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // ... (El botón de selección de fecha del calendario sigue aquí) ...
-                    OutlinedButton(
-                        onClick = { comandaToUpdateDate = null; showDatePicker = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryColor)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = PrimaryColor)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "${fechaSeleccionada.dayOfMonth.toString().padStart(2, '0')}-${fechaSeleccionada.monthNumber.toString().padStart(2, '0')}-${fechaSeleccionada.year}",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    InlineCalendarSelector(
+                        selectedDate = fechaSeleccionada,
+                        allComandas = todasLasComandas,
+                        onDateSelected = { fechaSeleccionada = it },
+                        primaryColor = PrimaryColor
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Comandas", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
-                        IconButton(
-                            onClick = { resetFormStates(); showAgregarDialog = true }
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Agregar comanda", tint = PrimaryColor, modifier = Modifier.size(32.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        val conteo = if (comandasDelDia.isNotEmpty()) " (${comandasDelDia.size})" else ""
+                        Text("Comandas$conteo", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = PrimaryColor)
+                        IconButton(onClick = { resetFormStates(); showAgregarDialog = true }) {
+                            Icon(Icons.Default.Add, contentDescription = "Agregar", tint = PrimaryColor, modifier = Modifier.size(32.dp))
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // --- Lista de comandas ---
+                // Lista de comandas
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
@@ -355,7 +270,7 @@ class ComandaScreen(
                             isSelected = selectedComanda == comanda,
                             onClick = { selectedComanda = if (selectedComanda == comanda) null else comanda },
                             onDelete = { confirmarEliminar(comanda) },
-                            onReassign = { confirmarReasignar(comanda) }, // <--- Abre DatePicker
+                            onReassign = { confirmarReasignar(comanda) },
                             onEditRemark = { editarObservaciones(comanda) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -389,7 +304,7 @@ class ComandaScreen(
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
 
-                            // --- Selección Cliente ---
+                            // Selección Cliente
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -410,7 +325,7 @@ class ComandaScreen(
                             }
                             if (errorCliente) Text("Debe seleccionar un cliente válido", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
 
-                            // --- Selección Material ---
+                            // Selección Material
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -431,7 +346,7 @@ class ComandaScreen(
                             }
                             if (errorDescripcion) Text("Debe seleccionar un material", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
 
-                            // --- Peso total ---
+                            // Peso total
                             OutlinedTextField(
                                 value = totalWeightComanda,
                                 onValueChange = { input ->
@@ -452,7 +367,7 @@ class ComandaScreen(
                             )
                             if (errorPeso) Text("Ingrese un número válido mayor a 0", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
 
-                            // --- Observaciones ---
+                            // Observaciones
                             OutlinedTextField(
                                 value = remarkComanda,
                                 onValueChange = { remarkComanda = it },
@@ -467,7 +382,7 @@ class ComandaScreen(
                                 )
                             )
 
-                            // --- Botones ---
+                            // Botones
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 TextButton(onClick = {
                                     showAgregarDialog = false
@@ -557,27 +472,20 @@ class ComandaScreen(
                 )
             }
 
-            // --- DatePicker (MODIFICADO para flujo de reasignación) ---
+            // --- DatePicker ---
             if (showDatePicker) {
                 UniversalDatePickerDialog(
                     initialDate = comandaToUpdateDate?.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date ?: fechaSeleccionada,
-
                     onDateSelected = { selected ->
                         showDatePicker = false
-
-                        // Si se está reasignando una comanda específica
                         if (comandaToUpdateDate != null) {
-                            // 1. Guarda la fecha seleccionada temporalmente
                             newDateSelected = selected
-                            // 2. Transfiere la comanda al estado genérico de modificación
                             comandaToModify = comandaToUpdateDate
-                            // 3. Muestra el diálogo de confirmación de fecha
                             showConfirmReassignDateDialog = true
                         } else {
-                            // Flujo normal de cambio de fecha de visualización
                             fechaSeleccionada = selected
                         }
-                        comandaToUpdateDate = null // Limpiamos el estado del DatePicker
+                        comandaToUpdateDate = null
                     },
                     onDismiss = {
                         showDatePicker = false
@@ -587,9 +495,7 @@ class ComandaScreen(
                 )
             }
 
-            // 🌟 DIÁLOGOS DE CONFIRMACIÓN Y EDICIÓN 🌟
-
-            // 1. Confirmación de ELIMINACIÓN (Anular)
+            // --- Confirmación Eliminación ---
             if (showConfirmDeleteDialog && comandaToModify != null) {
                 AlertDialog(
                     onDismissRequest = { showConfirmDeleteDialog = false; comandaToModify = null },
@@ -609,7 +515,7 @@ class ComandaScreen(
                 )
             }
 
-            // 2. Confirmación de REASIGNACIÓN DE FECHA (Nuevo flujo)
+            // --- Confirmación Reasignación Fecha ---
             if (showConfirmReassignDateDialog && comandaToModify != null && newDateSelected != null) {
                 val oldDate = comandaToModify!!.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date ?: fechaSeleccionada
                 val formattedNewDate = "${newDateSelected!!.dayOfMonth.toString().padStart(2, '0')}-${newDateSelected!!.monthNumber.toString().padStart(2, '0')}-${newDateSelected!!.year}"
@@ -643,7 +549,7 @@ class ComandaScreen(
                 )
             }
 
-            // 3. Diálogo de EDICIÓN de Observaciones (CORREGIDO EL GUARDADO Y LIMPIEZA)
+            // --- Diálogo de EDICIÓN de Observaciones ---
             if (showEditRemarkDialog && comandaToModify != null) {
                 Dialog(onDismissRequest = {
                     showEditRemarkDialog = false
@@ -692,7 +598,6 @@ class ComandaScreen(
                                 }) { Text("Cancelar", color = PrimaryColor) }
 
                                 TextButton(onClick = {
-                                    // Guardar y limpiar estados
                                     actualizarObservaciones(comandaToModify!!, newRemark)
                                     showEditRemarkDialog = false
                                     comandaToModify = null
@@ -701,12 +606,6 @@ class ComandaScreen(
                         }
                     }
                 }
-            }
-
-
-            // --- Cargar comandas iniciales ---
-            LaunchedEffect(fechaSeleccionada) {
-                loadComandasPorFecha(fechaSeleccionada)
             }
         }
     }
