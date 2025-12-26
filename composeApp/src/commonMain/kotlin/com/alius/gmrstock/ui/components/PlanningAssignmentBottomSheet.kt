@@ -61,15 +61,38 @@ fun PlanningAssignmentBottomSheet(
         scope.launch {
             isLoading = true
             try {
+                // 1. Cargamos los lotes por descripción
                 val loadedLotes = loteRepository.listarLotesPorDescripcion(materialDescription)
+
+                // 2. 🔥 NUEVA LÓGICA: Cargamos todas las comandas para ver cuáles lotes están ya "comprometidos"
+                val todasLasComandas = comandaRepository.listarTodasComandas()
+
+                // Creamos un Set de números de lote que ya están asignados a OTRAS comandas
+                val lotesOcupadosEnOtrasComandas = todasLasComandas
+                    .filter { it.idComanda != selectedComanda.idComanda && it.numberLoteComanda.isNotBlank() }
+                    .map { it.numberLoteComanda }
+                    .toSet()
 
                 var filteredLotes = loadedLotes
                     .filter { lote ->
                         val isDescriptionMatch = lote.description.equals(materialDescription, ignoreCase = true)
                         val bookedClient = lote.booked?.cliNombre
-                        val isAvailableOrReservedByMe = lote.booked == null || bookedClient == comandaClientName || lote.number == selectedComanda.numberLoteComanda
 
-                        isDescriptionMatch && isAvailableOrReservedByMe
+                        // Verificamos si el lote está ocupado por otra comanda activa
+                        val estaOcupadoPorOtraComanda = lotesOcupadosEnOtrasComandas.contains(lote.number)
+
+                        // Si la comanda actual ya tiene un lote asignado, solo mostramos ese (tu lógica de claridad)
+                        if (selectedComanda.numberLoteComanda.isNotBlank()) {
+                            lote.number == selectedComanda.numberLoteComanda
+                        } else {
+                            // Filtro de disponibilidad:
+                            // - Debe coincidir la descripción
+                            // - NO debe estar asignado a otra comanda activa (incluso si es del mismo cliente)
+                            // - Debe estar sin reserva O reservado por el cliente actual
+                            val isAvailableOrReservedByMe = (lote.booked == null || bookedClient == comandaClientName)
+
+                            isDescriptionMatch && isAvailableOrReservedByMe && !estaOcupadoPorOtraComanda
+                        }
                     }
 
                 filteredLotes = filteredLotes.sortedBy { it.number }
@@ -111,13 +134,11 @@ fun PlanningAssignmentBottomSheet(
 
                 if (shouldClearBooking) {
                     // B) Opción 2: Anular Reserva del Lote (Limpia todos los campos de reserva)
-                    // 🔥 Necesitas que tu repositorio tenga una función para esto. Asumiendo `loteRepository.updateLoteBooked(loteId, null, null, null, null)` o `loteRepository.clearLoteBooking(loteId)`
                     bookingCleared = loteRepository.updateLoteBooked(loteToProcess.id, null, null, null, null)
                     message = if (bookingCleared) "Lote $loteNumber desasignado y reserva anulada."
                     else "Error al anular reserva."
                 } else {
                     // C) Opción 1: Mantener Reserva (Solo desasigna de la Comanda)
-                    // Aseguramos que el estado de la reserva se mantenga con los datos originales
                     message = "Lote $loteNumber desasignado (Reserva mantenida)."
                 }
 
@@ -132,7 +153,6 @@ fun PlanningAssignmentBottomSheet(
             }
 
             // 2. --- LÓGICA DE ASIGNACIÓN/CONFIRMACIÓN (Sin cambios) ---
-            // Si ya hay un lote asignado a la comanda y no es el que se está pulsando, no permitimos la reasignación.
             if (selectedComanda.numberLoteComanda.isNotBlank()) return@launch
 
             // Asignar y/o confirmar la reserva (Lógica original)
@@ -241,20 +261,19 @@ fun PlanningAssignmentBottomSheet(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        // 🔥 CAMBIO DE FIRMA AQUÍ
                         PlanningLoteCard(
                             lote = lote,
                             comanda = selectedComanda,
                             certificado = certificado,
                             snackbarHostState = snackbarHostState,
-                            onAssignLote = assignLoteToComanda, // Pasa la función con la nueva firma
+                            onAssignLote = assignLoteToComanda,
                             onViewBigBags = { /* No implementado aquí */ },
                             modifier = Modifier.fillMaxWidth(0.85f)
                         )
                     }
                 }
 
-                // --- 2. BARRA VERTICAL DE PROGRESO (Idéntica al ejemplo) ---
+                // --- 2. BARRA VERTICAL DE PROGRESO ---
                 val totalItems = lotesDisponibles.size
                 if (totalItems > 1) {
                     val barWidth = 4.dp
@@ -276,7 +295,7 @@ fun PlanningAssignmentBottomSheet(
                             .fillMaxHeight()
                             .width(barWidth)
                             .align(Alignment.CenterEnd)
-                            .padding(vertical = 10.dp) // Padding para que no toque los bordes verticales del Box
+                            .padding(vertical = 10.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                     ) {
