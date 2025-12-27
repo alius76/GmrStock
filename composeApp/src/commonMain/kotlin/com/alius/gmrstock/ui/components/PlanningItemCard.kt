@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,7 +20,7 @@ import com.alius.gmrstock.ui.theme.PrimaryColor
 import com.alius.gmrstock.ui.theme.TextSecondary
 import androidx.compose.foundation.clickable
 import com.alius.gmrstock.ui.theme.ReservedColor
-
+import kotlinx.datetime.*
 
 @Composable
 fun PlanningItemCard(
@@ -30,8 +31,14 @@ fun PlanningItemCard(
     val isAssigned = lotNumber != "SIN ASIGNAR"
     val formattedComandaNumber = comanda.numeroDeComanda.toString().padStart(6, '0')
 
-
     val indicatorColor = if (isAssigned) PrimaryColor else ReservedColor
+
+    // Lógica para la etiqueta RETRASADA
+    val isDelayed = remember(comanda.dateBookedComanda) {
+        val dateBooked = comanda.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        dateBooked != null && dateBooked < today && !comanda.fueVendidoComanda
+    }
 
     // Usamos Box para superponer el indicador lateral
     Box(
@@ -94,15 +101,34 @@ fun PlanningItemCard(
 
                 // 2. Detalles del Cuerpo (Cliente, Material, Peso)
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // Cliente (Principal)
-                    Text(
-                        text = comanda.bookedClientComanda?.cliNombre ?: "Cliente Desconocido",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    // Cliente (Principal) con etiqueta RETRASADA
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = comanda.bookedClientComanda?.cliNombre ?: "Cliente Desconocido",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (isDelayed) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Surface(
+                                color = ReservedColor,
+                                shape = RoundedCornerShape(4.dp)
+                            ) {
+                                Text(
+                                    text = "RETRASADA",
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(4.dp))
 
                     // Material

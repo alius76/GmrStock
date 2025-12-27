@@ -85,6 +85,7 @@ kotlin {
 
             implementation(libs.gitlive.firebase.firestore)
             implementation(libs.gitlive.firebase.auth)
+
         }
 
         iosMain.dependencies {
@@ -101,6 +102,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.pdfbox)
 
             // ⭐️ Solución al error 'Module with the Main dispatcher is missing'
             implementation(libs.kotlinx.coroutines.swing)
@@ -145,8 +147,6 @@ android {
 }
 
 dependencies {
-    // ❌ ELIMINADO: Esta dependencia 'implementation(libs.androidx.foundation.desktop)' en el bloque global
-    // causaba el conflicto de la clase duplicada al inyectar versiones redundantes de Compose Foundation.
     debugImplementation(compose.uiTooling)
 }
 

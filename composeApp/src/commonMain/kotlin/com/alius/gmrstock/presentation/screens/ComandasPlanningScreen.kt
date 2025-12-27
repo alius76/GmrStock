@@ -3,15 +3,14 @@ package com.alius.gmrstock.presentation.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -19,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.alius.gmrstock.core.utils.PdfGenerator
 import com.alius.gmrstock.data.getComandaRepository
 import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.ui.components.PlanningItemCard
@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import com.alius.gmrstock.data.getClientRepository
 import com.alius.gmrstock.ui.components.PlanningAssignmentBottomSheet
+import com.alius.gmrstock.core.utils.formatInstant
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,7 @@ class ComandasPlanningScreen(
         val navigator = LocalNavigator.currentOrThrow
         val coroutineScope = rememberCoroutineScope()
 
-        // --- Repositorios, Estados, Loaders, Grouping, Sorting (Se mantienen igual) ---
+        // --- Repositorios, Estados, Loaders, Grouping, Sorting ---
         val comandaRepository = remember(databaseUrl) { getComandaRepository(databaseUrl) }
         val clientRepository = remember(databaseUrl) { getClientRepository(databaseUrl) }
         var comandasActivas by remember { mutableStateOf<List<Comanda>>(emptyList()) }
@@ -107,8 +108,48 @@ class ComandasPlanningScreen(
                         "Planning de comandas",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.weight(1f)
                     )
+
+                    // 🔥 BOTÓN DE IMPRESIÓN PDF
+                    IconButton(
+                        onClick = {
+                            if (comandasActivas.isNotEmpty()) {
+                                // 1. Filtramos y ordenamos para obtener los extremos reales
+                                val filteredAndSorted = comandasActivas
+                                    .filter { !it.fueVendidoComanda }
+                                    .sortedBy { it.dateBookedComanda }
+
+                                val firstComanda = filteredAndSorted.firstOrNull()
+                                val lastComanda = filteredAndSorted.lastOrNull()
+
+                                // 2. Usamos tu función formatInstant para el formato DD/MM/AAAA
+                                val startStr = formatInstant(firstComanda?.dateBookedComanda)
+                                val endStr = formatInstant(lastComanda?.dateBookedComanda)
+
+                                // 3. Construimos el texto del rango
+                                val dateRange = if (startStr.isNotEmpty() && endStr.isNotEmpty()) {
+                                    if (startStr == endStr) startStr else "$startStr al $endStr"
+                                } else {
+                                    "Fecha no definida"
+                                }
+
+                                // 4. Llamamos al generador
+                                PdfGenerator.generatePlanningPdf(
+                                    comandas = comandasActivas,
+                                    title = "Planning de comandas",
+                                    dateRange = dateRange
+                                )
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Print,
+                            contentDescription = "Imprimir",
+                            tint = PrimaryColor
+                        )
+                    }
                 }
             }
         ) { paddingValues ->
@@ -129,9 +170,8 @@ class ComandasPlanningScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        // Reducimos el padding horizontal aquí ya que la Card del día tiene el suyo.
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp) // Más espacio entre días
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         sortedComandaEntries.forEach { entry ->
                             val date = entry.key
@@ -142,7 +182,6 @@ class ComandasPlanningScreen(
                                 else -> "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
                             }
 
-                            // 🔥 Contenedor de Día (Card)
                             item {
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
@@ -151,7 +190,6 @@ class ComandasPlanningScreen(
                                     colors = CardDefaults.cardColors(containerColor = Color.White)
                                 ) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
-                                        // 1. Encabezado de Fecha (Banner dentro del contenedor)
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -172,14 +210,11 @@ class ComandasPlanningScreen(
                                                 fontSize = 16.sp,
                                                 fontWeight = FontWeight.SemiBold,
                                                 color = MaterialTheme.colorScheme.secondary
-                                                //color = MaterialTheme.colorScheme.onBackground
                                             )
                                         }
 
-                                        // 2. Separador
                                         Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
 
-                                        // 3. Lista de Comandas (Dentro del Contenedor)
                                         Column(
                                             modifier = Modifier.padding(12.dp),
                                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -203,7 +238,6 @@ class ComandasPlanningScreen(
                 }
             }
 
-            // 🔑 ModalBottomSheet (Se mantiene igual)
             if (showAssignmentBottomSheet && selectedComandaForAssignment != null) {
                 ModalBottomSheet(
                     onDismissRequest = {
