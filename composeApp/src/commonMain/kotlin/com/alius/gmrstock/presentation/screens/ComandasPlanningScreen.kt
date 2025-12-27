@@ -13,23 +13,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alius.gmrstock.core.utils.PdfGenerator
+import com.alius.gmrstock.core.utils.formatInstant
+import com.alius.gmrstock.data.getClientRepository
 import com.alius.gmrstock.data.getComandaRepository
 import com.alius.gmrstock.domain.model.Comanda
+import com.alius.gmrstock.domain.model.PlanningFilter
+import com.alius.gmrstock.ui.components.PlanningAssignmentBottomSheet
 import com.alius.gmrstock.ui.components.PlanningItemCard
 import com.alius.gmrstock.ui.theme.BackgroundColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
-import com.alius.gmrstock.data.getClientRepository
-import com.alius.gmrstock.ui.components.PlanningAssignmentBottomSheet
-import com.alius.gmrstock.core.utils.formatInstant
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 class ComandasPlanningScreen(
@@ -42,11 +43,13 @@ class ComandasPlanningScreen(
         val navigator = LocalNavigator.currentOrThrow
         val coroutineScope = rememberCoroutineScope()
 
-        // --- Repositorios, Estados, Loaders, Grouping, Sorting ---
+        // --- Repositorios y Estados ---
         val comandaRepository = remember(databaseUrl) { getComandaRepository(databaseUrl) }
         val clientRepository = remember(databaseUrl) { getClientRepository(databaseUrl) }
         var comandasActivas by remember { mutableStateOf<List<Comanda>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
+        var selectedFilter by remember { mutableStateOf(PlanningFilter.TODAS) }
+
         var showAssignmentBottomSheet by remember { mutableStateOf(false) }
         var selectedComandaForAssignment by remember { mutableStateOf<Comanda?>(null) }
         val assignmentSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -70,12 +73,36 @@ class ComandasPlanningScreen(
             Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         }
 
-        val groupedComandas by remember(comandasActivas) {
+        // --- Lógica de Filtrado por Botones (Todas / Semana / Mes) ---
+        val groupedComandas by remember(comandasActivas, selectedFilter) {
             derivedStateOf {
-                val filtered = comandasActivas.filter { !it.fueVendidoComanda }
-                filtered.groupBy { comanda: Comanda ->
-                    comanda.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+                val filtered = comandasActivas.filter { comanda ->
+                    if (comanda.fueVendidoComanda) return@filter false
+
+                    val cDate = comanda.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+                        ?: return@filter selectedFilter == PlanningFilter.TODAS
+
+                    when (selectedFilter) {
+                        PlanningFilter.TODAS -> true
+
+                        PlanningFilter.SEMANA -> {
+                            // Calculamos Lunes a Domingo de la semana actual
+                            // ordinal: Lunes=0 ... Domingo=6
+                            val daysFromMonday = now.dayOfWeek.ordinal
+                            val currentMonday = now.minus(DatePeriod(days = daysFromMonday))
+                            val nextSunday = currentMonday.plus(DatePeriod(days = 6))
+
+                            cDate in currentMonday..nextSunday
+                        }
+
+                        PlanningFilter.MES -> {
+                            cDate.month == now.month && cDate.year == now.year
+                        }
+                    }
                 }
+                filtered.groupBy { it.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date }
             }
         }
 
@@ -86,8 +113,6 @@ class ComandasPlanningScreen(
         }
 
         LaunchedEffect(databaseUrl) { loadComandasActivas() }
-        // ---------------------------------------------------------------------------------
-
 
         Scaffold(
             containerColor = BackgroundColor,
@@ -112,122 +137,154 @@ class ComandasPlanningScreen(
                         modifier = Modifier.weight(1f)
                     )
 
-                    // 🔥 BOTÓN DE IMPRESIÓN PDF
+                    // 🔥 BOTÓN DE IMPRESIÓN PDF (RESPETA EL FILTRO ACTUAL)
                     IconButton(
                         onClick = {
-                            if (comandasActivas.isNotEmpty()) {
-                                // 1. Filtramos y ordenamos para obtener los extremos reales
-                                val filteredAndSorted = comandasActivas
-                                    .filter { !it.fueVendidoComanda }
-                                    .sortedBy { it.dateBookedComanda }
+                            val currentList = groupedComandas.values.flatten()
+                            if (currentList.isNotEmpty()) {
+                                val sorted = currentList.sortedBy { it.dateBookedComanda }
+                                val startStr = formatInstant(sorted.first().dateBookedComanda)
+                                val endStr = formatInstant(sorted.last().dateBookedComanda)
 
-                                val firstComanda = filteredAndSorted.firstOrNull()
-                                val lastComanda = filteredAndSorted.lastOrNull()
-
-                                // 2. Usamos tu función formatInstant para el formato DD/MM/AAAA
-                                val startStr = formatInstant(firstComanda?.dateBookedComanda)
-                                val endStr = formatInstant(lastComanda?.dateBookedComanda)
-
-                                // 3. Construimos el texto del rango
-                                val dateRange = if (startStr.isNotEmpty() && endStr.isNotEmpty()) {
-                                    if (startStr == endStr) startStr else "$startStr al $endStr"
-                                } else {
-                                    "Fecha no definida"
+                                val rangeText = if (startStr == endStr) startStr else "$startStr al $endStr"
+                                val pdfTitle = when(selectedFilter) {
+                                    PlanningFilter.TODAS -> "Planning General"
+                                    PlanningFilter.SEMANA -> "Planning Semanal"
+                                    PlanningFilter.MES -> "Planning Mensual"
                                 }
 
-                                // 4. Llamamos al generador
                                 PdfGenerator.generatePlanningPdf(
-                                    comandas = comandasActivas,
-                                    title = "Planning de comandas",
-                                    dateRange = dateRange
+                                    comandas = currentList,
+                                    title = pdfTitle,
+                                    dateRange = rangeText
                                 )
                             }
                         }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Print,
-                            contentDescription = "Imprimir",
-                            tint = PrimaryColor
-                        )
+                        Icon(Icons.Default.Print, contentDescription = "Imprimir", tint = PrimaryColor)
                     }
                 }
             }
         ) { paddingValues ->
-            Box(
+            Column(
                 modifier = Modifier
                     .padding(paddingValues)
                     .fillMaxSize()
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryColor)
-                }
-                else if (sortedComandaEntries.isEmpty()) {
-                    Text(
-                        "No hay reservas activas pendientes.",
-                        modifier = Modifier.align(Alignment.Center).padding(16.dp),
-                        color = Color.Gray
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        sortedComandaEntries.forEach { entry ->
-                            val date = entry.key
-                            val comandasList = entry.value
-                            val dateText = when (date) {
-                                todayDate -> "HOY"
-                                null -> "Fecha Desconocida"
-                                else -> "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
-                            }
-
-                            item {
-                                Card(
+                // --- FILTROS EN LÍNEA ---
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    PlanningFilter.entries.forEach { filter ->
+                        val isSelected = selectedFilter == filter
+                        FilterChip(
+                            modifier = Modifier.weight(1f),
+                            selected = isSelected,
+                            onClick = { selectedFilter = filter },
+                            label = {
+                                Text(
+                                    text = when(filter) {
+                                        PlanningFilter.TODAS -> "Todas"
+                                        PlanningFilter.SEMANA -> "Semana"
+                                        PlanningFilter.MES -> "Mes"
+                                    },
                                     modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(12.dp),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                                ) {
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
-                                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Text(
-                                                dateText,
-                                                fontSize = 18.sp,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                color = PrimaryColor,
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                            Text(
-                                                "Comandas: ${comandasList.size}",
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.SemiBold,
-                                                color = MaterialTheme.colorScheme.secondary
-                                            )
-                                        }
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 13.sp
+                                )
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = PrimaryColor,
+                                selectedLabelColor = Color.White,
+                                containerColor = Color.White,
+                                labelColor = PrimaryColor
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor = PrimaryColor,
+                                borderWidth = 1.dp,
+                                enabled = true,
+                                selected = isSelected
+                            )
+                        )
+                    }
+                }
 
-                                        Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
+                // --- LISTADO ---
+                Box(modifier = Modifier.weight(1f)) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryColor)
+                    }
+                    else if (sortedComandaEntries.isEmpty()) {
+                        Text(
+                            "No hay comandas para el filtro seleccionado.",
+                            modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                            color = Color.Gray
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            sortedComandaEntries.forEach { entry ->
+                                val date = entry.key
+                                val comandasList = entry.value
+                                val dateText = when (date) {
+                                    todayDate -> "HOY"
+                                    null -> "Sin Fecha"
+                                    else -> "${date.dayOfMonth.toString().padStart(2, '0')}/${date.monthNumber.toString().padStart(2, '0')}/${date.year}"
+                                }
 
-                                        Column(
-                                            modifier = Modifier.padding(12.dp),
-                                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            comandasList.forEach { comanda ->
-                                                PlanningItemCard(
-                                                    comanda = comanda,
-                                                    onClick = { clickedComanda ->
-                                                        selectedComandaForAssignment = clickedComanda
-                                                        showAssignmentBottomSheet = true
-                                                        coroutineScope.launch { assignmentSheetState.show() }
-                                                    }
+                                item {
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(12.dp),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                                    ) {
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text(
+                                                    dateText,
+                                                    fontSize = 18.sp,
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = PrimaryColor,
+                                                    modifier = Modifier.weight(1f)
                                                 )
+                                                Text(
+                                                    "Comandas: ${comandasList.size}",
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = MaterialTheme.colorScheme.secondary
+                                                )
+                                            }
+
+                                            Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
+
+                                            Column(
+                                                modifier = Modifier.padding(12.dp),
+                                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                comandasList.forEach { comanda ->
+                                                    PlanningItemCard(
+                                                        comanda = comanda,
+                                                        onClick = { clickedComanda ->
+                                                            selectedComandaForAssignment = clickedComanda
+                                                            showAssignmentBottomSheet = true
+                                                            coroutineScope.launch { assignmentSheetState.show() }
+                                                        }
+                                                    )
+                                                }
                                             }
                                         }
                                     }

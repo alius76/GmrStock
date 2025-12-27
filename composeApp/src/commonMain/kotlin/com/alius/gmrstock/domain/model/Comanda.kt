@@ -4,6 +4,10 @@ import com.alius.gmrstock.domain.model.Cliente
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
 
+enum class PlanningFilter {
+    TODAS, SEMANA, MES
+}
+
 @Serializable
 data class Comanda(
     val idComanda: String,
