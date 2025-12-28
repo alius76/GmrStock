@@ -1,0 +1,403 @@
+package com.alius.gmrstock.presentation.screens
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Divider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.alius.gmrstock.core.utils.PdfGenerator
+import com.alius.gmrstock.core.utils.formatWeight
+import com.alius.gmrstock.data.getRatioRepository
+import com.alius.gmrstock.domain.model.Ratio
+import com.alius.gmrstock.ui.components.DateRangeFilter
+import com.alius.gmrstock.ui.components.ProduccionTrendChart
+import com.alius.gmrstock.ui.components.UniversalDatePickerDialog
+import com.alius.gmrstock.ui.theme.BackgroundColor
+import com.alius.gmrstock.ui.theme.PrimaryColor
+import kotlinx.datetime.*
+
+// Modelos de datos
+data class ProduccionDiaria(
+    val fecha: LocalDate,
+    val totalKilos: Double,
+    val cantidadRegistros: Int
+)
+
+data class ProduccionMensual(
+    val mesLabel: String,
+    val totalKilos: Double,
+    val cantidadRegistros: Int,
+    val fechaReferencia: LocalDate
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+class ProduccionRangoScreen(
+    private val databaseUrl: String
+) : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val ratioRepository = remember(databaseUrl) { getRatioRepository(databaseUrl) }
+
+        // --- Estados de Fecha ---
+        val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+        var startDate by remember { mutableStateOf(today.minus(DatePeriod(days = 7))) }
+        var endDate by remember { mutableStateOf(today) }
+
+        // --- Estados de Datos ---
+        var ratios by remember { mutableStateOf<List<Ratio>>(emptyList()) }
+        var isLoading by remember { mutableStateOf(false) }
+
+        // --- Diálogos ---
+        var showStartPicker by remember { mutableStateOf(false) }
+        var showEndPicker by remember { mutableStateOf(false) }
+
+        // --- Lógica de Carga ---
+        LaunchedEffect(startDate, endDate) {
+            isLoading = true
+            try {
+                ratios = ratioRepository.listarRatiosPorRango(startDate, endDate)
+            } catch (e: Exception) {
+                ratios = emptyList()
+            } finally {
+                isLoading = false
+            }
+        }
+
+        // --- Procesamiento de Datos ---
+        val datosAgrupados = remember(ratios) { agruparRatiosPorDia(ratios) }
+        val datosMensuales = remember(ratios) { agruparRatiosPorMes(ratios) }
+
+        // IMPORTANTE: Este es el 100% de la selección actual
+        val totalKilosGlobal by remember(ratios) {
+            derivedStateOf { ratios.sumOf { it.ratioTotalWeight.toDoubleOrNull() ?: 0.0 } }
+        }
+
+        val diasActivos by remember(datosAgrupados) {
+            derivedStateOf { datosAgrupados.size }
+        }
+        val promedioDiario = remember(totalKilosGlobal, diasActivos) {
+            if (diasActivos > 0) totalKilosGlobal / diasActivos else 0.0
+        }
+
+        Scaffold(
+            containerColor = BackgroundColor,
+            topBar = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BackgroundColor)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { navigator.pop() }) {
+                                Icon(Icons.Default.ArrowBack, "Atrás", tint = PrimaryColor)
+                            }
+                            Column(modifier = Modifier.padding(start = 8.dp)) {
+                                Text(
+                                    "Producción",
+                                    fontSize = 26.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                                Text(
+                                    "Seleccione rango de fechas",
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                        IconButton(onClick = {
+                            if (ratios.isNotEmpty()) {
+                                // 1. Formateamos las fechas con ceros a la izquierda y el año completo
+                                val startDay = startDate.dayOfMonth.toString().padStart(2, '0')
+                                val startMonth = startDate.monthNumber.toString().padStart(2, '0')
+                                val endDay = endDate.dayOfMonth.toString().padStart(2, '0')
+                                val endMonth = endDate.monthNumber.toString().padStart(2, '0')
+
+                                // 2. Construimos la cadena final: DD/MM/AAAA al DD/MM/AAAA
+                                val rangeStr = "$startDay/$startMonth/${startDate.year} al $endDay/$endMonth/${endDate.year}"
+
+                                // 3. Enviamos al generador
+                                PdfGenerator.generateProductionReportPdf(
+                                    datosAgrupados = datosAgrupados,
+                                    totalKilos = totalKilosGlobal,
+                                    promedio = promedioDiario,
+                                    dateRange = rangeStr
+                                )
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Print,
+                                contentDescription = "Imprimir",
+                                tint = PrimaryColor,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    DateRangeFilter(
+                        startDate = startDate,
+                        endDate = endDate,
+                        onSelectStartDate = { showStartPicker = true },
+                        onSelectEndDate = { showEndPicker = true }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Divider(color = Color.LightGray.copy(alpha = 0.3f))
+                }
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryColor)
+                } else if (ratios.isEmpty()) {
+                    Text("No hay datos para este rango", modifier = Modifier.align(Alignment.Center), color = Color.Gray)
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // 1. KPIs
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                KPICard(Modifier.weight(1f), "TOTAL", "${formatWeight(totalKilosGlobal)} kg", PrimaryColor)
+                                KPICard(Modifier.weight(1f), "ACTIVOS", "$diasActivos", Color(0xFFFF9800))
+                                KPICard(Modifier.weight(1f), "MEDIA", "${formatWeight(promedioDiario)} kg", Color(0xFF2196F3))
+                            }
+                        }
+
+                        // 2. Gráfico
+                        item {
+                            Text(
+                                "Tendencia de producción",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                            )
+                            ProduccionTrendChart(
+                                datos = datosAgrupados,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        // 3. Título de Lista
+                        item {
+                            Text(
+                                "Desglose mensual",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+
+                        // 4. Lista Agrupada
+                        items(datosMensuales.reversed()) { mensual ->
+                            // Calculamos el porcentaje comparando los kilos del mes con el total de la selección
+                            val porcentaje = if (totalKilosGlobal > 0) {
+                                (mensual.totalKilos / totalKilosGlobal).toFloat()
+                            } else 0f
+
+                            ProduccionMensualRow(mensual, porcentaje)
+                        }
+
+                        item { Spacer(modifier = Modifier.height(50.dp)) }
+                    }
+                }
+            }
+
+            if (showStartPicker) {
+                UniversalDatePickerDialog(startDate, { startDate = it }, { showStartPicker = false })
+            }
+            if (showEndPicker) {
+                UniversalDatePickerDialog(endDate, { endDate = it }, { showEndPicker = false })
+            }
+        }
+    }
+
+    private fun agruparRatiosPorDia(ratios: List<Ratio>): List<ProduccionDiaria> {
+        return ratios.groupBy {
+            Instant.fromEpochMilliseconds(it.ratioDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+        }.map { (fecha, lista) ->
+            ProduccionDiaria(
+                fecha = fecha,
+                totalKilos = lista.sumOf { it.ratioTotalWeight.toDoubleOrNull() ?: 0.0 },
+                cantidadRegistros = lista.size
+            )
+        }.sortedBy { it.fecha }
+    }
+
+    private fun agruparRatiosPorMes(ratios: List<Ratio>): List<ProduccionMensual> {
+        val mesesEspanol = mapOf(
+            Month.JANUARY to "Enero",
+            Month.FEBRUARY to "Febrero",
+            Month.MARCH to "Marzo",
+            Month.APRIL to "Abril",
+            Month.MAY to "Mayo",
+            Month.JUNE to "Junio",
+            Month.JULY to "Julio",
+            Month.AUGUST to "Agosto",
+            Month.SEPTEMBER to "Septiembre",
+            Month.OCTOBER to "Octubre",
+            Month.NOVEMBER to "Noviembre",
+            Month.DECEMBER to "Diciembre"
+        )
+
+        return ratios.groupBy {
+            val date = Instant.fromEpochMilliseconds(it.ratioDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+            "${mesesEspanol[date.month]} ${date.year}"
+        }.map { (mesAnio, lista) ->
+            ProduccionMensual(
+                mesLabel = mesAnio,
+                totalKilos = lista.sumOf { it.ratioTotalWeight.toDoubleOrNull() ?: 0.0 },
+                cantidadRegistros = lista.size,
+                fechaReferencia = Instant.fromEpochMilliseconds(lista.first().ratioDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+            )
+        }.sortedBy { it.fechaReferencia }
+    }
+
+    @Composable
+    private fun ProduccionMensualRow(
+        mensual: ProduccionMensual,
+        porcentaje: Float
+    ) {
+        var targetProgress by remember { mutableStateOf(0f) }
+        val animatedProgress by animateFloatAsState(
+            targetValue = targetProgress,
+            animationSpec = tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+        )
+
+        LaunchedEffect(porcentaje) { targetProgress = porcentaje.coerceIn(0f, 1f) }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(16.dp), // Esquinas más redondeadas (más moderno)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Sutil sombra en lugar de borde gris
+        ) {
+            Box(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+
+                // 🎨 BARRA CON DEGRADADO
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .graphicsLayer {
+                            scaleX = animatedProgress
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                        }
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    PrimaryColor.copy(alpha = 0.02f),
+                                    PrimaryColor.copy(alpha = 0.25f) // Más intenso al final
+                                )
+                            )
+                        )
+                )
+
+                // 📏 LÍNEA DE ACENTO VERTICAL (Opcional, da mucha calidad)
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(4.dp)
+                        .background(PrimaryColor, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                )
+
+                // CONTENIDO
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 18.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = mensual.mesLabel.uppercase(), // Mayúsculas sutiles
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.secondary,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "${mensual.cantidadRegistros} registros • ${(porcentaje * 100).toInt()}%",
+                            fontSize = 12.sp,
+                            color = Color.Gray.copy(alpha = 0.8f)
+                        )
+                    }
+
+                    // El peso ahora resalta más
+                    Surface(
+                        color = PrimaryColor.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "${formatWeight(mensual.totalKilos)} kg",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontWeight = FontWeight.Black,
+                            color = PrimaryColor,
+                            fontSize = 17.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+
+    @Composable
+    private fun KPICard(modifier: Modifier, title: String, value: String, color: Color) {
+        Card(
+            modifier = modifier,
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(2.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(title, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(value, fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = color)
+            }
+        }
+    }
+}

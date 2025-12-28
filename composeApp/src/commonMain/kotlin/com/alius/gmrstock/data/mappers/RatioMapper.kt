@@ -14,7 +14,9 @@ object RatioMapper {
             ratioId = fields["ratioId"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "",
             ratioDate = fields["ratioDate"]?.jsonObject?.get("timestampValue")?.jsonPrimitive?.contentOrNull
                 ?.let { Instant.parse(it).toEpochMilliseconds() } ?: 0L,
-            ratioTotalWeight = fields["ratioTotalWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "0"
+            ratioTotalWeight = fields["ratioTotalWeight"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: "0",
+            // ✅ Añadimos el nuevo campo para que coincida con el modelo actualizado
+            ratioLoteId = fields["ratioLoteId"]?.jsonObject?.get("stringValue")?.jsonPrimitive?.content ?: ""
         )
     }
 }

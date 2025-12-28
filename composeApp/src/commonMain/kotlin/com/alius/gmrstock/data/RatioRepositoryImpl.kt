@@ -3,6 +3,7 @@ package com.alius.gmrstock.data
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelAnoActual
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelDia
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelMesActual
+import com.alius.gmrstock.data.firestore.buildQueryRatiosPorRango
 import com.alius.gmrstock.data.mappers.RatioMapper
 import com.alius.gmrstock.domain.model.Ratio
 import io.github.aakira.napier.Napier
@@ -153,4 +154,38 @@ class RatioRepositoryImpl(
         }
     }
 
+    // ✅ Implementación del nuevo método de rango
+    override suspend fun listarRatiosPorRango(
+        inicio: kotlinx.datetime.LocalDate,
+        fin: kotlinx.datetime.LocalDate
+    ): List<Ratio> = ejecutarQuery(buildQueryRatiosPorRango(inicio, fin), "rango personalizado")
+
+    // 🛠️ Función común para evitar duplicar código de red y parseo
+    private suspend fun ejecutarQuery(query: String, etiqueta: String): List<Ratio> = withContext(Dispatchers.IO) {
+        Napier.d { "🌐 Iniciando listado de ratios ($etiqueta) desde: $databaseUrl" }
+        try {
+            val response: HttpResponse = client.post(databaseUrl) {
+                headers { append("Content-Type", "application/json") }
+                setBody(query)
+            }
+
+            val responseText = response.bodyAsText()
+            val rootArray = json.parseToJsonElement(responseText).jsonArray
+
+            rootArray.mapNotNull { element ->
+                try {
+                    val fields = element.jsonObject["document"]?.jsonObject
+                        ?.get("fields")?.jsonObject
+                    fields?.let { RatioMapper.fromFirestore(it) }
+                } catch (e: Exception) {
+                    Napier.e(e) { "⚠️ Error parseando un ratio en $etiqueta." }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Napier.e(e) { "❌ Error en ejecutarQuery para $etiqueta: ${e.message}" }
+            emptyList()
+        }
+    }
 }
+

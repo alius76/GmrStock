@@ -355,11 +355,11 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Planning de reservas",
-                                    icon = Icons.Default.Bookmark,
+                                    label = "Producción",
+                                    icon = Icons.Default.ProductionQuantityLimits,
                                     onClick = {
                                         showSearchDialog = false
-                                        localNavigator.push(ReservasScreen(currentDatabaseUrl))
+                                        localNavigator.push(ProduccionRangoScreen(currentDatabaseUrl))
                                     }
                                 )
                                 MaintenanceOption(

@@ -7,6 +7,7 @@ interface RatioRepository {
     suspend fun listarRatiosDelMes(): List<Ratio>
     suspend fun listarRatiosDelDia(): List<Ratio>
     suspend fun listarRatiosDelAno(): List<Ratio>
+    suspend fun listarRatiosPorRango(inicio: kotlinx.datetime.LocalDate, fin: kotlinx.datetime.LocalDate): List<Ratio>
 }
 
 // Función expect para obtener la implementación según plataforma

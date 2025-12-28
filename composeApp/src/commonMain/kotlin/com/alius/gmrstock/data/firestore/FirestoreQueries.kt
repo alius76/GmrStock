@@ -8,8 +8,10 @@ import com.alius.gmrstock.domain.model.LoteModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.plus
@@ -614,6 +616,44 @@ fun buildQueryRatiosDelAnoActual(): String {
                                 "field": { "fieldPath": "ratioDate" },
                                 "op": "LESS_THAN",
                                 "value": { "timestampValue": "$inicioAnoSiguiente" }
+                            }
+                        }
+                    ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "ratioDate" }, "direction": "ASCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
+}
+
+fun buildQueryRatiosPorRango(inicio: LocalDate, fin: LocalDate): String {
+    val instantInicio = inicio.atStartOfDayIn(TimeZone.currentSystemDefault())
+    // Para incluir el día final completo, sumamos 1 día y usamos LESS_THAN
+    val instantFin = fin.plus(1, DateTimeUnit.DAY).atStartOfDayIn(TimeZone.currentSystemDefault())
+
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "ratio" }],
+            "where": {
+                "compositeFilter": {
+                    "op": "AND",
+                    "filters": [
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "GREATER_THAN_OR_EQUAL",
+                                "value": { "timestampValue": "$instantInicio" }
+                            }
+                        },
+                        {
+                            "fieldFilter": {
+                                "field": { "fieldPath": "ratioDate" },
+                                "op": "LESS_THAN",
+                                "value": { "timestampValue": "$instantFin" }
                             }
                         }
                     ]
