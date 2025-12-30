@@ -9,6 +9,7 @@ import com.alius.gmrstock.data.firestore.buildQueryPorNumero
 import com.alius.gmrstock.data.firestore.buildQueryPorNumeroExacto
 import com.alius.gmrstock.data.firestore.buildQueryUltimosLotes
 import com.alius.gmrstock.data.firestore.parseRunQueryResponse
+import com.alius.gmrstock.data.firestore.parseSingleDocumentResponse
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.LoteModel
 import com.alius.gmrstock.domain.model.MaterialGroup
@@ -60,6 +61,29 @@ class LoteRepositoryImpl(
     override suspend fun listarLotes(data: String): List<LoteModel> {
         val query = buildQueryPorNumero(data)
         return ejecutarQuery(query)
+    }
+
+    override suspend fun getLoteById(id: String): LoteModel? = withContext(Dispatchers.IO) {
+
+        val docUrl = "${buildDocumentBaseUrl()}/lote/$id"
+
+        try {
+            val response: HttpResponse = client.get(docUrl) {
+                headers { append("Content-Type", "application/json") }
+            }
+
+            if (response.status == HttpStatusCode.OK) {
+                val responseText = response.bodyAsText()
+                // Llamamos a la función que acabamos de crear
+                parseSingleDocumentResponse(responseText)
+            } else {
+                println("⚠️ Lote no encontrado o error de red. Status: ${response.status}")
+                null
+            }
+        } catch (e: Exception) {
+            println("❌ Error en getLoteById: ${e.message}")
+            null
+        }
     }
 
     override suspend fun listarGruposPorDescripcion(filter: String): List<MaterialGroup> {

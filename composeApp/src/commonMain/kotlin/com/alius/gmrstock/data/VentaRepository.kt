@@ -35,7 +35,16 @@ interface VentaRepository {
         loteNumber: String,
         bbNumber: String
     ): Pair<String, Instant>?
+
+    /**
+     * 🔹 Nueva función para reportes: Obtiene ventas filtradas por fecha (y opcionalmente cliente)
+     * sin límites de cantidad de registros.
+     */
+    suspend fun obtenerVentasReporteGlobal(
+        cliente: String?,
+        inicio: Instant,
+        fin: Instant
+    ): List<Venta>
 }
 
 expect fun getVentaRepository(databaseUrl: String): VentaRepository
-

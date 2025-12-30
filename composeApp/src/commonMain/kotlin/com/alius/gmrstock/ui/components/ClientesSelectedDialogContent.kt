@@ -1,86 +1,115 @@
 package com.alius.gmrstock.ui.components
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.TextSecondary
 
 @Composable
 fun ClientesSelectedDialogContent(
-    clientes: List<Cliente>,
-    selectedCliente: Cliente?,
-    onClienteSelected: (Cliente) -> Unit,
-    onDismiss: () -> Unit
+    clients: List<Cliente>,
+    currentSelectedClient: Cliente?,
+    showAllOption: Boolean = false, // Parámetro opcional
+    onDismiss: () -> Unit,
+    onConfirm: (Cliente?) -> Unit // Cambiado a Cliente? (null significa TODOS)
 ) {
-    val primaryColor = PrimaryColor
+    var tempSelected by remember { mutableStateOf(currentSelectedClient) }
+    var searchQuery by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        if (clientes.isEmpty()) {
-            Text(
-                text = "No hay clientes disponibles.",
-                modifier = Modifier.padding(16.dp),
-                color = primaryColor.copy(alpha = 0.7f),
-                fontSize = 16.sp
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 400.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(clientes) { cliente ->
-                    val isSelected = selectedCliente == cliente
+    // Objeto ficticio para representar la opción global
+    val todoItem = remember { Cliente(cliNombre = "TODOS LOS CLIENTES") }
 
-                    Card(
-                        shape = RoundedCornerShape(12.dp),
-                        border = if (isSelected) null else BorderStroke(1.dp, primaryColor),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) primaryColor else Color.White
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onClienteSelected(cliente) }
-                            .padding(horizontal = 4.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                        ) {
-                            Text(
-                                text = cliente.cliNombre,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.secondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = cliente.cliObservaciones,
-                                fontSize = 14.sp,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                                else TextSecondary,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
+    val filteredClients = remember(searchQuery, clients) {
+        val base = if (searchQuery.isEmpty()) clients else clients.filter {
+            it.cliNombre.contains(searchQuery, ignoreCase = true)
+        }
+        // Solo inyectamos "TODOS" si no hay búsqueda activa y la opción está habilitada
+        if (showAllOption && searchQuery.isEmpty()) listOf(todoItem) + base else base
+    }
+
+    Dialog(onDismissRequest = { focusManager.clearFocus(); onDismiss() }) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(0.95f).heightIn(max = 550.dp),
+            elevation = CardDefaults.cardElevation(8.dp)
+        ) {
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(16.dp).fillMaxHeight()) {
+                Text(
+                    "Seleccione un cliente",
+                    fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor,
+                    modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Buscar cliente...", fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, null, tint = PrimaryColor) },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    LazyColumn {
+                        items(filteredClients) { clienteItem ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().clickable { tempSelected = clienteItem }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = tempSelected == clienteItem,
+                                    onClick = { tempSelected = clienteItem },
+                                    colors = RadioButtonDefaults.colors(selectedColor = PrimaryColor)
+                                )
+                                Text(
+                                    text = clienteItem.cliNombre,
+                                    color = if (tempSelected == clienteItem) PrimaryColor else Color.Unspecified,
+                                    fontWeight = if (tempSelected == clienteItem) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
                         }
+                    }
+                }
+
+                Row(Modifier.fillMaxWidth(), Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Cancelar", color = PrimaryColor) }
+                    TextButton(
+                        onClick = {
+                            // Si seleccionó el item especial, devolvemos null
+                            if (tempSelected == todoItem) onConfirm(null)
+                            else onConfirm(tempSelected)
+                        },
+                        enabled = tempSelected != null
+                    ) {
+                        Text("Aceptar", color = PrimaryColor)
                     }
                 }
             }

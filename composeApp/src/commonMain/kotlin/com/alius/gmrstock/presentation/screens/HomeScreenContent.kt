@@ -338,7 +338,7 @@ class HomeScreenContent(
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
-                                    label = "Ventas por cliente",
+                                    label = "Informe de ventas",
                                     icon = Icons.Default.EuroSymbol,
                                     onClick = {
                                         showSearchDialog = false

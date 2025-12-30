@@ -4,10 +4,8 @@ import com.alius.gmrstock.data.firestore.buildQueryHistorialDeHoy
 import com.alius.gmrstock.data.firestore.buildQueryPorNumeroExacto
 import com.alius.gmrstock.data.firestore.buildCreateBodyForLote
 import com.alius.gmrstock.data.firestore.parseRunQueryResponse
+import com.alius.gmrstock.data.firestore.parseSingleDocumentResponse
 import com.alius.gmrstock.domain.model.LoteModel
-import com.alius.gmrstock.data.HistorialRepository
-// 🚨 Importaciones necesarias para la nueva función:
-
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -231,4 +229,30 @@ class HistorialRepositoryImpl(
             false
         }
     }
+
+    override suspend fun getLoteHistorialById(id: String): LoteModel? = withContext(Dispatchers.IO) {
+        // Construimos la URL: .../documents/historial/ID_DEL_DOC
+        val baseUrl = buildDocumentBaseUrlWithoutKey()
+        val apiKey = extractApiKey()
+        val docUrl = "$baseUrl/historial/$id"
+
+        try {
+            val response: HttpResponse = client.get(docUrl) {
+                if (apiKey.isNotEmpty()) url.parameters.append("key", apiKey)
+                headers { append("Content-Type", "application/json") }
+            }
+
+            if (response.status == HttpStatusCode.OK) {
+                val responseText = response.bodyAsText()
+                parseSingleDocumentResponse(responseText)
+            } else {
+                // Si no está en historial (404), devolvemos null tranquilamente
+                null
+            }
+        } catch (e: Exception) {
+            println("❌ Error en getLoteHistorialById: ${e.message}")
+            null
+        }
+    }
+
 }

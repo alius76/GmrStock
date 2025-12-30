@@ -263,6 +263,27 @@ fun parseRunQueryResponseMaterial(responseText: String): List<Material> {
     }
 }
 
+/**
+ * Procesa la respuesta de un GET directo a un documento individual
+ */
+fun parseSingleDocumentResponse(jsonBody: String): LoteModel? {
+    return try {
+        val rootElement = json.parseToJsonElement(jsonBody)
+
+        // Verificamos que sea un documento válido (tiene el campo "fields")
+        if (rootElement.jsonObject.containsKey("fields")) {
+            val parsedDoc = json.decodeFromJsonElement<FirebaseDocument>(rootElement)
+            val dto = parsedDoc.toLoteDto()
+            LoteDtoMapper.fromDto(dto)
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        println("❌ Error parseando documento individual (GET): ${e.message}")
+        null
+    }
+}
+
 
 // -------------------- EXTENSION JSON --------------------
 

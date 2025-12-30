@@ -9,6 +9,8 @@ import com.alius.gmrstock.core.AppContextProvider
 import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.presentation.screens.ProduccionDiaria
 import com.alius.gmrstock.core.utils.formatWeight
+import com.alius.gmrstock.domain.model.Ratio
+import com.alius.gmrstock.domain.model.Venta
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.datetime.*
@@ -42,10 +44,11 @@ actual object PdfGenerator {
     }
 
     actual fun generateProductionReportPdf(
-        datosAgrupados: List<ProduccionDiaria>,
+        ratios: List<Ratio>,
         totalKilos: Double,
         promedio: Double,
-        dateRange: String
+        dateRange: String,
+        loteNombresMap: Map<String, String>
     ) {
         val pdfDocument = PdfDocument()
         val pageWidth = 595 // A4
@@ -78,7 +81,7 @@ actual object PdfGenerator {
 
         y += 45f
 
-        // --- CUADRO RESUMEN KPIs
+        // --- CUADRO RESUMEN KPIs ---
         val summaryRect = RectF(margin, y, pageWidth - margin, y + 75f)
         paint.color = LightGrayBg
         canvas.drawRoundRect(summaryRect, 12f, 12f, paint)
@@ -86,45 +89,61 @@ actual object PdfGenerator {
         paint.color = TextPrimaryPdf
         paint.textSize = 9f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("TOTAL PRODUCIDO", margin + 25f, y + 25f, paint)
-        canvas.drawText("DÍAS ACTIVOS", margin + 210f, y + 25f, paint)
-        canvas.drawText("MEDIA DIARIA", margin + 395f, y + 25f, paint)
+        canvas.drawText("TOTAL KILOS", margin + 25f, y + 25f, paint)
+        canvas.drawText("LOTES", margin + 210f, y + 25f, paint)
+        canvas.drawText("MEDIA DIARIA", margin + 410f, y + 25f, paint)
 
         paint.textSize = 17f
         paint.color = PrimaryPdfColor
         canvas.drawText("${formatWeight(totalKilos)} kg", margin + 25f, y + 55f, paint)
-        canvas.drawText("${datosAgrupados.size} días", margin + 210f, y + 55f, paint)
-        canvas.drawText("${formatWeight(promedio)} kg", margin + 395f, y + 55f, paint)
+        canvas.drawText("${ratios.size}", margin + 210f, y + 55f, paint)
+        canvas.drawText("${formatWeight(promedio)} kg", margin + 410f, y + 55f, paint)
 
         y += 110f
 
         // ==========================================
-        // 📊 NUEVA SECCIÓN: DESGLOSE MENSUAL (Visual)
+        // 📊 SECCIÓN: DESGLOSE MENSUAL (Barras Visuales)
         // ==========================================
         val mesesEspanol = mapOf(
             1 to "Enero", 2 to "Febrero", 3 to "Marzo", 4 to "Abril", 5 to "Mayo", 6 to "Junio",
             7 to "Julio", 8 to "Agosto", 9 to "Septiembre", 10 to "Octubre", 11 to "Noviembre", 12 to "Diciembre"
         )
 
-        val datosMensuales = datosAgrupados.groupBy { "${it.fecha.monthNumber}-${it.fecha.year}" }
-            .map { (key, lista) ->
-                val partes = key.split("-")
-                object {
-                    val label = "${mesesEspanol[partes[0].toInt()]} ${partes[1]}"
-                    val kilos = lista.sumOf { it.totalKilos }
-                    val porcentaje = if (totalKilos > 0) (kilos / totalKilos).toFloat() else 0f
-                }
-            }.sortedBy { it.label }
+        // Agrupamos los ratios para las barras de progreso mensuales
+        val datosMensuales = ratios.groupBy {
+            val date = Instant.fromEpochMilliseconds(it.ratioDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+            "${date.monthNumber}-${date.year}"
+        }.map { (key, lista) ->
+            val partes = key.split("-")
+            val mesNum = partes[0].toInt()
+            val anio = partes[1]
+            object {
+                val label = "${mesesEspanol[mesNum]} $anio"
+                val kilos = lista.sumOf { it.ratioTotalWeight.toDoubleOrNull() ?: 0.0 }
+                val porcentaje = if (totalKilos > 0) (kilos / totalKilos).toFloat() else 0f
+                val mesAnioSort = key // Para ordenar si fuera necesario
+            }
+        }.sortedBy { it.label }
 
-        if (datosMensuales.size > 1) { // Solo mostrar si hay más de un mes para comparar
+        // MODIFICACIÓN: Se quita la restricción de size > 1 para que aparezca siempre
+        if (datosMensuales.isNotEmpty()) {
             paint.color = DarkGrayPdfColor
             paint.textSize = 12f
             paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            canvas.drawText("DISTRIBUCIÓN POR MES", margin, y, paint)
+            canvas.drawText("DESGLOSE MENSUAL", margin, y, paint)
             y += 20f
 
             datosMensuales.forEach { mes ->
-                // Nombre del Mes y Kilos
+                // Control de salto de página dentro del desglose mensual si fuera necesario
+                if (y > pageHeight - 80f) {
+                    pdfDocument.finishPage(page)
+                    pageNumber++
+                    pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+                    page = pdfDocument.startPage(pageInfo)
+                    canvas = page.canvas
+                    y = 60f
+                }
+
                 paint.textSize = 10f
                 paint.color = TextPrimaryPdf
                 paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
@@ -134,13 +153,11 @@ actual object PdfGenerator {
                 canvas.drawText(pesoMesText, pageWidth - margin - paint.measureText(pesoMesText), y, paint)
 
                 y += 8f
-                // Barra de progreso (Fondo)
                 val barWidth = pageWidth - (margin * 2)
                 val barRectFondo = RectF(margin, y, margin + barWidth, y + 6f)
                 paint.color = Color.rgb(230, 230, 230)
                 canvas.drawRoundRect(barRectFondo, 3f, 3f, paint)
 
-                // Barra de progreso (Activa)
                 val barRectActiva = RectF(margin, y, margin + (barWidth * mes.porcentaje), y + 6f)
                 paint.color = PrimaryPdfColor
                 canvas.drawRoundRect(barRectActiva, 3f, 3f, paint)
@@ -150,17 +167,18 @@ actual object PdfGenerator {
             y += 10f
         }
 
-        // --- TABLA DETALLADA (Se mantiene lógica de salto de página) ---
+        // --- TABLA DETALLADA (REGISTRO POR REGISTRO) ---
         paint.color = Color.BLACK
         paint.textSize = 12f
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("DETALLE DIARIO", margin, y, paint)
+        canvas.drawText("DETALLE DE PRODUCCIÓN", margin, y, paint)
         y += 20f
 
         // Cabeceras de tabla
         paint.textSize = 10f
+        paint.color = Color.GRAY
         canvas.drawText("FECHA", margin + 10f, y, paint)
-        canvas.drawText("REGISTROS", margin + 200f, y, paint)
+        canvas.drawText("NÚMERO DE LOTE", margin + 140f, y, paint) // Más espacio para el nombre del lote
         val labelPeso = "PESO TOTAL"
         canvas.drawText(labelPeso, pageWidth - margin - paint.measureText(labelPeso) - 10f, y, paint)
 
@@ -170,7 +188,9 @@ actual object PdfGenerator {
         y += 25f
 
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-        datosAgrupados.sortedByDescending { it.fecha }.forEachIndexed { index, dia ->
+
+        // Mostramos cada ratio individual ordenado por fecha
+        ratios.sortedByDescending { it.ratioDate }.forEachIndexed { index, ratio ->
             if (y > pageHeight - 60f) {
                 pdfDocument.finishPage(page)
                 pageNumber++
@@ -178,20 +198,37 @@ actual object PdfGenerator {
                 page = pdfDocument.startPage(pageInfo)
                 canvas = page.canvas
                 y = 60f
+
+                // Repetir cabeceras en nueva página para claridad
+                paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                canvas.drawText("FECHA", margin + 10f, y, paint)
+                canvas.drawText("NÚMERO DE LOTE", margin + 140f, y, paint)
+                canvas.drawText(labelPeso, pageWidth - margin - paint.measureText(labelPeso) - 10f, y, paint)
+                y += 25f
+                paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
             }
 
-            // Fila cebreada
+            // Fila cebreada (como en la pantalla)
             if (index % 2 != 0) {
                 paint.color = Color.rgb(250, 250, 250)
                 canvas.drawRect(RectF(margin, y - 16f, pageWidth - margin, y + 8f), paint)
             }
 
             paint.color = TextPrimaryPdf
-            val f = dia.fecha
-            canvas.drawText("${f.dayOfMonth.toString().padStart(2,'0')}/${f.monthNumber.toString().padStart(2,'0')}/${f.year}", margin + 10f, y, paint)
-            canvas.drawText("${dia.cantidadRegistros} lotes", margin + 200f, y, paint)
 
-            val pesoText = "${formatWeight(dia.totalKilos)} kg"
+            // Formatear Fecha
+            val instant = Instant.fromEpochMilliseconds(ratio.ratioDate)
+            val f = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+            val dateStr = "${f.dayOfMonth.toString().padStart(2,'0')}/${f.monthNumber.toString().padStart(2,'0')}/${f.year}"
+            canvas.drawText(dateStr, margin + 10f, y, paint)
+
+            // Nombre del Lote (Mapa resuelto)
+            val nombreLote = loteNombresMap[ratio.ratioLoteId] ?: "Desconocido"
+            canvas.drawText("Lote: $nombreLote", margin + 140f, y, paint)
+
+            // Peso
+            val kilosIndividual = ratio.ratioTotalWeight.toDoubleOrNull() ?: 0.0
+            val pesoText = "${formatWeight(kilosIndividual)} kg"
             paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             canvas.drawText(pesoText, pageWidth - margin - paint.measureText(pesoText) - 10f, y, paint)
             paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
@@ -350,6 +387,171 @@ actual object PdfGenerator {
 
         pdfDocument.finishPage(page)
         saveAndSharePdf(pdfDocument, "Planning_Comandas_${Clock.System.now().toEpochMilliseconds()}")
+    }
+
+
+    // ============================================================
+// 3. GENERAR LISTADO DE VENTAS (DISEÑO GRID + LOGO + INTELIGENTE)
+// ============================================================
+    actual fun generateVentasReportPdf(
+        clienteNombre: String,
+        ventas: List<Venta>,
+        totalKilos: Double,
+        dateRange: String,
+        desgloseMateriales: Map<String, Double>
+    ) {
+        val pdfDocument = PdfDocument()
+        val pageWidth = 595 // A4
+        val pageHeight = 842
+        var pageNumber = 1
+
+        var pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+        var page = pdfDocument.startPage(pageInfo)
+        var canvas = page.canvas
+        val paint = Paint()
+        val margin = 45f
+        var y = 60f
+
+        // --- CABECERA ---
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textSize = 20f
+        paint.color = DarkGrayPdfColor
+        canvas.drawText("REPORTE DE VENTAS", margin, y, paint)
+
+        // Logo a la derecha alineado con el título
+        paint.color = PrimaryPdfColor
+        val logoText = "GMR Stock"
+        canvas.drawText(logoText, pageWidth - margin - paint.measureText(logoText), y, paint)
+
+        // Ajuste: Rango y Cliente debajo del título (lado izquierdo)
+        y += 22f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        paint.textSize = 11f
+        paint.color = Color.GRAY
+
+        // Aplicamos ensureYearInRange para corregir el formato de fecha
+        canvas.drawText("Rango: ${ensureYearInRange(dateRange)}", margin, y, paint)
+
+        y += 16f
+        canvas.drawText("Cliente: $clienteNombre", margin, y, paint)
+
+        y += 45f
+
+        // --- CUADRO RESUMEN (KPIs) ---
+        val summaryRect = RectF(margin, y, pageWidth - margin, y + 70f)
+        paint.color = LightGrayBg
+        canvas.drawRoundRect(summaryRect, 12f, 12f, paint)
+
+        paint.color = TextPrimaryPdf
+        paint.textSize = 9f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("TOTAL KILOS", margin + 25f, y + 25f, paint)
+        canvas.drawText("LOTES", margin + 210f, y + 25f, paint)
+        // Ajuste: Columna de MATERIALES más a la derecha (de 395f a 430f)
+        canvas.drawText("MATERIALES", margin + 430f, y + 25f, paint)
+
+        paint.textSize = 17f
+        paint.color = PrimaryPdfColor
+        canvas.drawText("${formatWeight(totalKilos)} kg", margin + 25f, y + 55f, paint)
+        canvas.drawText("${ventas.size}", margin + 210f, y + 55f, paint)
+        canvas.drawText("${desgloseMateriales.size}", margin + 430f, y + 55f, paint)
+
+        y += 110f
+
+        // --- DESGLOSE POR MATERIAL (Barras visuales) ---
+        paint.color = DarkGrayPdfColor
+        paint.textSize = 12f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("DESGLOSE POR MATERIAL", margin, y, paint)
+        y += 25f
+
+        desgloseMateriales.forEach { (material, kilos) ->
+            val porcentaje = if (totalKilos > 0) (kilos / totalKilos).toFloat() else 0f
+
+            paint.textSize = 10f
+            paint.color = TextPrimaryPdf
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+            canvas.drawText(material, margin, y, paint)
+
+            val kilosText = "${formatWeight(kilos)} kg (${(porcentaje * 100).toInt()}%)"
+            canvas.drawText(kilosText, pageWidth - margin - paint.measureText(kilosText), y, paint)
+
+            y += 8f
+            val barWidth = pageWidth - (margin * 2)
+            paint.color = Color.rgb(235, 235, 235)
+            canvas.drawRoundRect(RectF(margin, y, margin + barWidth, y + 5f), 3f, 3f, paint)
+
+            paint.color = PrimaryPdfColor
+            canvas.drawRoundRect(RectF(margin, y, margin + (barWidth * porcentaje), y + 5f), 3f, 3f, paint)
+            y += 25f
+        }
+
+        y += 15f
+
+        // --- TABLA DETALLADA ---
+        paint.color = Color.BLACK
+        paint.textSize = 12f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("DETALLE DE VENTAS", margin, y, paint)
+        y += 20f
+
+        // Cabeceras
+        paint.textSize = 9f
+        paint.color = Color.GRAY
+        canvas.drawText("FECHA / LOTE", margin + 5f, y, paint)
+        canvas.drawText("MATERIAL", margin + 180f, y, paint)
+        val hPeso = "PESO TOTAL"
+        canvas.drawText(hPeso, pageWidth - margin - paint.measureText(hPeso) - 5f, y, paint)
+
+        y += 8f
+        paint.color = GrayPdfColor
+        canvas.drawLine(margin, y, pageWidth - margin, y, paint)
+        y += 20f
+
+        // Filas de ventas
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        ventas.sortedByDescending { it.ventaFecha }.forEachIndexed { index, venta ->
+            // Salto de página
+            if (y > pageHeight - 60f) {
+                pdfDocument.finishPage(page)
+                pageNumber++
+                pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+                page = pdfDocument.startPage(pageInfo)
+                canvas = page.canvas
+                y = 60f
+            }
+
+            // Fondo cebra
+            if (index % 2 != 0) {
+                paint.color = Color.rgb(250, 250, 250)
+                canvas.drawRect(RectF(margin, y - 14f, pageWidth - margin, y + 18f), paint)
+            }
+
+            paint.color = TextPrimaryPdf
+            paint.textSize = 10f
+            val fecha = venta.ventaFecha?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+            val fechaStr = if (fecha != null) "${fecha.dayOfMonth}/${fecha.monthNumber}/${fecha.year}" else "---"
+
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            canvas.drawText(fechaStr, margin + 5f, y, paint)
+
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+            paint.color = Color.GRAY
+            canvas.drawText("Lote: ${venta.ventaLote}", margin + 5f, y + 12f, paint)
+
+            paint.color = TextPrimaryPdf
+            canvas.drawText(venta.ventaMaterial?.take(25) ?: "General", margin + 180f, y + 6f, paint)
+
+            val pText = "${formatWeight(venta.ventaPesoTotal?.toDoubleOrNull() ?: 0.0)} kg"
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            canvas.drawText(pText, pageWidth - margin - paint.measureText(pText) - 5f, y + 6f, paint)
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+
+            y += 35f
+        }
+
+        pdfDocument.finishPage(page)
+        saveAndSharePdf(pdfDocument, "Ventas_${clienteNombre.replace(" ", "_")}_${Clock.System.now().toEpochMilliseconds()}")
     }
 
     private fun saveAndSharePdf(pdf: PdfDocument, fileName: String) {

@@ -1,7 +1,5 @@
 package com.alius.gmrstock.presentation.screens
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,11 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,16 +22,21 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.alius.gmrstock.core.utils.PdfGenerator
 import com.alius.gmrstock.core.utils.formatWeight
+import com.alius.gmrstock.data.getHistorialRepository
+import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.data.getRatioRepository
 import com.alius.gmrstock.domain.model.Ratio
 import com.alius.gmrstock.ui.components.DateRangeFilter
+import com.alius.gmrstock.ui.components.ExpandableProduccionCard
 import com.alius.gmrstock.ui.components.ProduccionTrendChart
 import com.alius.gmrstock.ui.components.UniversalDatePickerDialog
 import com.alius.gmrstock.ui.theme.BackgroundColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.datetime.*
 
-// Modelos de datos
+// Modelos de datos fuera de la clase para que sean accesibles por otros componentes
 data class ProduccionDiaria(
     val fecha: LocalDate,
     val totalKilos: Double,
@@ -48,7 +47,8 @@ data class ProduccionMensual(
     val mesLabel: String,
     val totalKilos: Double,
     val cantidadRegistros: Int,
-    val fechaReferencia: LocalDate
+    val fechaReferencia: LocalDate,
+    val listaRatios: List<Ratio>
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,6 +60,8 @@ class ProduccionRangoScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val ratioRepository = remember(databaseUrl) { getRatioRepository(databaseUrl) }
+        val loteRepository = remember(databaseUrl) { getLoteRepository(databaseUrl) }
+        val historialRepository = remember(databaseUrl) { getHistorialRepository(databaseUrl) }
 
         // --- Estados de Fecha ---
         val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
@@ -70,6 +72,9 @@ class ProduccionRangoScreen(
         var ratios by remember { mutableStateOf<List<Ratio>>(emptyList()) }
         var isLoading by remember { mutableStateOf(false) }
 
+        // --- Mapa para traducir ID técnico -> Número de Lote (number) ---
+        var loteNombresMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
         // --- Diálogos ---
         var showStartPicker by remember { mutableStateOf(false) }
         var showEndPicker by remember { mutableStateOf(false) }
@@ -78,7 +83,38 @@ class ProduccionRangoScreen(
         LaunchedEffect(startDate, endDate) {
             isLoading = true
             try {
-                ratios = ratioRepository.listarRatiosPorRango(startDate, endDate)
+                // 1. Obtener los ratios del rango seleccionado
+                val fetchedRatios = ratioRepository.listarRatiosPorRango(startDate, endDate)
+                ratios = fetchedRatios
+
+                // 2. Extraer IDs únicos de lotes para buscar sus nombres
+                val loteIdsNecesarios = fetchedRatios.map { it.ratioLoteId }
+                    .filter { it.isNotBlank() }
+                    .distinct()
+
+                // 3. Búsqueda en Cascada (Lote -> Historial) en paralelo
+                val deferredResultados = loteIdsNecesarios.map { id ->
+                    async {
+                        // Intento 1: Buscar en colección 'lote' (stock)
+                        var loteEncontrado = loteRepository.getLoteById(id)
+
+                        // Intento 2: Si no está en stock, buscar en 'historial' (vendidos)
+                        if (loteEncontrado == null) {
+                            loteEncontrado = historialRepository.getLoteHistorialById(id)
+                        }
+
+                        // Retornar el par ID to Number
+                        id to loteEncontrado?.number
+                    }
+                }
+
+                val resultados = deferredResultados.awaitAll()
+
+                // 4. Crear el mapa de traducción ID -> Number
+                loteNombresMap = resultados.mapNotNull { (id, number) ->
+                    number?.let { id to it }
+                }.toMap()
+
             } catch (e: Exception) {
                 ratios = emptyList()
             } finally {
@@ -90,7 +126,6 @@ class ProduccionRangoScreen(
         val datosAgrupados = remember(ratios) { agruparRatiosPorDia(ratios) }
         val datosMensuales = remember(ratios) { agruparRatiosPorMes(ratios) }
 
-        // IMPORTANTE: Este es el 100% de la selección actual
         val totalKilosGlobal by remember(ratios) {
             derivedStateOf { ratios.sumOf { it.ratioTotalWeight.toDoubleOrNull() ?: 0.0 } }
         }
@@ -136,21 +171,20 @@ class ProduccionRangoScreen(
                         }
                         IconButton(onClick = {
                             if (ratios.isNotEmpty()) {
-                                // 1. Formateamos las fechas con ceros a la izquierda y el año completo
                                 val startDay = startDate.dayOfMonth.toString().padStart(2, '0')
                                 val startMonth = startDate.monthNumber.toString().padStart(2, '0')
                                 val endDay = endDate.dayOfMonth.toString().padStart(2, '0')
                                 val endMonth = endDate.monthNumber.toString().padStart(2, '0')
 
-                                // 2. Construimos la cadena final: DD/MM/AAAA al DD/MM/AAAA
                                 val rangeStr = "$startDay/$startMonth/${startDate.year} al $endDay/$endMonth/${endDate.year}"
 
-                                // 3. Enviamos al generador
+                                // LLAMADA ACTUALIZADA PARA EL NUEVO PDF POR REGISTRO
                                 PdfGenerator.generateProductionReportPdf(
-                                    datosAgrupados = datosAgrupados,
+                                    ratios = ratios,
                                     totalKilos = totalKilosGlobal,
                                     promedio = promedioDiario,
-                                    dateRange = rangeStr
+                                    dateRange = rangeStr,
+                                    loteNombresMap = loteNombresMap
                                 )
                             }
                         }) {
@@ -188,19 +222,17 @@ class ProduccionRangoScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // 1. KPIs
                         item {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 KPICard(Modifier.weight(1f), "TOTAL", "${formatWeight(totalKilosGlobal)} kg", PrimaryColor)
-                                KPICard(Modifier.weight(1f), "ACTIVOS", "$diasActivos", Color(0xFFFF9800))
+                                KPICard(Modifier.weight(1f), "DÍAS ACTIVOS", "$diasActivos", Color(0xFFFF9800))
                                 KPICard(Modifier.weight(1f), "MEDIA", "${formatWeight(promedioDiario)} kg", Color(0xFF2196F3))
                             }
                         }
 
-                        // 2. Gráfico
                         item {
                             Text(
                                 "Tendencia de producción",
@@ -215,7 +247,6 @@ class ProduccionRangoScreen(
                             )
                         }
 
-                        // 3. Título de Lista
                         item {
                             Text(
                                 "Desglose mensual",
@@ -226,14 +257,16 @@ class ProduccionRangoScreen(
                             )
                         }
 
-                        // 4. Lista Agrupada
                         items(datosMensuales.reversed()) { mensual ->
-                            // Calculamos el porcentaje comparando los kilos del mes con el total de la selección
                             val porcentaje = if (totalKilosGlobal > 0) {
                                 (mensual.totalKilos / totalKilosGlobal).toFloat()
                             } else 0f
 
-                            ProduccionMensualRow(mensual, porcentaje)
+                            ExpandableProduccionCard(
+                                mensual = mensual,
+                                porcentaje = porcentaje,
+                                loteNombresMap = loteNombresMap
+                            )
                         }
 
                         item { Spacer(modifier = Modifier.height(50.dp)) }
@@ -286,102 +319,11 @@ class ProduccionRangoScreen(
                 mesLabel = mesAnio,
                 totalKilos = lista.sumOf { it.ratioTotalWeight.toDoubleOrNull() ?: 0.0 },
                 cantidadRegistros = lista.size,
-                fechaReferencia = Instant.fromEpochMilliseconds(lista.first().ratioDate).toLocalDateTime(TimeZone.currentSystemDefault()).date
+                fechaReferencia = Instant.fromEpochMilliseconds(lista.first().ratioDate).toLocalDateTime(TimeZone.currentSystemDefault()).date,
+                listaRatios = lista.sortedByDescending { it.ratioDate }
             )
         }.sortedBy { it.fechaReferencia }
     }
-
-    @Composable
-    private fun ProduccionMensualRow(
-        mensual: ProduccionMensual,
-        porcentaje: Float
-    ) {
-        var targetProgress by remember { mutableStateOf(0f) }
-        val animatedProgress by animateFloatAsState(
-            targetValue = targetProgress,
-            animationSpec = tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-        )
-
-        LaunchedEffect(porcentaje) { targetProgress = porcentaje.coerceIn(0f, 1f) }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            shape = RoundedCornerShape(16.dp), // Esquinas más redondeadas (más moderno)
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Sutil sombra en lugar de borde gris
-        ) {
-            Box(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-
-                // 🎨 BARRA CON DEGRADADO
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .graphicsLayer {
-                            scaleX = animatedProgress
-                            transformOrigin = TransformOrigin(0f, 0.5f)
-                        }
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    PrimaryColor.copy(alpha = 0.02f),
-                                    PrimaryColor.copy(alpha = 0.25f) // Más intenso al final
-                                )
-                            )
-                        )
-                )
-
-                // 📏 LÍNEA DE ACENTO VERTICAL (Opcional, da mucha calidad)
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(4.dp)
-                        .background(PrimaryColor, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
-                )
-
-                // CONTENIDO
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp, vertical = 18.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = mensual.mesLabel.uppercase(), // Mayúsculas sutiles
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.secondary,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = "${mensual.cantidadRegistros} registros • ${(porcentaje * 100).toInt()}%",
-                            fontSize = 12.sp,
-                            color = Color.Gray.copy(alpha = 0.8f)
-                        )
-                    }
-
-                    // El peso ahora resalta más
-                    Surface(
-                        color = PrimaryColor.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "${formatWeight(mensual.totalKilos)} kg",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontWeight = FontWeight.Black,
-                            color = PrimaryColor,
-                            fontSize = 17.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-
-
-
 
     @Composable
     private fun KPICard(modifier: Modifier, title: String, value: String, color: Color) {

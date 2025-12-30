@@ -33,6 +33,8 @@ interface HistorialRepository {
      */
     suspend fun agregarYLigaroLote(lote: LoteModel): String?
 
+    suspend fun getLoteHistorialById(id: String): LoteModel?
+
     /**
      * Elimina el registro del lote de la colección 'historial' después de la réplica.
      */

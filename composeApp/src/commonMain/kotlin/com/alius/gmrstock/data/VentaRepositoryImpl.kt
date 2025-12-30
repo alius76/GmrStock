@@ -211,4 +211,43 @@ class VentaRepositoryImpl(
             null
         }
     }
+
+    /**
+     * Nueva función que garantiza traer TODAS las ventas de un rango
+     * sin límites de cantidad y sin tocar las funciones antiguas.
+     */
+    override suspend fun obtenerVentasReporteGlobal(
+        cliente: String?,
+        inicio: Instant,
+        fin: Instant
+    ): List<Venta> = withContext(Dispatchers.IO) {
+        try {
+            // Generamos la query específica según si hay cliente o no
+            val query = if (cliente.isNullOrBlank()) {
+                buildQueryVentasDeHoy(inicio, fin) // Query global por fechas
+            } else {
+                buildQueryVentasPorClienteYFecha(cliente, inicio, fin) // Query por cliente y fechas
+            }
+
+            val response: HttpResponse = client.post(databaseUrl) {
+                headers { append("Content-Type", "application/json") }
+                setBody(query)
+            }
+
+            val responseText = response.bodyAsText()
+            val jsonArray = Json.parseToJsonElement(responseText).jsonArray
+
+            jsonArray.mapNotNull { element ->
+                try {
+                    val doc = element.jsonObject["document"]?.jsonObject ?: return@mapNotNull null
+                    val fields = doc["fields"]?.jsonObject ?: return@mapNotNull null
+                    VentaMapper.fromFirestore(fields)
+                } catch (e: Exception) { null }
+            }
+        } catch (e: Exception) {
+            println("❌ Error en obtenerVentasReporteGlobal: ${e.message}")
+            emptyList()
+        }
+    }
+
 }

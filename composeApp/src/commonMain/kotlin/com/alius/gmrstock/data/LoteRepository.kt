@@ -11,6 +11,7 @@ import kotlinx.datetime.LocalDate
 interface LoteRepository {
 
     suspend fun listarLotes(data: String): List<LoteModel>
+    suspend fun getLoteById(id: String): LoteModel?
 
     suspend fun listarGruposPorDescripcion(filter: String = ""): List<MaterialGroup>
     suspend fun getLoteByNumber(number: String): LoteModel?
