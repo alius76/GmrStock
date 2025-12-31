@@ -434,6 +434,261 @@ actual object PdfGenerator {
         showShareSheet(filePath)
     }
 
+    // ==========================================
+    // 4. GENERAR INFORME DE STOCK (iOS)
+    // ==========================================
+    actual fun generateStockReportPdf(
+        materialGroups: List<com.alius.gmrstock.domain.model.MaterialGroup>,
+        totalKilos: Double
+    ) {
+        // Nombre de archivo con marca de tiempo para evitar duplicados
+        val fileName = "Stock_Materiales_${Clock.System.now().toEpochMilliseconds()}.pdf"
+        val paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
+        val cacheDirectory = paths.first() as String
+        val filePath = cacheDirectory + "/" + fileName
+
+        val pageWidth = 595.2
+        val pageHeight = 841.8
+        val pageRect = CGRectMake(0.0, 0.0, pageWidth, pageHeight)
+        val margin = 45.0
+
+        UIGraphicsBeginPDFContextToFile(filePath, pageRect, null)
+        UIGraphicsBeginPDFPageWithInfo(pageRect, null)
+
+        var currentY = 60.0
+
+        fun checkNewPage(needed: Double) {
+            if (currentY + needed > pageHeight - 60.0) {
+                UIGraphicsBeginPDFPageWithInfo(pageRect, null)
+                currentY = 60.0
+            }
+        }
+
+        // --- CABECERA ---
+        drawText("MATERIALES EN STOCK", margin, currentY, UIFont.boldSystemFontOfSize(22.0), darkGrayColor)
+
+        val logoText = "GMR Stock"
+        val logoWidth = (logoText as NSString).sizeWithAttributes(
+            mapOf(NSFontAttributeName to UIFont.boldSystemFontOfSize(22.0)) as Map<Any?, *>
+        ).useContents { width }
+        drawText(logoText, pageWidth - margin - logoWidth, currentY, UIFont.boldSystemFontOfSize(22.0), primaryColor)
+
+        currentY += 22.0
+        val fechaActual = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        drawText("Fecha de informe: ${fechaActual.dayOfMonth}/${fechaActual.monthNumber}/${fechaActual.year}", margin, currentY, UIFont.systemFontOfSize(11.0), UIColor.grayColor)
+        currentY += 45.0
+
+        // --- CUADRO RESUMEN (KPIs) - COLUMNAS AJUSTADAS ---
+        val summaryRect = CGRectMake(margin, currentY, pageWidth - (margin * 2), 75.0)
+        lightGrayBg.setFill()
+        UIBezierPath.bezierPathWithRoundedRect(summaryRect, 12.0).fill()
+
+        // Etiquetas (X: 45+25, 45+180, 45+415 para llegar a 460)
+        drawText("TOTAL KILOS", margin + 25.0, currentY + 15.0, UIFont.boldSystemFontOfSize(9.0), textPrimaryColor)
+        drawText("MATERIALES", margin + 210.0, currentY + 15.0, UIFont.boldSystemFontOfSize(9.0), textPrimaryColor)
+        drawText("LOTES", margin + 460.0, currentY + 15.0, UIFont.boldSystemFontOfSize(9.0), textPrimaryColor)
+
+        // Valores
+        drawText("${formatWeight(totalKilos)} kg", margin + 25.0, currentY + 40.0, UIFont.boldSystemFontOfSize(17.0), primaryColor)
+        drawText("${materialGroups.size}", margin + 210.0, currentY + 40.0, UIFont.boldSystemFontOfSize(17.0), primaryColor)
+        drawText("${materialGroups.sumOf { it.totalLotes }}", margin + 460.0, currentY + 40.0, UIFont.boldSystemFontOfSize(17.0), primaryColor)
+
+        currentY += 115.0
+
+        // --- TABLA DETALLADA ---
+        drawText("DETALLE DE STOCK", margin + 10.0, currentY, UIFont.boldSystemFontOfSize(12.0), UIColor.blackColor)
+        currentY += 20.0
+
+        // Cabeceras
+        drawText("MATERIALES", margin + 10.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+        drawText("LOTES / BB", margin + 300.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+
+        val labelPeso = "PESO TOTAL"
+        val lpWidth = (labelPeso as NSString).sizeWithAttributes(mapOf(NSFontAttributeName to UIFont.boldSystemFontOfSize(10.0)) as Map<Any?, *>).useContents { width }
+        drawText(labelPeso, pageWidth - margin - lpWidth - 10.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+
+        currentY += 15.0
+        val context = UIGraphicsGetCurrentContext()
+        CGContextSetStrokeColorWithColor(context, UIColor.lightGrayColor.CGColor)
+        CGContextSetLineWidth(context, 1.0)
+        CGContextMoveToPoint(context, margin, currentY)
+        CGContextAddLineToPoint(context, pageWidth - margin, currentY)
+        CGContextStrokePath(context)
+        currentY += 20.0
+
+        // Filas de materiales
+        materialGroups.sortedBy { it.description }.forEachIndexed { index, group ->
+            checkNewPage(35.0)
+
+            // Fila cebreada (fondo gris claro para filas impares)
+            if (index % 2 != 0) {
+                val rowRect = CGRectMake(margin, currentY - 8.0, pageWidth - (margin * 2), 28.0)
+                UIColor.colorWithWhite(0.98, 1.0).setFill()
+                UIRectFill(rowRect)
+            }
+
+            // Descripción (con truncado si es muy largo)
+            val desc = if (group.description.length > 45) group.description.take(42) + "..." else group.description
+            drawText(desc, margin + 10.0, currentY, UIFont.systemFontOfSize(10.0), textPrimaryColor)
+
+            // Info Lotes / BB
+            drawText("${group.totalLotes} Lotes / ${group.totalBigBags} BB", margin + 300.0, currentY, UIFont.systemFontOfSize(10.0), UIColor.grayColor)
+
+            // Peso (Negrita a la derecha)
+            val pesoGroup = group.totalWeight.toDoubleOrNull() ?: 0.0
+            val pesoText = "${formatWeight(pesoGroup)} kg"
+            val pWidth = (pesoText as NSString).sizeWithAttributes(mapOf(NSFontAttributeName to UIFont.boldSystemFontOfSize(10.0)) as Map<Any?, *>).useContents { width }
+            drawText(pesoText, pageWidth - margin - pWidth - 10.0, currentY, UIFont.boldSystemFontOfSize(10.0), textPrimaryColor)
+
+            currentY += 30.0
+        }
+
+        UIGraphicsEndPDFContext()
+        // Llamada a la función de compartir nativa de iOS
+        showShareSheet(filePath)
+    }
+
+    // ==========================================
+    // 5. GENERAR INFORME VERTISOL (iOS) - DESGLOSADO POR FECHA
+    // ==========================================
+    actual fun generateVertisolReportPdf(
+        vertisolList: List<com.alius.gmrstock.domain.model.Vertisol>,
+        totalKilos: Double
+    ) {
+        val fileName = "Reporte_Vertisol_${Clock.System.now().toEpochMilliseconds()}.pdf"
+        val paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
+        val cacheDirectory = paths.first() as String
+        val filePath = cacheDirectory + "/" + fileName
+
+        val pageWidth = 595.2
+        val pageHeight = 841.8
+        val pageRect = CGRectMake(0.0, 0.0, pageWidth, pageHeight)
+        val margin = 45.0
+
+        // --- PREPARACIÓN DE DATOS (Explosión por fecha de trasvase) ---
+        val filasDesglosadas = vertisolList.flatMap { lote ->
+            lote.vertisolBigBag.groupBy { bb ->
+                bb.bbTrasvaseDate?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+            }.map { (fecha, bags) ->
+                val fechaStr = if (fecha != null) {
+                    "${fecha.dayOfMonth.toString().padStart(2, '0')}/${fecha.monthNumber.toString().padStart(2, '0')}/${fecha.year}"
+                } else {
+                    "Sin fecha"
+                }
+                val pesoTotalFecha = bags.sumOf { it.bbWeight.toDoubleOrNull() ?: 0.0 }
+
+                object {
+                    val numeroLote = lote.vertisolNumber
+                    val descripcion = lote.vertisolDescription
+                    val fechaTrasvase = fechaStr
+                    val cantidadBB = bags.size
+                    val peso = pesoTotalFecha
+                }
+            }
+        }.sortedByDescending { it.fechaTrasvase }
+
+        UIGraphicsBeginPDFContextToFile(filePath, pageRect, null)
+        UIGraphicsBeginPDFPageWithInfo(pageRect, null)
+
+        var currentY = 60.0
+
+        fun checkNewPage(needed: Double) {
+            if (currentY + needed > pageHeight - 60.0) {
+                UIGraphicsBeginPDFPageWithInfo(pageRect, null)
+                currentY = 60.0
+            }
+        }
+
+        // --- CABECERA ---
+        drawText("LOTES EN VERTISOL", margin, currentY, UIFont.boldSystemFontOfSize(22.0), darkGrayColor)
+
+        val logoText = "GMR Stock"
+        val logoWidth = (logoText as NSString).sizeWithAttributes(
+            mapOf(NSFontAttributeName to UIFont.boldSystemFontOfSize(22.0)) as Map<Any?, *>
+        ).useContents { width }
+        drawText(logoText, pageWidth - margin - logoWidth, currentY, UIFont.boldSystemFontOfSize(22.0), primaryColor)
+
+        currentY += 22.0
+        val fechaActual = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        drawText("Generado el: ${fechaActual.dayOfMonth}/${fechaActual.monthNumber}/${fechaActual.year}", margin, currentY, UIFont.systemFontOfSize(11.0), UIColor.grayColor)
+        currentY += 45.0
+
+        // --- CUADRO RESUMEN (KPIs) - AJUSTADO SEGÚN ANDROID ---
+        val summaryRect = CGRectMake(margin, currentY, pageWidth - (margin * 2), 75.0)
+        lightGrayBg.setFill()
+        UIBezierPath.bezierPathWithRoundedRect(summaryRect, 12.0).fill()
+
+        // Etiquetas (Nuevas posiciones: Lotes +250f, BigBags +430f)
+        drawText("TOTAL KILOS", margin + 25.0, currentY + 15.0, UIFont.boldSystemFontOfSize(9.0), textPrimaryColor)
+        drawText("LOTES", margin + 250.0, currentY + 15.0, UIFont.boldSystemFontOfSize(9.0), textPrimaryColor)
+        drawText("BIGBAGS", margin + 430.0, currentY + 15.0, UIFont.boldSystemFontOfSize(9.0), textPrimaryColor)
+
+        // Valores
+        drawText("${formatWeight(totalKilos)} kg", margin + 25.0, currentY + 40.0, UIFont.boldSystemFontOfSize(17.0), primaryColor)
+        drawText("${vertisolList.size}", margin + 250.0, currentY + 40.0, UIFont.boldSystemFontOfSize(17.0), primaryColor)
+
+        val totalBB = vertisolList.sumOf { it.vertisolBigBag.size }
+        drawText("$totalBB", margin + 430.0, currentY + 40.0, UIFont.boldSystemFontOfSize(17.0), primaryColor)
+
+        currentY += 115.0
+
+        // --- TABLA DETALLADA ---
+        drawText("REGISTROS DE TRASVASE", margin, currentY, UIFont.boldSystemFontOfSize(12.0), UIColor.blackColor)
+        currentY += 20.0
+
+        // Cabeceras (Estado cambiado a Trasvase)
+        drawText("LOTE / MATERIAL", margin + 10.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+        drawText("TRASVASE", margin + 260.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+        drawText("BB", margin + 370.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+
+        val labelPeso = "PESO TOTAL"
+        val lpWidth = (labelPeso as NSString).sizeWithAttributes(mapOf(NSFontAttributeName to UIFont.boldSystemFontOfSize(10.0)) as Map<Any?, *>).useContents { width }
+        drawText(labelPeso, pageWidth - margin - lpWidth - 10.0, currentY, UIFont.boldSystemFontOfSize(10.0), UIColor.grayColor)
+
+        currentY += 15.0
+        val context = UIGraphicsGetCurrentContext()
+        CGContextSetStrokeColorWithColor(context, UIColor.lightGrayColor.CGColor)
+        CGContextSetLineWidth(context, 1.0)
+        CGContextMoveToPoint(context, margin, currentY)
+        CGContextAddLineToPoint(context, pageWidth - margin, currentY)
+        CGContextStrokePath(context)
+        currentY += 20.0
+
+        // --- FILAS DESGLOSADAS ---
+        filasDesglosadas.forEachIndexed { index, fila ->
+            checkNewPage(45.0)
+
+            if (index % 2 != 0) {
+                val rowRect = CGRectMake(margin, currentY - 10.0, pageWidth - (margin * 2), 38.0)
+                UIColor.colorWithWhite(0.98, 1.0).setFill()
+                UIRectFill(rowRect)
+            }
+
+            // Lote (Negrita)
+            drawText(fila.numeroLote, margin + 10.0, currentY, UIFont.boldSystemFontOfSize(10.0), textPrimaryColor)
+
+            // Material (Gris pequeño debajo)
+            val desc = if (fila.descripcion.length > 35) fila.descripcion.take(32) + "..." else fila.descripcion
+            drawText(desc, margin + 10.0, currentY + 12.0, UIFont.systemFontOfSize(8.5), UIColor.grayColor)
+
+            // Fecha de Trasvase (En lugar de Estado)
+            drawText(fila.fechaTrasvase, margin + 260.0, currentY + 6.0, UIFont.systemFontOfSize(10.0), textPrimaryColor)
+
+            // Cantidad BigBags del desglose
+            drawText("${fila.cantidadBB} BB", margin + 370.0, currentY + 6.0, UIFont.systemFontOfSize(10.0), textPrimaryColor)
+
+            // Peso Parcial del desglose
+            val pText = "${formatWeight(fila.peso)} kg"
+            val pWidth = (pText as NSString).sizeWithAttributes(mapOf(NSFontAttributeName to UIFont.boldSystemFontOfSize(10.0)) as Map<Any?, *>).useContents { width }
+            drawText(pText, pageWidth - margin - pWidth - 10.0, currentY + 6.0, UIFont.boldSystemFontOfSize(10.0), textPrimaryColor)
+
+            currentY += 38.0
+        }
+
+        UIGraphicsEndPDFContext()
+        showShareSheet(filePath)
+    }
+
     @Suppress("UNCHECKED_CAST")
     private fun drawText(text: String, x: Double, y: Double, font: UIFont, color: UIColor) {
         val attributes = mapOf(NSFontAttributeName to font, NSForegroundColorAttributeName to color)

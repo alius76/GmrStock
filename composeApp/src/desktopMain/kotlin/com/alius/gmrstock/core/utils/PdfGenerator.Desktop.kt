@@ -1,6 +1,7 @@
 package com.alius.gmrstock.core.utils
 
 import com.alius.gmrstock.domain.model.Comanda
+import com.alius.gmrstock.domain.model.MaterialGroup
 import com.alius.gmrstock.domain.model.Ratio
 import com.alius.gmrstock.domain.model.Venta
 import kotlinx.datetime.*
@@ -636,6 +637,373 @@ actual object PdfGenerator {
 
         contentStream.close()
         savePdfDesktop(document, "Ventas_${clienteNombre.replace(" ", "_")}")
+    }
+
+    // ============================================================
+    // 4. GENERAR INFORME DE STOCK (NUEVO - PDFBOX DESKTOP)
+    // ============================================================
+    actual fun generateStockReportPdf(
+        materialGroups: List<MaterialGroup>,
+        totalKilos: Double
+    ) {
+        val document = PDDocument()
+        val margin = 45f
+        val pageWidth = PDRectangle.A4.width
+        val pageHeight = PDRectangle.A4.height
+        var y = pageHeight - 60f
+
+        var currentPage = PDPage(PDRectangle.A4)
+        document.addPage(currentPage)
+        var contentStream = PDPageContentStream(document, currentPage)
+
+        fun checkNewPage(needed: Float = 40f) {
+            if (y - needed < 60f) {
+                contentStream.close()
+                currentPage = PDPage(PDRectangle.A4)
+                document.addPage(currentPage)
+                contentStream = PDPageContentStream(document, currentPage)
+                y = pageHeight - 60f
+            }
+        }
+
+        // --- CABECERA ---
+        contentStream.beginText()
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 22f)
+        contentStream.setNonStrokingColor(DarkGrayPdfColor)
+        contentStream.newLineAtOffset(margin, y)
+        contentStream.showText("MATERIALES EN STOCK".pdfSafe())
+        contentStream.endText()
+
+        val logoText = "GMR Stock"
+        val logoWidth = PDType1Font.HELVETICA_BOLD.getStringWidth(logoText) / 1000 * 22f
+        contentStream.beginText()
+        contentStream.setNonStrokingColor(PrimaryPdfColor)
+        contentStream.newLineAtOffset(pageWidth - margin - logoWidth, y)
+        contentStream.showText(logoText)
+        contentStream.endText()
+
+        y -= 25f
+        contentStream.beginText()
+        contentStream.setFont(PDType1Font.HELVETICA, 11f)
+        contentStream.setNonStrokingColor(Color.GRAY)
+        contentStream.newLineAtOffset(margin, y)
+        val fechaActual = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        contentStream.showText("Fecha de informe: ${fechaActual.dayOfMonth}/${fechaActual.monthNumber}/${fechaActual.year}")
+        contentStream.endText()
+
+        y -= 45f
+
+        // --- CUADRO RESUMEN KPIs ---
+        contentStream.setNonStrokingColor(LightGrayBg)
+        contentStream.addRect(margin, y - 75f, pageWidth - (margin * 2), 75f)
+        contentStream.fill()
+
+        contentStream.setNonStrokingColor(TextPrimaryPdf)
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 9f)
+        contentStream.beginText()
+        // Posición inicial: margin + 25
+        contentStream.newLineAtOffset(margin + 25f, y - 25f)
+        contentStream.showText("TOTAL KILOS")
+        // Salto a Materiales: +200 (Total X = margin + 225)
+        contentStream.newLineAtOffset(200f, 0f)
+        contentStream.showText("MATERIALES")
+        // Salto a Lotes: +235 (Total X = margin + 460) -> Desplazado a la derecha
+        contentStream.newLineAtOffset(235f, 0f)
+        contentStream.showText("LOTES")
+        contentStream.endText()
+
+        contentStream.setNonStrokingColor(PrimaryPdfColor)
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 17f)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin + 25f, y - 55f)
+        contentStream.showText("${formatWeight(totalKilos)} kg")
+        contentStream.newLineAtOffset(200f, 0f)
+        contentStream.showText("${materialGroups.size}")
+        contentStream.newLineAtOffset(235f, 0f) // Mismo desplazamiento que las etiquetas
+        contentStream.showText("${materialGroups.sumOf { it.totalLotes }}")
+        contentStream.endText()
+
+        y -= 115f
+
+        // --- TABLA DETALLADA ---
+        contentStream.setNonStrokingColor(Color.BLACK)
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12f)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin + 10f, y)
+        contentStream.showText("DETALLE DE STOCK".pdfSafe())
+        contentStream.endText()
+
+        y -= 20f
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10f)
+        contentStream.setNonStrokingColor(Color.GRAY)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin + 10f, y)
+        contentStream.showText("MATERIALES")
+        contentStream.newLineAtOffset(290f, 0f)
+        contentStream.showText("LOTES / BB")
+        contentStream.endText()
+
+        val labelPeso = "PESO TOTAL"
+        val labelW = PDType1Font.HELVETICA_BOLD.getStringWidth(labelPeso) / 1000 * 10f
+        contentStream.beginText()
+        contentStream.newLineAtOffset(pageWidth - margin - labelW - 10f, y)
+        contentStream.showText(labelPeso)
+        contentStream.endText()
+
+        y -= 8f
+        contentStream.setStrokingColor(GrayPdfColor)
+        contentStream.setLineWidth(1f)
+        contentStream.moveTo(margin, y)
+        contentStream.lineTo(pageWidth - margin, y)
+        contentStream.stroke()
+        y -= 25f
+
+        materialGroups.sortedBy { it.description }.forEachIndexed { index, group ->
+            checkNewPage(30f)
+
+            // Fila cebreada
+            if (index % 2 != 0) {
+                contentStream.setNonStrokingColor(Color(250, 250, 250))
+                contentStream.addRect(margin, y - 8f, pageWidth - (margin * 2), 28f)
+                contentStream.fill()
+            }
+
+            contentStream.setNonStrokingColor(TextPrimaryPdf)
+            contentStream.setFont(PDType1Font.HELVETICA, 10f)
+
+            // Descripción
+            val desc = if (group.description.length > 45) group.description.take(42) + "..." else group.description
+            contentStream.beginText()
+            contentStream.newLineAtOffset(margin + 10f, y)
+            contentStream.showText(desc.pdfSafe())
+
+            // Info Lotes / BB
+            contentStream.setNonStrokingColor(Color.GRAY)
+            contentStream.newLineAtOffset(290f, 0f)
+            contentStream.showText("${group.totalLotes} Lotes / ${group.totalBigBags} BB")
+            contentStream.endText()
+
+            // Peso Total
+            val pesoGroup = group.totalWeight.toString().toDoubleOrNull() ?: 0.0
+            val pText = "${formatWeight(pesoGroup)} kg"
+            contentStream.setNonStrokingColor(TextPrimaryPdf)
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10f)
+            val pW = PDType1Font.HELVETICA_BOLD.getStringWidth(pText) / 1000 * 10f
+            contentStream.beginText()
+            contentStream.newLineAtOffset(pageWidth - margin - pW - 10f, y)
+            contentStream.showText(pText)
+            contentStream.endText()
+
+            y -= 30f
+        }
+
+        contentStream.close()
+        // Uso del timestamp para el nombre del archivo igual que en Android
+        savePdfDesktop(document, "Stock_Materiales_${Clock.System.now().toEpochMilliseconds()}")
+    }
+
+    // ============================================================
+    // 5. GENERAR INFORME VERTISOL (DESKTOP - DESGLOSADO POR FECHA)
+    // ============================================================
+    actual fun generateVertisolReportPdf(
+        vertisolList: List<com.alius.gmrstock.domain.model.Vertisol>,
+        totalKilos: Double
+    ) {
+        val document = PDDocument()
+        val margin = 45f
+        val pageWidth = PDRectangle.A4.width
+        val pageHeight = PDRectangle.A4.height
+        var y = pageHeight - 60f
+
+        var currentPage = PDPage(PDRectangle.A4)
+        document.addPage(currentPage)
+        var contentStream = PDPageContentStream(document, currentPage)
+
+        // Helper para saltos de página
+        fun checkNewPage(needed: Float = 40f) {
+            if (y - needed < 60f) {
+                contentStream.close()
+                currentPage = PDPage(PDRectangle.A4)
+                document.addPage(currentPage)
+                contentStream = PDPageContentStream(document, currentPage)
+                y = pageHeight - 60f
+            }
+        }
+
+        // --- PREPARACIÓN DE DATOS ---
+        val filasDesglosadas = vertisolList.flatMap { lote ->
+            lote.vertisolBigBag.groupBy { bb ->
+                bb.bbTrasvaseDate?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+            }.map { (fecha, bags) ->
+                val fechaStr = if (fecha != null) {
+                    "${fecha.dayOfMonth.toString().padStart(2, '0')}/${fecha.monthNumber.toString().padStart(2, '0')}/${fecha.year}"
+                } else {
+                    "Sin fecha"
+                }
+                val pesoTotalFecha = bags.sumOf { it.bbWeight.toDoubleOrNull() ?: 0.0 }
+
+                object {
+                    val numeroLote = lote.vertisolNumber
+                    val descripcion = lote.vertisolDescription
+                    val fechaTrasvase = fechaStr
+                    val cantidadBB = bags.size
+                    val peso = pesoTotalFecha
+                }
+            }
+        }.sortedByDescending { it.fechaTrasvase }
+
+        // --- CABECERA ---
+        contentStream.beginText()
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 22f)
+        contentStream.setNonStrokingColor(DarkGrayPdfColor)
+        contentStream.newLineAtOffset(margin, y)
+        contentStream.showText("LOTES EN VERTISOL".pdfSafe())
+        contentStream.endText()
+
+        val logoText = "GMR Stock"
+        val logoWidth = PDType1Font.HELVETICA_BOLD.getStringWidth(logoText) / 1000 * 22f
+        contentStream.beginText()
+        contentStream.setNonStrokingColor(PrimaryPdfColor)
+        contentStream.newLineAtOffset(pageWidth - margin - logoWidth, y)
+        contentStream.showText(logoText)
+        contentStream.endText()
+
+        y -= 25f
+        contentStream.beginText()
+        contentStream.setFont(PDType1Font.HELVETICA, 11f)
+        contentStream.setNonStrokingColor(Color.GRAY)
+        contentStream.newLineAtOffset(margin, y)
+        val fechaActual = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        contentStream.showText("Generado el: ${fechaActual.dayOfMonth}/${fechaActual.monthNumber}/${fechaActual.year}")
+        contentStream.endText()
+
+        y -= 45f
+
+        // --- CUADRO RESUMEN (KPIs) ---
+        contentStream.setNonStrokingColor(LightGrayBg)
+        contentStream.addRect(margin, y - 75f, pageWidth - (margin * 2), 75f)
+        contentStream.fill()
+
+        contentStream.setNonStrokingColor(TextPrimaryPdf)
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 9f)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin + 25f, y - 25f)
+        contentStream.showText("TOTAL KILOS")
+        contentStream.newLineAtOffset(225f, 0f)
+        contentStream.showText("LOTES")
+        contentStream.newLineAtOffset(180f, 0f)
+        contentStream.showText("BIGBAGS")
+        contentStream.endText()
+
+        contentStream.setNonStrokingColor(PrimaryPdfColor)
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 17f)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin + 25f, y - 55f)
+        contentStream.showText("${formatWeight(totalKilos)} kg")
+        contentStream.newLineAtOffset(225f, 0f)
+        contentStream.showText("${vertisolList.size}")
+        contentStream.newLineAtOffset(180f, 0f)
+        val totalBB = vertisolList.sumOf { it.vertisolBigBag.size }
+        contentStream.showText("$totalBB")
+        contentStream.endText()
+
+        y -= 115f
+
+        // --- TABLA DETALLADA ---
+        contentStream.setNonStrokingColor(Color.BLACK)
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12f)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin, y)
+        contentStream.showText("REGISTROS DE TRASVASE".pdfSafe())
+        contentStream.endText()
+
+        y -= 20f
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10f)
+        contentStream.setNonStrokingColor(Color.GRAY)
+        contentStream.beginText()
+        contentStream.newLineAtOffset(margin + 10f, y)
+        contentStream.showText("LOTE / MATERIAL")
+        contentStream.newLineAtOffset(250f, 0f)
+        contentStream.showText("TRASVASE")
+        contentStream.newLineAtOffset(110f, 0f)
+        contentStream.showText("BB")
+        contentStream.endText()
+
+        val labelPeso = "PESO TOTAL"
+        val lpW = PDType1Font.HELVETICA_BOLD.getStringWidth(labelPeso) / 1000 * 10f
+        contentStream.beginText()
+        contentStream.newLineAtOffset(pageWidth - margin - lpW - 10f, y)
+        contentStream.showText(labelPeso)
+        contentStream.endText()
+
+        y -= 8f
+        contentStream.setStrokingColor(GrayPdfColor)
+        contentStream.setLineWidth(1f)
+        contentStream.moveTo(margin, y)
+        contentStream.lineTo(pageWidth - margin, y)
+        contentStream.stroke()
+
+        y -= 30f // Espacio inicial antes de la primera fila
+
+        // --- FILAS DESGLOSADAS ---
+        filasDesglosadas.forEachIndexed { index, fila ->
+            checkNewPage(45f)
+
+            // Fila cebreada: ajustamos el rectángulo para que el texto no quede al límite inferior
+            if (index % 2 != 0) {
+                contentStream.setNonStrokingColor(Color(250, 250, 250))
+                // Subimos el rectángulo 18 puntos respecto a 'y' para centrar el contenido
+                contentStream.addRect(margin, y - 18f, pageWidth - (margin * 2), 38f)
+                contentStream.fill()
+            }
+
+            // Lote (Negrita) - Posición base
+            contentStream.setNonStrokingColor(TextPrimaryPdf)
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10f)
+            contentStream.beginText()
+            contentStream.newLineAtOffset(margin + 10f, y)
+            contentStream.showText(fila.numeroLote.pdfSafe())
+            contentStream.endText()
+
+            // Material - Lo subimos un poco (antes y - 12f, ahora y - 10f) para que no se corte
+            contentStream.setFont(PDType1Font.HELVETICA, 8.5f)
+            contentStream.setNonStrokingColor(Color.GRAY)
+            contentStream.beginText()
+            contentStream.newLineAtOffset(margin + 10f, y - 10f)
+            val desc = if (fila.descripcion.length > 40) fila.descripcion.take(37) + "..." else fila.descripcion
+            contentStream.showText(desc.pdfSafe())
+            contentStream.endText()
+
+            // Datos de columnas (Fecha, BB, Peso) - Los centramos un poco mejor verticalmente
+            contentStream.setNonStrokingColor(TextPrimaryPdf)
+
+            // Fecha de Trasvase
+            contentStream.setFont(PDType1Font.HELVETICA, 10f)
+            contentStream.beginText()
+            contentStream.newLineAtOffset(margin + 260f, y - 2f)
+            contentStream.showText(fila.fechaTrasvase)
+            contentStream.endText()
+
+            // BigBags
+            contentStream.beginText()
+            contentStream.newLineAtOffset(margin + 370f, y - 2f)
+            contentStream.showText("${fila.cantidadBB} BB")
+            contentStream.endText()
+
+            // Peso Parcial
+            val pText = "${formatWeight(fila.peso)} kg"
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10f)
+            val pW = PDType1Font.HELVETICA_BOLD.getStringWidth(pText) / 1000 * 10f
+            contentStream.beginText()
+            contentStream.newLineAtOffset(pageWidth - margin - pW - 10f, y - 2f)
+            contentStream.showText(pText)
+            contentStream.endText()
+
+            y -= 38f // Salto a la siguiente fila
+        }
+
+        contentStream.close()
+        savePdfDesktop(document, "Reporte_Vertisol_${Clock.System.now().toEpochMilliseconds()}")
     }
 
     private fun savePdfDesktop(document: PDDocument, fileName: String) {

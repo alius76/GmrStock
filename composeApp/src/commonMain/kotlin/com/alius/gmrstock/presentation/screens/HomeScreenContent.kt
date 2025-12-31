@@ -502,13 +502,31 @@ class HomeScreenContent(
                                         )
                                     }
 
-                                    // Botón a la derecha del título
+                                    // --- BOTÓN PDF (NUEVO) ---
+                                    IconButton(
+                                        onClick = {
+                                            val totalKilos = materialGroups.sumOf { it.totalWeight.toDoubleOrNull() ?: 0.0 }
+                                            com.alius.gmrstock.core.utils.PdfGenerator.generateStockReportPdf(
+                                                materialGroups = materialGroups,
+                                                totalKilos = totalKilos
+                                            )
+                                        },
+                                        modifier = Modifier.size(48.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PictureAsPdf,
+                                            contentDescription = "Generar PDF de Stock",
+                                            tint = PrimaryColor
+                                        )
+                                    }
+
+                                    // Botón de búsqueda (Existente)
                                     IconButton(
                                         onClick = {
                                             showLotesBottomSheet = true
                                             coroutineScope.launch { sheetStateLotes.show() }
                                         },
-                                        modifier = Modifier.size(56.dp)
+                                        modifier = Modifier.size(48.dp)
                                     ) {
                                         Icon(
                                             imageVector = Icons.Filled.Search,

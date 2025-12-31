@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Print
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.alius.gmrstock.core.utils.PdfGenerator
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.data.getLoteRepository
 import com.alius.gmrstock.domain.model.Vertisol
@@ -60,7 +62,7 @@ class VertisolScreen(private val databaseUrl: String) : Screen {
                 .background(BackgroundColor)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // 🔹 Header fijo: flecha + título + subtítulo en la misma fila
+                // 🔹 Header fijo
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -68,27 +70,36 @@ class VertisolScreen(private val databaseUrl: String) : Screen {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { navigator.pop() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = PrimaryColor
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = PrimaryColor)
                     }
 
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
+                    Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
                         Text(
                             text = "Lotes en Vertisol",
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary
                         )
-
                         Text(
                             text = "Total kilos: ${formatWeight(totalKilos)} Kg",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Medium
-                            ),
+                            style = MaterialTheme.typography.titleMedium,
                             color = Color.Gray
+                        )
+                    }
+
+                    // 🔹 BOTÓN DE IMPRIMIR MODIFICADO
+                    IconButton(
+                        onClick = {
+                            PdfGenerator.generateVertisolReportPdf(vertisolList, totalKilos)
+                        },
+                        // Si isLoading es true, enabled será false
+                        enabled = !isLoading
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Print,
+                            contentDescription = "Imprimir",
+                            // Usamos una lógica simple: si está habilitado PrimaryColor, si no, lo dejamos por defecto (gris)
+                            tint = if (!isLoading) PrimaryColor else Color.LightGray
                         )
                     }
                 }

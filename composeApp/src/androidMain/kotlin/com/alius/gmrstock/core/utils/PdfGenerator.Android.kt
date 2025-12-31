@@ -7,8 +7,7 @@ import android.util.Log
 import androidx.core.content.FileProvider
 import com.alius.gmrstock.core.AppContextProvider
 import com.alius.gmrstock.domain.model.Comanda
-import com.alius.gmrstock.presentation.screens.ProduccionDiaria
-import com.alius.gmrstock.core.utils.formatWeight
+import com.alius.gmrstock.domain.model.MaterialGroup
 import com.alius.gmrstock.domain.model.Ratio
 import com.alius.gmrstock.domain.model.Venta
 import java.io.File
@@ -552,6 +551,294 @@ actual object PdfGenerator {
 
         pdfDocument.finishPage(page)
         saveAndSharePdf(pdfDocument, "Ventas_${clienteNombre.replace(" ", "_")}_${Clock.System.now().toEpochMilliseconds()}")
+    }
+
+    // ============================================================
+    // 4. GENERAR INFORME DE STOCK (NUEVO)
+    // ============================================================
+    actual fun generateStockReportPdf(
+        materialGroups: List<MaterialGroup>,
+        totalKilos: Double
+    ) {
+        val pdfDocument = PdfDocument()
+        val pageWidth = 595 // A4
+        val pageHeight = 842
+        var pageNumber = 1
+
+        var pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+        var page = pdfDocument.startPage(pageInfo)
+        var canvas = page.canvas
+        val paint = Paint()
+        val margin = 45f
+        var y = 60f
+
+        // --- CABECERA ---
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textSize = 22f
+        paint.color = DarkGrayPdfColor
+        canvas.drawText("MATERIALES EN STOCK", margin, y, paint)
+
+        paint.color = PrimaryPdfColor
+        val logoText = "GMR Stock"
+        canvas.drawText(logoText, pageWidth - margin - paint.measureText(logoText), y, paint)
+
+        y += 22f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        paint.textSize = 11f
+        paint.color = Color.GRAY
+        val fechaActual = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        canvas.drawText("Fecha de informe: ${fechaActual.dayOfMonth}/${fechaActual.monthNumber}/${fechaActual.year}", margin, y, paint)
+
+        y += 45f
+
+        // --- CUADRO RESUMEN KPIs (ESTILO CENTRADO) ---
+        val summaryRect = RectF(margin, y, pageWidth - margin, y + 75f)
+        paint.color = LightGrayBg
+        canvas.drawRoundRect(summaryRect, 12f, 12f, paint)
+
+        paint.color = TextPrimaryPdf
+        paint.textSize = 9f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("TOTAL KILOS", margin + 25f, y + 25f, paint)
+        canvas.drawText("MATERIALES", margin + 225f, y + 25f, paint)
+        canvas.drawText("LOTES", margin + 460f, y + 25f, paint)
+
+        paint.textSize = 17f
+        paint.color = PrimaryPdfColor
+        canvas.drawText("${formatWeight(totalKilos)} kg", margin + 25f, y + 55f, paint)
+        canvas.drawText("${materialGroups.size}", margin + 225f, y + 55f, paint)
+        canvas.drawText("${materialGroups.sumOf { it.totalLotes }}", margin + 460f, y + 55f, paint)
+
+        y += 115f
+
+        // --- TABLA DETALLADA ---
+        paint.color = Color.BLACK
+        paint.textSize = 12f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("DETALLE DE STOCK", margin, y, paint)
+        y += 20f
+
+        // Cabeceras de tabla
+        paint.textSize = 10f
+        paint.color = Color.GRAY
+        canvas.drawText("MATERIALES", margin + 10f, y, paint)
+        canvas.drawText("LOTES / BB", margin + 300f, y, paint)
+        val labelPeso = "PESO TOTAL"
+        canvas.drawText(labelPeso, pageWidth - margin - paint.measureText(labelPeso) - 10f, y, paint)
+
+        y += 8f
+        paint.color = GrayPdfColor
+        canvas.drawLine(margin, y, pageWidth - margin, y, paint)
+        y += 25f
+
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+
+        materialGroups.sortedBy { it.description }.forEachIndexed { index, group ->
+            if (y > pageHeight - 60f) {
+                pdfDocument.finishPage(page)
+                pageNumber++
+                pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+                page = pdfDocument.startPage(pageInfo)
+                canvas = page.canvas
+                y = 60f
+            }
+
+            // Fila cebreada
+            if (index % 2 != 0) {
+                paint.color = Color.rgb(250, 250, 250)
+                canvas.drawRect(RectF(margin, y - 18f, pageWidth - margin, y + 10f), paint)
+            }
+
+            paint.color = TextPrimaryPdf
+            paint.textSize = 10f
+            // Descripción
+            val desc = if (group.description.length > 45) group.description.take(42) + "..." else group.description
+            canvas.drawText(desc, margin + 10f, y, paint)
+
+            // Info de Lotes y BigBags
+            paint.color = Color.GRAY
+            canvas.drawText("${group.totalLotes} Lotes / ${group.totalBigBags} BB", margin + 300f, y, paint)
+
+            // Peso
+            paint.color = TextPrimaryPdf
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val pesoGroup = group.totalWeight.toString().toDoubleOrNull() ?: 0.0
+            val pesoText = "${formatWeight(pesoGroup)} kg"
+            canvas.drawText(pesoText, pageWidth - margin - paint.measureText(pesoText) - 10f, y, paint)
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+
+            y += 30f
+        }
+
+        pdfDocument.finishPage(page)
+        saveAndSharePdf(pdfDocument, "Stock_Materiales_${Clock.System.now().toEpochMilliseconds()}")
+    }
+
+    // ==========================================
+    // 5. GENERAR INFORME VERTISOL (ANDROID) - DESGLOSADO POR FECHA
+    // ==========================================
+    actual fun generateVertisolReportPdf(
+        vertisolList: List<com.alius.gmrstock.domain.model.Vertisol>,
+        totalKilos: Double
+    ) {
+        val pdfDocument = PdfDocument()
+        val pageWidth = 595 // A4
+        val pageHeight = 842
+        var pageNumber = 1
+
+        var pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+        var page = pdfDocument.startPage(pageInfo)
+        var canvas = page.canvas
+        val paint = Paint()
+        val margin = 45f
+        var y = 60f
+
+        // --- PREPARACIÓN DE DATOS (Explosión por fecha de trasvase) ---
+        val filasDesglosadas = vertisolList.flatMap { lote ->
+            lote.vertisolBigBag.groupBy { bb ->
+                bb.bbTrasvaseDate?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
+            }.map { (fecha, bags) ->
+                val fechaStr = if (fecha != null) {
+                    "${fecha.dayOfMonth.toString().padStart(2, '0')}/${fecha.monthNumber.toString().padStart(2, '0')}/${fecha.year}"
+                } else {
+                    "Sin fecha"
+                }
+                val pesoTotalFecha = bags.sumOf { it.bbWeight.toDoubleOrNull() ?: 0.0 }
+
+                object {
+                    val numeroLote = lote.vertisolNumber
+                    val descripcion = lote.vertisolDescription
+                    val fechaTrasvase = fechaStr
+                    val cantidadBB = bags.size
+                    val peso = pesoTotalFecha
+                }
+            }
+        }.sortedByDescending { it.fechaTrasvase }
+
+        // --- CABECERA ---
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.textSize = 22f
+        paint.color = DarkGrayPdfColor
+        canvas.drawText("LOTES EN VERTISOL", margin, y, paint)
+
+        paint.color = PrimaryPdfColor
+        val logoText = "GMR Stock"
+        canvas.drawText(logoText, pageWidth - margin - paint.measureText(logoText), y, paint)
+
+        y += 22f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        paint.textSize = 11f
+        paint.color = Color.GRAY
+        val fechaHoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        canvas.drawText("Generado el: ${fechaHoy.dayOfMonth}/${fechaHoy.monthNumber}/${fechaHoy.year}", margin, y, paint)
+
+        y += 45f
+
+        // --- CUADRO RESUMEN (KPIs) ---
+        val summaryRect = RectF(margin, y, pageWidth - margin, y + 75f)
+        paint.color = LightGrayBg
+        canvas.drawRoundRect(summaryRect, 12f, 12f, paint)
+
+        paint.color = TextPrimaryPdf
+        paint.textSize = 9f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+
+        // Etiquetas de los KPIs con nuevas posiciones
+        canvas.drawText("TOTAL KILOS", margin + 25f, y + 25f, paint)
+        canvas.drawText("LOTES", margin + 250f, y + 25f, paint)    // Movido de 210f a 250f
+        canvas.drawText("BIGBAGS", margin + 430f, y + 25f, paint) // Movido de 460f a 430f
+
+        paint.textSize = 17f
+        paint.color = PrimaryPdfColor
+
+        // Valores de los KPIs con nuevas posiciones
+        canvas.drawText("${formatWeight(totalKilos)} kg", margin + 25f, y + 55f, paint)
+        canvas.drawText("${vertisolList.size}", margin + 250f, y + 55f, paint)
+
+        val totalBB = vertisolList.sumOf { it.vertisolBigBag.size }
+        canvas.drawText("$totalBB", margin + 430f, y + 55f, paint)
+
+        y += 115f
+
+        // --- TABLA DETALLADA ---
+        paint.color = Color.BLACK
+        paint.textSize = 12f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("REGISTROS DE TRASVASE", margin, y, paint)
+        y += 20f
+
+        // Cabeceras de tabla
+        paint.textSize = 10f
+        paint.color = Color.GRAY
+        canvas.drawText("LOTE / MATERIAL", margin + 10f, y, paint)
+        canvas.drawText("TRASVASE", margin + 260f, y, paint)
+        canvas.drawText("BB", margin + 370f, y, paint)
+        val labelPeso = "PESO TOTAL"
+        canvas.drawText(labelPeso, pageWidth - margin - paint.measureText(labelPeso) - 10f, y, paint)
+
+        y += 8f
+        paint.color = GrayPdfColor
+        canvas.drawLine(margin, y, pageWidth - margin, y, paint)
+        y += 25f
+
+        // --- FILAS DESGLOSADAS ---
+        filasDesglosadas.forEachIndexed { index, fila ->
+            if (y > pageHeight - 60f) {
+                pdfDocument.finishPage(page)
+                pageNumber++
+                pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNumber).create()
+                page = pdfDocument.startPage(pageInfo)
+                canvas = page.canvas
+                y = 60f
+
+                // Repetir cabeceras en nueva página
+                paint.textSize = 10f
+                paint.color = Color.GRAY
+                paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                canvas.drawText("LOTE / MATERIAL", margin + 10f, y, paint)
+                canvas.drawText("TRASVASE", margin + 260f, y, paint)
+                canvas.drawText("BB", margin + 370f, y, paint)
+                canvas.drawText(labelPeso, pageWidth - margin - paint.measureText(labelPeso) - 10f, y, paint)
+                y += 25f
+            }
+
+            // Fila cebreada
+            if (index % 2 != 0) {
+                paint.color = Color.rgb(250, 250, 250)
+                canvas.drawRect(RectF(margin, y - 16f, pageWidth - margin, y + 22f), paint)
+            }
+
+            // Lote (Negrita)
+            paint.color = TextPrimaryPdf
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            paint.textSize = 10f
+            canvas.drawText(fila.numeroLote, margin + 10f, y, paint)
+
+            // Material (Debajo en Gris)
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+            paint.textSize = 8.5f
+            paint.color = Color.GRAY
+            val desc = if (fila.descripcion.length > 40) fila.descripcion.take(37) + "..." else fila.descripcion
+            canvas.drawText(desc, margin + 10f, y + 12f, paint)
+
+            // Fecha de Trasvase
+            paint.color = TextPrimaryPdf
+            paint.textSize = 10f
+            canvas.drawText(fila.fechaTrasvase, margin + 260f, y + 6f, paint)
+
+            // Cantidad de BigBags de esa fecha
+            canvas.drawText("${fila.cantidadBB} BB", margin + 370f, y + 6f, paint)
+
+            // Peso Parcial de esa fecha
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val pText = "${formatWeight(fila.peso)} kg"
+            canvas.drawText(pText, pageWidth - margin - paint.measureText(pText) - 10f, y + 6f, paint)
+
+            y += 38f
+        }
+
+        pdfDocument.finishPage(page)
+        saveAndSharePdf(pdfDocument, "Reporte_Vertisol_${Clock.System.now().toEpochMilliseconds()}")
     }
 
     private fun saveAndSharePdf(pdf: PdfDocument, fileName: String) {
