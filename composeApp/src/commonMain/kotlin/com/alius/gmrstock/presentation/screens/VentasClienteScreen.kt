@@ -239,8 +239,8 @@ fun VentasTopSection(
                     Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = PrimaryColor)
                 }
                 Column(Modifier.padding(start = 8.dp)) {
-                    Text("Ventas", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "Total: ${formatWeight(totalKilos)} kg", fontSize = 14.sp, color = Color.Gray)
+                    Text("Informe de ventas", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                    Text(text = "Filtre por cliente y fecha", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium), color = Color.Gray)
                 }
             }
             IconButton(

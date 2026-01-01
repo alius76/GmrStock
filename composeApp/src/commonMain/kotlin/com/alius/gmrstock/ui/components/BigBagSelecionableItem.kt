@@ -51,7 +51,12 @@ fun BigBagSeleccionableItem(
         // MEJORA 3: Contorno más visible al seleccionar
         border = if (isSelected) selectedBorder else unselectedBorder,
         // Pequeña elevación
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(
+            // Si está seleccionado, ponemos elevación 0 para que la transparencia sea real.
+            // Si no, dejamos los 2.dp para que se vea la sombra normal.
+            defaultElevation = if (isSelected) 0.dp else 2.dp,
+            pressedElevation = 0.dp
+        )
     ) {
         Row(
             modifier = Modifier

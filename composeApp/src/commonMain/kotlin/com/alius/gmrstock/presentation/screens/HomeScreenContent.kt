@@ -370,7 +370,7 @@ class HomeScreenContent(
                                     icon = Icons.Default.Timeline,
                                     onClick = {
                                         showSearchDialog = false
-                                        showUnimplementedDialog = true
+                                        localNavigator.push(TrazabilidadScreen(currentDatabaseUrl))
                                     }
                                 )
                             }

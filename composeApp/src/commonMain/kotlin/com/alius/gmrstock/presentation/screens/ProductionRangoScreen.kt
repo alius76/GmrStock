@@ -165,9 +165,8 @@ class ProduccionRangoScreen(
                                 )
                                 Text(
                                     "Seleccione rango de fechas",
-                                    fontSize = 14.sp,
-                                    color = Color.Gray
-                                )
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium), color = Color.Gray)
+
                             }
                         }
                         IconButton(onClick = {

@@ -9,15 +9,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -55,6 +56,7 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
         val ventaRepository = remember(databaseUrl) { getVentaRepository(databaseUrl) }
         val historialRepository = remember(databaseUrl) { getHistorialRepository(databaseUrl) }
 
+        // --- Estados ---
         var numeroLote by remember { mutableStateOf("") }
         var clientes by remember { mutableStateOf<List<String>>(emptyList()) }
         var clienteSeleccionado by remember { mutableStateOf<String?>(null) }
@@ -64,6 +66,7 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
         var loteArchivadoTemporal by remember { mutableStateOf<LoteModel?>(null) }
 
         var isLoading by remember { mutableStateOf(false) }
+        var isFirstLoad by remember { mutableStateOf(true) } // Estado para controlar la lupa inicial
         var errorMessage by remember { mutableStateOf<String?>(null) }
         var ultimoClientePorBb by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
         var bigBagsSeleccionados by remember { mutableStateOf<Set<BigBags>>(emptySet()) }
@@ -80,19 +83,13 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth() // Asegura que el Row ocupe todo el ancho
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     IconButton(onClick = { navigator.pop() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = PrimaryColor
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = PrimaryColor)
                     }
 
-                    Column(
-                        modifier = Modifier.padding(start = 8.dp).weight(1f)
-                    ) {
+                    Column(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
                         Text(
                             text = "Devoluciones",
                             fontSize = 26.sp,
@@ -107,10 +104,7 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                         )
                     }
 
-                    // 🆕 NUEVO BOTÓN: Historial de Devoluciones
-                    IconButton(
-                        onClick = { navigator.push(ListaDevolucionesScreen(databaseUrl)) }
-                    ) {
+                    IconButton(onClick = { navigator.push(ListaDevolucionesScreen(databaseUrl)) }) {
                         Icon(
                             Icons.Default.List,
                             contentDescription = "Historial de devoluciones",
@@ -121,51 +115,49 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                 }
             }
 
-            val topPadding = 100.dp
-
-            // --- Contenido scrollable usando LazyColumn ---
-            LazyColumn(
+            // --- CUERPO DE LA PANTALLA ---
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = topPadding),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(top = 100.dp) // Espacio para el header fijo
             ) {
-                // --- Input Número de Lote ---
-                item {
+                // --- SECCIÓN DE BÚSQUEDA (Siempre visible arriba) ---
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                     OutlinedTextField(
                         value = numeroLote,
                         onValueChange = { input ->
                             if (input.all { it.isDigit() } || input.isEmpty()) {
                                 numeroLote = input
+                                if (input.isEmpty()) {
+                                    isFirstLoad = true
+                                    errorMessage = null
+                                }
                                 clientes = emptyList()
                                 clienteSeleccionado = null
                                 bigBagsFiltrados = emptyList()
                                 loteBuscado = null
                                 loteArchivadoTemporal = null
                                 bigBagsSeleccionados = emptySet()
-                                errorMessage = null
                             }
                         },
                         label = { Text("Número de lote") },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = PrimaryColor,
                             focusedLabelColor = PrimaryColor
                         )
                     )
-                }
 
-                // --- Botón Buscar ---
-                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     Button(
                         onClick = {
                             coroutineScope.launch {
                                 isLoading = true
+                                isFirstLoad = false
                                 errorMessage = null
                                 clientes = emptyList()
                                 clienteSeleccionado = null
@@ -228,104 +220,89 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor),
                         enabled = numeroLote.isNotBlank() && !isLoading
                     ) {
-                        Text(
-                            "Buscar",
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Text("Buscar", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
-                // --- Dropdown Cliente ---
-                if (clientes.isNotEmpty()) {
-                    item {
-                        Text("Seleccione cliente:", modifier = Modifier.padding(start = 16.dp))
-                        ClienteDialog(
-                            clientes = clientes,
-                            clienteSeleccionado = clienteSeleccionado,
-                            onClienteSeleccionado = { cliente ->
-                                clienteSeleccionado = cliente
-                                bigBagsSeleccionados = emptySet()
-                                coroutineScope.launch {
-                                    isLoading = true
-                                    errorMessage = null
-                                    try {
-                                        val bigbags = loteBuscado?.bigBag ?: emptyList()
-                                        bigBagsFiltrados = bigbags.filter { bb ->
-                                            bb.bbStatus == "o" && ultimoClientePorBb[bb.bbNumber] == cliente
+                // --- SECCIÓN DE CONTENIDO (Centrada o Lista) ---
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (isLoading) {
+                        CircularProgressIndicator(Modifier.align(Alignment.Center), color = PrimaryColor)
+                    } else if (isFirstLoad) {
+                        EmptyStateDevoluciones(isNoAction = true)
+                    } else if (errorMessage != null) {
+                        EmptyStateDevoluciones(isNoAction = false, customMessage = errorMessage)
+                    } else {
+                        // RESULTADOS
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            if (clientes.isNotEmpty()) {
+                                item {
+                                    Text("Seleccione cliente:", modifier = Modifier.padding(start = 16.dp))
+                                    ClienteDialog(
+                                        clientes = clientes,
+                                        clienteSeleccionado = clienteSeleccionado,
+                                        onClienteSeleccionado = { cliente ->
+                                            clienteSeleccionado = cliente
+                                            bigBagsSeleccionados = emptySet()
+                                            coroutineScope.launch {
+                                                isLoading = true
+                                                errorMessage = null
+                                                try {
+                                                    val bigbags = loteBuscado?.bigBag ?: emptyList()
+                                                    bigBagsFiltrados = bigbags.filter { bb ->
+                                                        bb.bbStatus == "o" && ultimoClientePorBb[bb.bbNumber] == cliente
+                                                    }
+                                                    if (bigBagsFiltrados.isEmpty()) {
+                                                        errorMessage = "No hay BigBags disponibles para devolver para este cliente."
+                                                    }
+                                                } catch (e: Exception) {
+                                                    errorMessage = "❌ Error al cargar BigBags: ${e.message}"
+                                                } finally {
+                                                    isLoading = false
+                                                }
+                                            }
                                         }
-                                        if (bigBagsFiltrados.isEmpty()) {
-                                            errorMessage = "No hay BigBags disponibles para devolver para este cliente."
+                                    )
+                                }
+                            }
+
+                            if (clienteSeleccionado != null && bigBagsFiltrados.isNotEmpty() && loteBuscado != null) {
+                                items(bigBagsFiltrados, key = { it.bbNumber }) { bigBag ->
+                                    BigBagSeleccionableItem(
+                                        bigBag = bigBag,
+                                        isSelected = bigBagsSeleccionados.contains(bigBag),
+                                        onToggleSelect = {
+                                            bigBagsSeleccionados = if (bigBagsSeleccionados.contains(bigBag)) {
+                                                bigBagsSeleccionados - bigBag
+                                            } else {
+                                                bigBagsSeleccionados + bigBag
+                                            }
                                         }
-                                    } catch (e: Exception) {
-                                        errorMessage = "❌ Error al cargar BigBags: ${e.message}"
-                                    } finally {
-                                        isLoading = false
+                                    )
+                                }
+
+                                item {
+                                    Button(
+                                        onClick = { showConfirmMultipleDialog = true },
+                                        enabled = bigBagsSeleccionados.isNotEmpty(),
+                                        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                                    ) {
+                                        Text("Devolver ${bigBagsSeleccionados.size} BigBag(s)", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
-                        )
-                    }
-                }
-
-                // --- Lista de BigBags ---
-                if (clienteSeleccionado != null && bigBagsFiltrados.isNotEmpty() && loteBuscado != null) {
-                    items(bigBagsFiltrados, key = { it.bbNumber }) { bigBag ->
-                        BigBagSeleccionableItem(
-                            bigBag = bigBag,
-                            isSelected = bigBagsSeleccionados.contains(bigBag),
-                            onToggleSelect = {
-                                bigBagsSeleccionados =
-                                    if (bigBagsSeleccionados.contains(bigBag)) {
-                                        bigBagsSeleccionados - bigBag
-                                    } else {
-                                        bigBagsSeleccionados + bigBag
-                                    }
-                            }
-                        )
-                    }
-
-                    // --- Botón Devolver ---
-                    item {
-                        Button(
-                            onClick = { showConfirmMultipleDialog = true },
-                            enabled = bigBagsSeleccionados.isNotEmpty(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
-                        ) {
-                            Text(
-                                "Devolver ${bigBagsSeleccionados.size} BigBag(s)",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Bold
-                            )
                         }
-                    }
-                }
-
-                // --- Mensajes de Error/Estado ---
-                if (errorMessage != null) {
-                    item {
-                        Text(
-                            text = errorMessage!!,
-                            color = when {
-                                errorMessage!!.startsWith("❌") -> Color.Red
-                                errorMessage!!.startsWith("⚠️") -> Color(0xFFFFA500)
-                                errorMessage!!.startsWith("✅") -> PrimaryColor.copy(alpha = 0.8f)
-                                else -> PrimaryColor
-                            },
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                        )
                     }
                 }
             }
@@ -353,7 +330,6 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                         TextButton(
                             onClick = {
                                 showConfirmMultipleDialog = false
-                                // --- lógica de devolución tal como la tenías ---
                                 coroutineScope.launch {
                                     isLoading = true
                                     errorMessage = null
@@ -369,10 +345,10 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                                                 loteActualizadoEnStock = loteParaActualizar.copy(id = newStockId, status = "s")
                                                 val successDelete = historialRepository.eliminarLoteHistorial(loteArchivado.id)
                                                 if (!successDelete) {
-                                                    errorMessage = "⚠️ Lote copiado a Stock, pero falló la eliminación del registro de Historial. Revise Historial."
+                                                    errorMessage = "⚠️ Lote copiado a Stock, pero falló la eliminación del registro de Historial."
                                                 }
                                             } else {
-                                                errorMessage = "❌ Error al copiar/ligar lote de Historial a Stock. Cancelando devolución."
+                                                errorMessage = "❌ Error al copiar lote de Historial a Stock."
                                                 isLoading = false
                                                 return@launch
                                             }
@@ -381,15 +357,12 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                                         }
 
                                         val loteActivo = loteActualizadoEnStock!!
-
-                                        val devolucionBigbagsList = selectedBigBags.map { bb ->
-                                            DevolucionBigbag(bb.bbNumber, bb.bbWeight)
-                                        }
+                                        val devolucionBigbagsList = selectedBigBags.map { DevolucionBigbag(it.bbNumber, it.bbWeight) }
                                         val devolucion = Devolucion(
                                             devolucionCliente = clienteSeleccionado!!,
                                             devolucionLote = loteActivo.number,
                                             devolucionMaterial = loteActivo.description,
-                                            devolucionFecha = Clock.System.now(),
+                                            devolucionFecha = Clock.System.now(), // SE RESPETA INSTANT
                                             devolucionPesoTotal = totalWeightNumber.toLong().toString(),
                                             devolucionBigbags = devolucionBigbagsList
                                         )
@@ -409,25 +382,12 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
                                                         bb.bbStatus == "o" && ultimoClientePorBb[bb.bbNumber] == clienteSeleccionado
                                                     }
                                                     bigBagsSeleccionados = emptySet()
-                                                    val finalMessage = if (loteArchivadoTemporal != null) {
-                                                        "✅ Lote revivido y Devolución completa."
-                                                    } else {
-                                                        "✅ Devolución registrada y Stock actualizado."
-                                                    }
-                                                    errorMessage = if (errorMessage?.contains("⚠️") == true) {
-                                                        "${errorMessage!!}\n$finalMessage"
-                                                    } else finalMessage
-                                                } else {
-                                                    errorMessage = "✅ Devolución registrada, pero error al recargar el lote."
+                                                    errorMessage = "✅ Devolución registrada correctamente."
                                                 }
-                                            } else {
-                                                errorMessage = "❌ Error al actualizar los BigBags en el Lote."
                                             }
-                                        } else {
-                                            errorMessage = "❌ Error al guardar el registro consolidado de devolución."
                                         }
                                     } catch (e: Exception) {
-                                        errorMessage = "❌ Error en el proceso de devolución: ${e.message}"
+                                        errorMessage = "❌ Error: ${e.message}"
                                     } finally {
                                         isLoading = false
                                         loteArchivadoTemporal = null
@@ -448,41 +408,53 @@ class DevolucionesScreen(private val databaseUrl: String) : Screen {
             }
         }
     }
+}
 
-    // --- FUNCIONES AUXILIARES ---
-    @Composable
-    // Lo dejo pero no lo estoy usando
-    fun ClienteDropdown(
-        clientes: List<String>,
-        clienteSeleccionado: String?,
-        onClienteSeleccionado: (String) -> Unit
+// --- COMPONENTES AUXILIARES ---
+
+@Composable
+fun EmptyStateDevoluciones(isNoAction: Boolean, customMessage: String? = null) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(bottom = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        var expanded by remember { mutableStateOf(false) }
-        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-            OutlinedButton(
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryColor),
-                border = BorderStroke(1.dp, PrimaryColor)
-            ) {
-                Text(clienteSeleccionado ?: "Mostrar lista de clientes", color = if (clienteSeleccionado != null) Color.Black else Color.Gray)
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.background(Color.White)
-            ) {
-                clientes.forEach { cliente ->
-                    DropdownMenuItem(
-                        text = { Text(cliente) },
-                        onClick = {
-                            expanded = false
-                            onClienteSeleccionado(cliente)
-                        }
-                    )
-                }
+        // 1. Lógica para el icono GRANDE
+        val icon = if (isNoAction) Icons.Default.Search else {
+            when {
+                customMessage?.contains("❌") == true -> Icons.Default.Error
+                customMessage?.contains("✅") == true -> Icons.Default.CheckCircle
+                else -> Icons.Default.Info
             }
         }
+
+        // 2. Limpiamos el texto para quitarle los emojis repetidos de forma segura
+        val cleanText = customMessage
+            ?.replace("✅", "")
+            ?.replace("❌", "")
+            ?.replace("⚠️", "")
+            ?.trim() ?: ""
+
+        // Corregido: Variable asignada correctamente
+        val finalDisplay = if (isNoAction) "Ingrese un número de lote para devolver" else cleanText
+
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(100.dp).alpha(0.2f),
+            tint = if (customMessage?.contains("❌") == true) Color.Red else Color.Gray
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = finalDisplay,
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.Gray,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        )
     }
 }
 

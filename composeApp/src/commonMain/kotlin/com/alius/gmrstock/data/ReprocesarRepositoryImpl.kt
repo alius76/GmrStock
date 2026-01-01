@@ -73,7 +73,7 @@ class ReprocesarRepositoryImpl(
             "from": [{ "collectionId": "reprocesar" }],
             "where": {
               "fieldFilter": {
-                "field": { "fieldPath": "reprocesoNumber" },
+                "field": { "fieldPath": "reprocesarLoteNumber" },
                 "op": "EQUAL",
                 "value": { "stringValue": "$reprocesoNumber" }
               }
