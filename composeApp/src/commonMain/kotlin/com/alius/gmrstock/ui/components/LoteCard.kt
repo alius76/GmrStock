@@ -473,84 +473,57 @@ fun LoteCard(
         }
     }
 
-// --- Diálogo de reservas con selección de cliente ---
+// --- Diálogo de reservas con selección de cliente (Estructura Blindada y Lógica de Guardado Completa) ---
     if (showReservedDialog) {
         var selectedCliente by remember { mutableStateOf(lote.booked) }
         var showClientesDialog by remember { mutableStateOf(false) }
-        var userToSave by remember { mutableStateOf(currentUserEmail) }
+        val userToSave = currentUserEmail
         var clientesList by remember { mutableStateOf<List<Cliente>?>(null) }
 
-        // 🆕 ESTADOS PARA COMANDAS
-        var selectedComanda by remember { mutableStateOf<Comanda?>(null) }
-        var comandasList by remember { mutableStateOf<List<Comanda>>(emptyList()) }
-        var isComandasLoading by remember { mutableStateOf(false) }
+        var linkedComanda by remember { mutableStateOf<Comanda?>(null) }
+        var isComandaLoading by remember { mutableStateOf(false) }
+
+        // Estado para las observaciones
         var currentBookedRemark by remember { mutableStateOf(lote.bookedRemark?.trim() ?: "") }
 
-        // REPOSITORIOS (Asume que están definidos en LoteCard)
+        // 🛡️ Lógica para detectar si el comentario ha cambiado
+        val remarkChanged = currentBookedRemark.trim() != (lote.bookedRemark?.trim() ?: "")
+
         val comandaRepository = remember { getComandaRepository(databaseUrl) }
 
-        val dialogWidthFraction = 0.95f
         val noOkCliente = Cliente(cliNombre = "NO OK")
         val errorColor = MaterialTheme.colorScheme.error
         val cardShape = RoundedCornerShape(12.dp)
 
-        // Banderas de estado
-        val isLoteReservedByRealClient = lote.booked != null && lote.booked.cliNombre != "NO OK"
         val isNoOkSelected = selectedCliente?.cliNombre == "NO OK"
         val isLoteReservedOrBlocked = lote.booked != null
         val isBloqueoClickable = !isLoteReservedOrBlocked || isNoOkSelected
-        val isRealClientSelected = selectedCliente != null && selectedCliente!!.cliNombre != "NO OK"
 
-        // 1. CARGAR Y FILTRAR CLIENTES
+        // 1. Cargar Clientes
         LaunchedEffect(Unit) {
             val allClients = clientRepository.getAllClientsOrderedByName()
             clientesList = allClients.filter { it.cliNombre != "NO OK" }
         }
 
-        // 2. CARGAR Y FILTRAR COMANDAS (Lógica Modificada para Excluir Vendidas)
-        LaunchedEffect(selectedCliente) {
-            comandasList = emptyList()
-            selectedComanda = null
-            val cliente = selectedCliente
-
-            // Solo cargar comandas si es un cliente real
-            if (cliente != null && cliente.cliNombre != "NO OK") {
-                isComandasLoading = true
+        // 2. Cargar Comanda vinculada
+        LaunchedEffect(lote.number) {
+            if (isLoteReservedOrBlocked) {
+                isComandaLoading = true
                 try {
-                    val allComandas = comandaRepository.getPendingComandasByClient(cliente.cliNombre)
-
-                    // 🔑 PASO 1: Excluir Comandas que ya fueron vendidas.
-                    val activeComandas = allComandas.filter { !it.fueVendidoComanda }
-
-                    // 🔑 PASO 2: Encontrar la comanda previamente asignada (si aún está activa)
-                    val previouslyAssignedComanda = activeComandas.firstOrNull { it.numberLoteComanda == lote.number }
-
-                    // 🔑 PASO 3: Filtrar solo las comandas que están disponibles para este lote
-                    val availableComandas = activeComandas.filter { comanda ->
-                        val isUnassigned = comanda.numberLoteComanda.isNullOrBlank() || comanda.numberLoteComanda == "0"
-                        val isAssignedToThisLote = comanda.numberLoteComanda == lote.number
-                        isUnassigned || isAssignedToThisLote
-                    }
-
-                    comandasList = availableComandas
-
-                    // 🔑 PASO 4: Pre-seleccionar la comanda si la reserva del lote es del cliente actual y tiene una comanda activa asociada.
-                    if (lote.booked?.cliNombre == cliente.cliNombre) {
-                        selectedComanda = previouslyAssignedComanda
-                    }
-
+                    linkedComanda = comandaRepository.getComandaByLoteNumber(lote.number)
                 } catch (e: Exception) {
-                    scope.launch { snackbarHostState.showSnackbar("Error al cargar comandas: ${e.message}") }
+                    linkedComanda = null
                 } finally {
-                    isComandasLoading = false
+                    isComandaLoading = false
                 }
             }
         }
 
-        // 3. DIÁLOGO PRINCIPAL (AlertDialog)
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
-            modifier = Modifier.fillMaxWidth(dialogWidthFraction).fillMaxHeight(0.9f),
+            modifier = Modifier
+                .width(360.dp) // Ancho Fijo
+                .height(650.dp), // Altura Fija Total
             title = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -560,81 +533,68 @@ fun LoteCard(
                 }
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     lote.bookedByUser?.takeIf { it.isNotBlank() }?.let {
                         InfoCard(label = "Reservado por", value = it)
                     }
 
-                    // --- 1. CLIENTE ---
+                    // --- 1. SELECCIÓN DE CLIENTE ---
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
                             .border(
                                 width = 1.dp,
-                                color = if (selectedCliente != null) PrimaryColor
+                                color = if (selectedCliente != null && !isNoOkSelected) PrimaryColor
                                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                                 shape = cardShape
                             )
                             .clip(cardShape)
-                            // Deshabilitamos el selector si ya hay reserva/bloqueo
                             .clickable(enabled = !isLoteReservedOrBlocked) { showClientesDialog = true }
                             .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Text(
-                            text = selectedCliente?.cliNombre ?: "Seleccione cliente",
-                            color = if (selectedCliente != null && !isLoteReservedOrBlocked) PrimaryColor
-                            else if (isLoteReservedOrBlocked) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            text = if (isNoOkSelected) "BLOQUEO ACTIVO" else (selectedCliente?.cliNombre ?: "Seleccione cliente"),
+                            color = if (isNoOkSelected) errorColor else if (selectedCliente != null) PrimaryColor else TextSecondary
                         )
                     }
 
-                    // --- 2. SECCIÓN DE COMANDAS PENDIENTES ---
-                    Text("Comandas activas (${selectedCliente?.cliNombre ?: "No Seleccionado"})", fontWeight = FontWeight.Bold)
+                    // --- 2. SECCIÓN DE COMANDA ASOCIADA (Altura Fija) ---
+                    Text("Comanda vinculada", fontWeight = FontWeight.Bold)
 
                     Box(modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .height(150.dp)
                         .border(1.dp, MaterialTheme.colorScheme.outlineVariant, cardShape)
                         .padding(4.dp)) {
 
-                        if (isComandasLoading) {
+                        if (isComandaLoading) {
                             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(30.dp), color = PrimaryColor)
-                        } else if (isRealClientSelected && comandasList.isEmpty()) {
-                            Text("No hay comandas pendientes para este cliente disponibles para este lote.", modifier = Modifier.align(Alignment.Center).padding(16.dp), color = TextSecondary)
-                        } else if (!isRealClientSelected) {
-                            Text("Lista de comandas del cliente.", modifier = Modifier.align(Alignment.Center).padding(16.dp), color = TextSecondary)
-                        } else { // Mostrar la lista si hay cliente real y comandas
-                            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
-                                items(comandasList) { comanda ->
-
-                                    // 🔑 LÓGICA DE INTERACTIVIDAD (CORREGIDA):
-                                    // Es clickeable si NO hay cliente real reservando,
-                                    // O si el cliente seleccionado actualmente es el que tiene la reserva del lote.
-                                    // Esto permite reasignar una nueva comanda al mismo cliente después de una venta.
-                                    val isComandaClickable = !isLoteReservedByRealClient || (selectedCliente?.cliNombre == lote.booked?.cliNombre)
-
-                                    ComandaLoteCard(
-                                        comanda = comanda,
-                                        isSelected = comanda.idComanda == selectedComanda?.idComanda,
-                                        onClick = if (isComandaClickable) { clickedComanda ->
-                                            selectedComanda = if (selectedComanda?.idComanda == clickedComanda.idComanda) null else clickedComanda
-                                        } else { _: Comanda -> }
-                                    )
-                                }
-                            }
+                        } else if (linkedComanda != null) {
+                            ComandaLoteCard(comanda = linkedComanda!!, isSelected = true, onClick = { })
+                        } else {
+                            Text(
+                                "Sin comanda asociada.",
+                                modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                                color = TextSecondary,
+                                textAlign = TextAlign.Center,
+                                fontSize = 13.sp
+                            )
                         }
                     }
-                    // ---------------------------------------------------
 
-                    // --- 3. OBSERVACIONES ---
+                    // --- 3. OBSERVACIONES (Altura Fija Blindada) ---
                     OutlinedTextField(
                         value = currentBookedRemark,
                         onValueChange = { currentBookedRemark = it },
                         label = { Text("Observaciones de reserva") },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp, max = 150.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(130.dp),
                         singleLine = false,
                         shape = cardShape,
                         colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -644,233 +604,129 @@ fun LoteCard(
                         )
                     )
 
-                    // --- 4. BLOQUEO INTERNO (Botón) ---
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val bloqueoBackgroundColor = when {
-                        isNoOkSelected -> errorColor
-                        isLoteReservedOrBlocked && !isNoOkSelected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
-                        isBloqueoClickable -> errorColor.copy(alpha = 0.15f)
-                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
-                    }
-
-                    val bloqueoIconColor = when {
-                        isNoOkSelected -> Color.LightGray
-                        isLoteReservedOrBlocked && !isNoOkSelected -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        isBloqueoClickable -> errorColor
-                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                    }
-                    val bloqueoTextColor = bloqueoIconColor
-
+                    // --- 4. BLOQUEO INTERNO (Efectos Reforzados) ---
+                    val isBlocked = isNoOkSelected
+                    val bloqueoBgColor = if (isBlocked) errorColor.copy(alpha = 0.15f) else errorColor.copy(alpha = 0.05f)
+                    val bloqueoStrokeColor = if (isBlocked) errorColor else errorColor.copy(alpha = 0.3f)
+                    val bloqueoStrokeWidth = if (isBlocked) 2.dp else 1.dp
 
                     Surface(
                         shape = cardShape,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
+                            .height(54.dp)
+                            .border(bloqueoStrokeWidth, bloqueoStrokeColor, cardShape)
                             .clip(cardShape)
-                            .background(bloqueoBackgroundColor)
+                            .background(bloqueoBgColor)
                             .then(
-                                if (isBloqueoClickable) Modifier.clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    selectedCliente = noOkCliente
-                                    selectedComanda = null
+                                if (isBloqueoClickable) Modifier.clickable {
+                                    selectedCliente = if (isBlocked) null else noOkCliente
                                 }
                                 else Modifier
                             ),
-                        shadowElevation = if (isBloqueoClickable) 2.dp else 0.dp
+                        shadowElevation = if (isBlocked) 4.dp else 0.dp
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp),
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                Icons.Default.Lock,
-                                contentDescription = "Bloquear",
-                                tint = bloqueoIconColor,
+                                imageVector = if (isBlocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                                contentDescription = null,
+                                tint = bloqueoStrokeColor,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                "BLOQUEO INTERNO",
-                                color = bloqueoTextColor,
-                                fontWeight = FontWeight.Bold,
+                                text = if (isBlocked) "BLOQUEO ACTIVADO" else "BLOQUEO INTERNO",
+                                color = bloqueoStrokeColor,
+                                fontWeight = FontWeight.ExtraBold,
                                 fontSize = 16.sp
                             )
                         }
                     }
                 }
             },
-            // --- 5. Botones de Acción (ConfirmButton) ---
             confirmButton = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Botón Anular
-                    if (lote.booked != null || lote.dateBooked != null) {
+                    // BOTÓN ANULAR
+                    if (isLoteReservedOrBlocked) {
                         TextButton(onClick = {
                             showReservedDialog = false
                             scope.launch {
                                 var success = true
-
-                                // Buscamos la comanda ACTIVA vinculada a ESTE LOTE (si existe)
-                                val linkedComanda = comandasList.firstOrNull { it.numberLoteComanda == lote.number }
-
-                                if (linkedComanda != null) {
-                                    val comandaCleanSuccess = comandaRepository.updateComandaLoteNumber(linkedComanda.idComanda, "")
-                                    if (!comandaCleanSuccess) {
-                                        snackbarHostState.showSnackbar("Error al limpiar la Comanda asociada.")
-                                        success = false
-                                    }
+                                linkedComanda?.let {
+                                    val comandaCleanSuccess = comandaRepository.updateComandaLoteNumber(it.idComanda, "")
+                                    if (!comandaCleanSuccess) success = false
                                 }
-
                                 val loteCleanSuccess = loteRepository.updateLoteBooked(lote.id, null, null, null, null)
-                                if (!loteCleanSuccess) {
-                                    snackbarHostState.showSnackbar("Error al anular la reserva del Lote.")
-                                    success = false
-                                }
+                                if (!loteCleanSuccess) success = false
 
                                 if (success) {
                                     onRemarkUpdated(lote.copy(booked = null, dateBooked = null, bookedByUser = null, bookedRemark = null))
+                                    snackbarHostState.showSnackbar("Reserva anulada")
                                 }
-                                snackbarHostState.showSnackbar(if (success) "Reserva anulada" else "Error al anular la reserva")
                             }
-                        }) { Text("Anular", color = MaterialTheme.colorScheme.error) }
+                        }) { Text("Anular", color = errorColor) }
                     } else Spacer(modifier = Modifier.width(1.dp))
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { showReservedDialog = false }) { Text("Cancelar", color = PrimaryColor) }
 
-                        // Botón Guardar (Lógica Modificada)
                         TextButton(
                             onClick = {
-                                // Validaciones
-                                if (selectedCliente == null) {
-                                    scope.launch { snackbarHostState.showSnackbar("Debe seleccionar un cliente") }
-                                    return@TextButton
-                                }
-                                if (isLoteReservedOrBlocked && selectedCliente?.cliNombre != lote.booked?.cliNombre) {
-                                    scope.launch { snackbarHostState.showSnackbar("Debe anular la reserva/bloqueo existente antes de seleccionar otro cliente.") }
-                                    return@TextButton
-                                }
-
-                                // Lógica de la fecha de reserva (usa fecha de Comanda si existe, si no, usa la actual o la existente)
-                                val newDateBooked = if (selectedComanda != null) {
-                                    selectedComanda!!.dateBookedComanda
-                                } else if (lote.booked == null) {
-                                    kotlinx.datetime.Clock.System.now() // Nueva reserva, usa fecha actual
-                                } else {
-                                    lote.dateBooked // Mantiene la fecha de la reserva existente
-                                }
-
+                                if (selectedCliente == null) return@TextButton
                                 showReservedDialog = false
                                 val remarkToSave = currentBookedRemark.trim().ifBlank { null }
-
                                 scope.launch {
-                                    var comandaSuccess = true
-
-                                    // Paso 1: Desvincular la comanda anterior (si el usuario cambió la selección o deseleccionó)
-                                    // Usamos 'comandasList' que contiene las comandas activas del cliente actual, excluyendo la que se selecciona ahora.
-                                    val oldLinkedComanda = comandasList.firstOrNull { it.numberLoteComanda == lote.number && it.idComanda != selectedComanda?.idComanda }
-
-                                    if (oldLinkedComanda != null) {
-                                        comandaSuccess = comandaRepository.updateComandaLoteNumber(oldLinkedComanda.idComanda, "")
-                                        if (!comandaSuccess) {
-                                            snackbarHostState.showSnackbar("Error al desvincular la Comanda anterior.")
-                                        }
-                                    }
-
-                                    // Paso 2: Actualizar la reserva del lote
-                                    val loteSuccess = loteRepository.updateLoteBooked(
-                                        lote.id, selectedCliente, newDateBooked, userToSave, remarkToSave
+                                    val success = loteRepository.updateLoteBooked(
+                                        lote.id,
+                                        selectedCliente,
+                                        lote.dateBooked ?: kotlinx.datetime.Clock.System.now(),
+                                        userToSave,
+                                        remarkToSave
                                     )
-
-                                    // Paso 3: Vincular la nueva comanda (si se seleccionó una y la reserva del lote fue exitosa)
-                                    if (loteSuccess && selectedComanda != null && comandaSuccess) {
-                                        comandaSuccess = comandaRepository.updateComandaLoteNumber(
-                                            selectedComanda!!.idComanda, lote.number
-                                        )
-                                    }
-
-                                    if (loteSuccess && comandaSuccess) {
-                                        val updatedLote = lote.copy(
+                                    if (success) {
+                                        onRemarkUpdated(lote.copy(
                                             booked = selectedCliente,
-                                            dateBooked = newDateBooked,
                                             bookedByUser = userToSave,
                                             bookedRemark = remarkToSave
-                                        )
-                                        onRemarkUpdated(updatedLote)
-
-                                        val msg = if (selectedComanda != null) "Reserva y Comanda asociadas correctamente"
-                                        else "Reserva del lote guardada (sin Comanda asociada)"
-                                        snackbarHostState.showSnackbar(msg)
-                                    } else {
-                                        snackbarHostState.showSnackbar("Error al guardar la reserva. Lote: $loteSuccess, Comanda: $comandaSuccess")
+                                        ))
+                                        snackbarHostState.showSnackbar("Cambios guardados")
                                     }
                                 }
                             },
-                            // Habilitación: Solo requiere que se haya seleccionado un cliente
-                            enabled = selectedCliente != null
-                        ) { Text("Guardar", color = PrimaryColor) }
+                            // 🔥 Habilitado si hay un cliente seleccionado Y (es nuevo bloqueo/reserva O el texto ha cambiado)
+                            enabled = selectedCliente != null && (!isLoteReservedOrBlocked || remarkChanged)
+                        ) {
+                            Text(
+                                "Guardar",
+                                color = if (selectedCliente != null && (!isLoteReservedOrBlocked || remarkChanged)) PrimaryColor else TextSecondary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
         )
 
-        // --- DIÁLOGO DE SELECCIÓN DE CLIENTE ---
         if (showClientesDialog) {
-            var tempCliente by remember { mutableStateOf(selectedCliente) }
-
-            AlertDialog(
-                onDismissRequest = { showClientesDialog = false },
-                title = { Text("Seleccione un cliente", fontWeight = FontWeight.Bold, color = PrimaryColor) },
-                text = {
-                    Box(modifier = Modifier.heightIn(max = 400.dp)) {
-                        LazyColumn {
-                            items(clientesList ?: emptyList()) { cliente ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { tempCliente = cliente }
-                                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    RadioButton(
-                                        selected = tempCliente == cliente,
-                                        onClick = { tempCliente = cliente },
-                                        colors = RadioButtonDefaults.colors(selectedColor = PrimaryColor)
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(cliente.cliNombre)
-                                }
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        selectedCliente = tempCliente
-                        showClientesDialog = false
-                    }) {
-                        Text("Aceptar", color = PrimaryColor)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showClientesDialog = false }) {
-                        Text("Cancelar", color = PrimaryColor)
-                    }
-                },
-                shape = RoundedCornerShape(16.dp)
+            ClientesSelectedDialogContent(
+                clients = clientesList ?: emptyList(),
+                currentSelectedClient = selectedCliente,
+                showAllOption = false,
+                onDismiss = { showClientesDialog = false },
+                onConfirm = { cliente ->
+                    selectedCliente = cliente
+                    showClientesDialog = false
+                }
             )
         }
-
     }
 
 }

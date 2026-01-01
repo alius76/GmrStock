@@ -20,6 +20,7 @@ actual object PdfGenerator {
     private val darkGrayColor = UIColor.colorWithRed(85.0/255.0, green = 85.0/255.0, blue = 85.0/255.0, alpha = 1.0)
     private val lightGrayBg = UIColor.colorWithRed(245.0/255.0, green = 245.0/255.0, blue = 245.0/255.0, alpha = 1.0)
     private val textPrimaryColor = UIColor.colorWithRed(51.0/255.0, green = 51.0/255.0, blue = 51.0/255.0, alpha = 1.0)
+    private val warningColor = UIColor.colorWithRed(240.0/255.0, green = 154.0/255.0, blue = 0.0/255.0, alpha = 1.0)
 
     private fun ensureYearInRange(range: String): String {
         val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
@@ -193,7 +194,7 @@ actual object PdfGenerator {
         title: String,
         dateRange: String
     ) {
-        val fileName = "Planning_Comandas.pdf"
+        val fileName = "Planning_Comandas_${Clock.System.now().toEpochMilliseconds()}.pdf"
         val paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
         val cacheDirectory = paths.first() as String
         val filePath = cacheDirectory + "/" + fileName
@@ -262,7 +263,7 @@ actual object PdfGenerator {
                     val labelRect = CGRectMake(xOffset + columnWidth - 65.0, currentY + 8.0, 57.0, 14.0)
                     reservedColor.setFill()
                     UIBezierPath.bezierPathWithRoundedRect(labelRect, 4.0).fill()
-                    drawTextInRect("RETRASADA", labelRect, UIFont.boldSystemFontOfSize(7.0), UIColor.whiteColor, NSTextAlignmentCenter)
+                    drawTextInRect("RETRASO", labelRect, UIFont.boldSystemFontOfSize(7.0), UIColor.whiteColor, NSTextAlignmentCenter)
                 }
 
                 innerY += 18.0
@@ -272,12 +273,12 @@ actual object PdfGenerator {
                 innerY += 18.0
 
                 val isAssigned = comanda.numberLoteComanda.isNotBlank()
-                drawText(if (isAssigned) "Lote: ${comanda.numberLoteComanda}" else "PENDIENTE LOTE", xOffset + 10.0, innerY, UIFont.boldSystemFontOfSize(9.0), if (isAssigned) primaryColor else reservedColor)
+                drawText(if (isAssigned) "Lote: ${comanda.numberLoteComanda}" else "PENDIENTE DE ASIGNAR", xOffset + 10.0, innerY, UIFont.boldSystemFontOfSize(11.0), if (isAssigned) primaryColor else warningColor)
 
                 if (comanda.remarkComanda.isNotBlank()) {
                     innerY += 14.0
                     val obs = if (comanda.remarkComanda.length > 30) comanda.remarkComanda.take(27) + "..." else comanda.remarkComanda
-                    drawText("Obs: $obs", xOffset + 10.0, innerY, UIFont.italicSystemFontOfSize(8.5), UIColor.grayColor)
+                    drawText("Obs: $obs", xOffset + 10.0, innerY, UIFont.italicSystemFontOfSize(8.0), UIColor.grayColor)
                 }
 
                 if (isRightColumn || index == list.size - 1) currentY += cellHeight + 10.0
@@ -299,7 +300,7 @@ actual object PdfGenerator {
         dateRange: String,
         desgloseMateriales: Map<String, Double>
     ) {
-        val fileName = "Reporte_Ventas.pdf"
+        val fileName = "Reporte_Ventas_${Clock.System.now().toEpochMilliseconds()}.pdf"
         val paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
         val cacheDirectory = paths.first() as String
         val filePath = cacheDirectory + "/" + fileName

@@ -10,6 +10,7 @@ import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.domain.model.MaterialGroup
 import com.alius.gmrstock.domain.model.Ratio
 import com.alius.gmrstock.domain.model.Venta
+import com.alius.gmrstock.ui.theme.WarningColor
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.datetime.*
@@ -25,6 +26,7 @@ actual object PdfGenerator {
     private val TextPrimaryPdf = Color.rgb(51, 51, 51)       // 0xFF333333
     private val GrayPdfColor = Color.rgb(204, 204, 204)      // 0xFFCCCCCC
     private val LightGrayBg = Color.rgb(245, 245, 245)       // Fondo para KPIs
+    private val WarningPdfColor = Color.rgb(240, 154, 0)      // 0xFFF09A00 (Ámbar)
 
     // Helper corregido para que ambas fechas del rango muestren el año correctamente
     private fun ensureYearInRange(range: String): String {
@@ -349,7 +351,7 @@ actual object PdfGenerator {
                     val labelRect = RectF(xOffset + columnWidth - 65f, y + 8f, xOffset + columnWidth - 8f, y + 22f)
                     canvas.drawRoundRect(labelRect, 4f, 4f, labelPaint)
                     paint.color = Color.WHITE; paint.textSize = 7f
-                    canvas.drawText("RETRASADA", labelRect.centerX() - paint.measureText("RETRASADA")/2, labelRect.centerY() + 2.5f, paint)
+                    canvas.drawText("RETRASO", labelRect.centerX() - paint.measureText("RETRASO")/2, labelRect.centerY() + 2.5f, paint)
                 }
 
                 // Detalles (Material, Peso, Lote)
@@ -364,15 +366,15 @@ actual object PdfGenerator {
                 innerY += 18f
                 val isAssigned = comanda.numberLoteComanda.isNotBlank()
                 paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                paint.textSize = 9f
-                paint.color = if (isAssigned) PrimaryPdfColor else ReservedPdfColor
-                canvas.drawText(if (isAssigned) "Lote: ${comanda.numberLoteComanda}" else "PENDIENTE LOTE", xOffset + 10f, innerY, paint)
+                paint.textSize = 11f
+                paint.color = if (isAssigned) PrimaryPdfColor else WarningPdfColor
+                canvas.drawText(if (isAssigned) "Lote: ${comanda.numberLoteComanda}" else "PENDIENTE DE ASIGNAR", xOffset + 10f, innerY, paint)
 
                 // Observaciones
                 if (!comanda.remarkComanda.isNullOrBlank()) {
                     innerY += 14f; paint.color = Color.GRAY
-                    paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC); paint.textSize = 8.5f
-                    val obs = if (comanda.remarkComanda!!.length > 30) comanda.remarkComanda!!.take(27) + "..." else comanda.remarkComanda!!
+                    paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC); paint.textSize = 8f
+                    val obs = if (comanda.remarkComanda!!.length > 65) comanda.remarkComanda!!.take(62) + "..." else comanda.remarkComanda!!
                     canvas.drawText("Obs: $obs", xOffset + 10f, innerY, paint)
                 }
 

@@ -19,30 +19,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.alius.gmrstock.domain.model.Cliente
+// USAMOS ALIAS PARA EVITAR EL ERROR DE "INT" O "REFERENCE"
+import com.alius.gmrstock.domain.model.Material as MaterialModel
 import com.alius.gmrstock.ui.theme.PrimaryColor
 
 @Composable
-fun ClientesSelectedDialogContent(
-    clients: List<Cliente>,
-    currentSelectedClient: Cliente?,
-    showAllOption: Boolean = false, // Parámetro opcional
+fun MaterialSelectedDialogContent(
+    materials: List<MaterialModel>,
+    currentSelectedMaterial: MaterialModel?,
     onDismiss: () -> Unit,
-    onConfirm: (Cliente?) -> Unit // Cambiado a Cliente? (null significa TODOS)
+    onConfirm: (MaterialModel) -> Unit
 ) {
-    var tempSelected by remember { mutableStateOf(currentSelectedClient) }
+    var tempSelected by remember { mutableStateOf<MaterialModel?>(currentSelectedMaterial) }
     var searchQuery by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
-    // Objeto ficticio para representar la opción global
-    val todoItem = remember { Cliente(cliNombre = "TODOS LOS CLIENTES") }
-
-    val filteredClients = remember(searchQuery, clients) {
-        val base = if (searchQuery.isEmpty()) clients else clients.filter {
-            it.cliNombre.contains(searchQuery, ignoreCase = true)
+    val filteredMaterials = remember(searchQuery, materials) {
+        if (searchQuery.isEmpty()) materials else materials.filter {
+            it.materialNombre.contains(searchQuery, ignoreCase = true)
         }
-        // Solo inyectamos "TODOS" si no hay búsqueda activa y la opción está habilitada
-        if (showAllOption && searchQuery.isEmpty()) listOf(todoItem) + base else base
     }
 
     Dialog(onDismissRequest = { focusManager.clearFocus(); onDismiss() }) {
@@ -53,7 +48,7 @@ fun ClientesSelectedDialogContent(
         ) {
             Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(16.dp).fillMaxHeight()) {
                 Text(
-                    "Seleccione un cliente",
+                    "Seleccione un material",
                     fontWeight = FontWeight.Bold, fontSize = 20.sp, color = PrimaryColor,
                     modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
                 )
@@ -64,15 +59,14 @@ fun ClientesSelectedDialogContent(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Buscar cliente...", fontSize = 14.sp) },
-                    leadingIcon = { Icon(Icons.Default.Search, null, tint = PrimaryColor) },
+                    placeholder = { Text("Buscar material...", fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PrimaryColor) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = PrimaryColor,    // Color del borde al seleccionar
-                        focusedLabelColor = PrimaryColor,     // Color de la etiqueta al seleccionar
-                        cursorColor = PrimaryColor,           // Color de la barrita del cursor
-                        focusedLeadingIconColor = PrimaryColor // Color del icono cuando está enfocado
+                        focusedBorderColor = PrimaryColor,
+                        cursorColor = PrimaryColor,
+                        focusedLeadingIconColor = PrimaryColor
                     )
                 )
 
@@ -80,21 +74,21 @@ fun ClientesSelectedDialogContent(
 
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     LazyColumn {
-                        items(filteredClients) { clienteItem ->
+                        items(filteredMaterials) { materialItem ->
                             Row(
-                                modifier = Modifier.fillMaxWidth().clickable { tempSelected = clienteItem }
+                                modifier = Modifier.fillMaxWidth().clickable { tempSelected = materialItem }
                                     .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 RadioButton(
-                                    selected = tempSelected == clienteItem,
-                                    onClick = { tempSelected = clienteItem },
+                                    selected = tempSelected == materialItem,
+                                    onClick = { tempSelected = materialItem },
                                     colors = RadioButtonDefaults.colors(selectedColor = PrimaryColor)
                                 )
                                 Text(
-                                    text = clienteItem.cliNombre,
-                                    color = if (tempSelected == clienteItem) PrimaryColor else Color.Unspecified,
-                                    fontWeight = if (tempSelected == clienteItem) FontWeight.Bold else FontWeight.Normal
+                                    text = materialItem.materialNombre,
+                                    color = if (tempSelected == materialItem) PrimaryColor else Color.Unspecified,
+                                    fontWeight = if (tempSelected == materialItem) FontWeight.Bold else FontWeight.Normal
                                 )
                             }
                         }
@@ -104,11 +98,7 @@ fun ClientesSelectedDialogContent(
                 Row(Modifier.fillMaxWidth(), Arrangement.End) {
                     TextButton(onClick = onDismiss) { Text("Cancelar", color = PrimaryColor) }
                     TextButton(
-                        onClick = {
-                            // Si seleccionó el item especial, devolvemos null
-                            if (tempSelected == todoItem) onConfirm(null)
-                            else onConfirm(tempSelected)
-                        },
+                        onClick = { tempSelected?.let { onConfirm(it) } },
                         enabled = tempSelected != null
                     ) {
                         Text("Aceptar", color = PrimaryColor)

@@ -31,9 +31,12 @@ import com.alius.gmrstock.data.getMaterialRepository
 import com.alius.gmrstock.domain.model.Cliente
 import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.domain.model.Material
+import com.alius.gmrstock.ui.components.ClientesSelectedDialogContent
 import com.alius.gmrstock.ui.components.ComandaCard
 import com.alius.gmrstock.ui.components.InlineCalendarSelector
+import com.alius.gmrstock.ui.components.MaterialSelectedDialogContent
 import com.alius.gmrstock.ui.components.UniversalDatePickerDialog
+import com.alius.gmrstock.ui.components.PlanningAssignmentBottomSheet
 import com.alius.gmrstock.ui.theme.BackgroundColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
 import kotlinx.coroutines.launch
@@ -49,6 +52,7 @@ class ComandaScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
+        val snackbarHostState = remember { SnackbarHostState() }
 
         // --- Repositorios ---
         val clientRepository = remember(databaseUrl) { getClientRepository(databaseUrl) }
@@ -86,6 +90,11 @@ class ComandaScreen(
         // --- Estados para Reasignar Fecha ---
         var showDatePicker by remember { mutableStateOf(false) }
         var comandaToUpdateDate by remember { mutableStateOf<Comanda?>(null) }
+
+        // --- Estados para ASIGNACIÓN DE LOTE (Nuevo) ---
+        var showAssignmentSheet by remember { mutableStateOf(false) }
+        var comandaForLote by remember { mutableStateOf<Comanda?>(null) }
+        val assignmentSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         // --- Diálogos y Modificaciones ---
         var showConfirmDeleteDialog by remember { mutableStateOf(false) }
@@ -271,12 +280,24 @@ class ComandaScreen(
                             onClick = { selectedComanda = if (selectedComanda == comanda) null else comanda },
                             onDelete = { confirmarEliminar(comanda) },
                             onReassign = { confirmarReasignar(comanda) },
-                            onEditRemark = { editarObservaciones(comanda) }
+                            onEditRemark = { editarObservaciones(comanda) },
+                            onAssignLote = { // 🔥 Acción del nuevo botón de Lote
+                                comandaForLote = comanda
+                                showAssignmentSheet = true
+                                selectedComanda = null
+                                scope.launch { assignmentSheetState.show() }
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
+
+            // --- Snackbar Host ---
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
 
             // --- Dialog Agregar Comanda ---
             if (showAgregarDialog) {
@@ -406,69 +427,34 @@ class ComandaScreen(
                 }
             }
 
-            // --- Dialog Cliente ---
+            // --- Dialog Cliente (Sustituido por tu componente optimizado) ---
             if (showClientesDialog) {
-                var tempCliente by remember { mutableStateOf(selectedCliente) }
-                AlertDialog(
-                    onDismissRequest = { showClientesDialog = false },
-                    title = { Text("Seleccione un cliente", fontWeight = FontWeight.Bold, color = PrimaryColor) },
-                    text = {
-                        LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
-                            items(clients) { cliente ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { tempCliente = cliente }
-                                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    RadioButton(selected = tempCliente == cliente, onClick = { tempCliente = cliente }, colors = RadioButtonDefaults.colors(selectedColor = PrimaryColor))
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(cliente.cliNombre)
-                                }
-                            }
-                        }
+                ClientesSelectedDialogContent(
+                    clients = clients,
+                    currentSelectedClient = selectedCliente,
+                    showAllOption = false, // En una nueva comanda NO permitimos "TODOS"
+                    onDismiss = {
+                        showClientesDialog = false
                     },
-                    confirmButton = { TextButton(onClick = {
-                        selectedCliente = tempCliente
+                    onConfirm = { clienteSeleccionado ->
+                        selectedCliente = clienteSeleccionado
                         errorCliente = false
                         showClientesDialog = false
-                    }) { Text("Aceptar", color = PrimaryColor) } },
-                    dismissButton = { TextButton(onClick = { showClientesDialog = false }) { Text("Cancelar", color = PrimaryColor) } },
-                    shape = RoundedCornerShape(16.dp)
+                    }
                 )
             }
 
-            // --- Dialog Material ---
+            // --- Dialog Material (Sustituido por el nuevo componente) ---
             if (showMaterialDialog) {
-                var tempMaterial by remember { mutableStateOf(selectedMaterial) }
-                AlertDialog(
-                    onDismissRequest = { showMaterialDialog = false },
-                    title = { Text("Seleccione un material", fontWeight = FontWeight.Bold, color = PrimaryColor) },
-                    text = {
-                        LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
-                            items(materials) { material ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { tempMaterial = material }
-                                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    RadioButton(selected = tempMaterial == material, onClick = { tempMaterial = material }, colors = RadioButtonDefaults.colors(selectedColor = PrimaryColor))
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(material.materialNombre)
-                                }
-                            }
-                        }
-                    },
-                    confirmButton = { TextButton(onClick = {
-                        selectedMaterial = tempMaterial
+                MaterialSelectedDialogContent(
+                    materials = materials,
+                    currentSelectedMaterial = selectedMaterial,
+                    onDismiss = { showMaterialDialog = false },
+                    onConfirm = { materialSeleccionado ->
+                        selectedMaterial = materialSeleccionado
                         errorDescripcion = false
                         showMaterialDialog = false
-                    }) { Text("Aceptar", color = PrimaryColor) } },
-                    dismissButton = { TextButton(onClick = { showMaterialDialog = false }) { Text("Cancelar", color = PrimaryColor) } },
-                    shape = RoundedCornerShape(16.dp)
+                    }
                 )
             }
 
@@ -605,6 +591,36 @@ class ComandaScreen(
                             }
                         }
                     }
+                }
+            }
+
+            // --- BOTTOM SHEET DE ASIGNACIÓN DE LOTES (Nuevo) ---
+            if (showAssignmentSheet && comandaForLote != null) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showAssignmentSheet = false
+                        comandaForLote = null
+                    },
+                    sheetState = assignmentSheetState,
+                    containerColor = Color.White,
+                    dragHandle = { BottomSheetDefaults.DragHandle() }
+                ) {
+                    PlanningAssignmentBottomSheet(
+                        selectedComanda = comandaForLote!!,
+                        databaseUrl = databaseUrl,
+                        currentUserEmail = currentUserEmail,
+                        clientRepository = clientRepository,
+                        onLoteAssignmentSuccess = {
+                            refrescarDatos()
+                            scope.launch { assignmentSheetState.hide() }.invokeOnCompletion {
+                                if (!assignmentSheetState.isVisible) {
+                                    showAssignmentSheet = false
+                                    comandaForLote = null
+                                }
+                            }
+                        },
+                        snackbarHostState = snackbarHostState
+                    )
                 }
             }
         }

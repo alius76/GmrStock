@@ -1,12 +1,13 @@
 package com.alius.gmrstock.ui.components
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,149 +18,119 @@ import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.domain.model.Comanda
 import com.alius.gmrstock.ui.theme.PrimaryColor
-import com.alius.gmrstock.ui.theme.TextSecondary
-import androidx.compose.foundation.clickable
-import com.alius.gmrstock.ui.theme.ReservedColor
-import kotlinx.datetime.*
+import com.alius.gmrstock.ui.theme.WarningColor
 
 @Composable
 fun PlanningItemCard(
     comanda: Comanda,
-    onClick: (Comanda) -> Unit
+    modifier: Modifier = Modifier
 ) {
-    val lotNumber = comanda.numberLoteComanda.ifBlank { "SIN ASIGNAR" }
-    val isAssigned = lotNumber != "SIN ASIGNAR"
-    val formattedComandaNumber = comanda.numeroDeComanda.toString().padStart(6, '0')
+    var isExpanded by remember { mutableStateOf(false) }
 
-    val indicatorColor = if (isAssigned) PrimaryColor else ReservedColor
+    // --- Lógica de Estado ---
+    val isAssigned = comanda.numberLoteComanda.isNotBlank()
+    val lotNumber = if (isAssigned) comanda.numberLoteComanda else "PENDIENTE"
 
-    // Lógica para la etiqueta RETRASADA
-    val isDelayed = remember(comanda.dateBookedComanda) {
-        val dateBooked = comanda.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        dateBooked != null && dateBooked < today && !comanda.fueVendidoComanda
-    }
+    // Usamos PrimaryColor (Verde/Azul) si tiene lote, y WarningColor (Ámbar) si está pendiente
+    val indicatorColor = if (isAssigned) PrimaryColor else WarningColor
 
-    // Usamos Box para superponer el indicador lateral
-    Box(
-        modifier = Modifier
+    Card(
+        modifier = modifier
             .fillMaxWidth()
-            .clickable { onClick(comanda) }
+            .clickable { isExpanded = !isExpanded },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isExpanded) 4.dp else 1.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.4f))
     ) {
-        // --- Indicador lateral prominente (La Clave Visual) ---
-        Spacer(
-            modifier = Modifier
-                .width(6.dp) // Ancho del indicador
-                .fillMaxHeight()
-                .align(Alignment.CenterStart)
-                .background(indicatorColor, shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
-        )
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            // --- Barra de Color Lateral (Refleja estado de lote) ---
+            Box(
+                modifier = Modifier
+                    .width(5.dp)
+                    .fillMaxHeight()
+                    .background(indicatorColor)
+            )
 
-        // --- Card Principal ---
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 6.dp), // Compensamos el ancho del indicador
-            shape = RoundedCornerShape(12.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f))
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                // Nombre del Cliente
+                Text(
+                    text = comanda.bookedClientComanda?.cliNombre?.uppercase() ?: "SIN CLIENTE",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-                // 1. Cabecera Lote/Comanda y Botón
+                // Descripción del Material
+                Text(
+                    text = comanda.descriptionLoteComanda,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Fila Inferior: Etiqueta de Lote y Peso Total
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.LightGray.copy(alpha = 0.1f))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Estado de Asignación (Más prominente)
-                    Text(
-                        text = "Lote: $lotNumber",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = indicatorColor
-                    )
-
-                    // Comanda Badge
-                    Box(
-                        modifier = Modifier
-                            .background(color = PrimaryColor.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    // Badge con el número de Lote o texto "PENDIENTE"
+                    Surface(
+                        color = indicatorColor.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = "#$formattedComandaNumber",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-
-                // 2. Detalles del Cuerpo (Cliente, Material, Peso)
-                Column(modifier = Modifier.padding(16.dp)) {
-                    // Cliente (Principal) con etiqueta RETRASADA
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = comanda.bookedClientComanda?.cliNombre ?: "Cliente Desconocido",
-                            style = MaterialTheme.typography.titleMedium,
+                            text = lotNumber,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false)
+                            color = indicatorColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
-                        if (isDelayed) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
-                                color = ReservedColor,
-                                shape = RoundedCornerShape(4.dp)
-                            ) {
-                                Text(
-                                    text = "RETRASADA",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Material
+                    // Peso formateado
                     Text(
-                        text = comanda.descriptionLoteComanda,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Peso
-                    Text(
-                        text = "Peso total: ${formatWeight(comanda.totalWeightComanda.toDoubleOrNull() ?: 0.0)} Kg",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = Color.Gray
+                        text = "${formatWeight(comanda.totalWeightComanda.toDoubleOrNull() ?: 0.0)} Kg",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray
                     )
                 }
 
-                // --- Observaciones (si existen) ---
-                if (comanda.remarkComanda.isNotBlank()) {
-                    Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(alpha = 0.3f))
-                    Text(
-                        text = "Obs: ${comanda.remarkComanda}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                // --- Sección de Observaciones (Solo si existen y está expandido) ---
+                AnimatedVisibility(
+                    visible = isExpanded && comanda.remarkComanda.isNotBlank(),
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            thickness = 0.5.dp,
+                            color = Color.LightGray.copy(alpha = 0.5f)
+                        )
+
+                        Text(
+                            text = "Observaciones:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray
+                        )
+
+                        Text(
+                            text = comanda.remarkComanda,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.DarkGray,
+                            lineHeight = 14.sp
+                        )
+                    }
                 }
             }
         }

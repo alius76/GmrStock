@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.core.utils.formatWeight
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.WarningColor
 
 @Composable
 fun VentasKPISection(
@@ -121,7 +122,7 @@ fun VentasKPISection(
                     text = "$totalVentas",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color(0xFFFF9800)
+                    color = WarningColor
                 )
                 Text(
                     text = "operaciones",

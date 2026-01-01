@@ -16,3 +16,6 @@ val ReservedColor = Color(0xFFB71C1C)
 val BackgroundColor = Color.White
 val GrayColor = Color(0xFFCCCCCC)
 val DarkGrayColor = Color(0xFF555555)
+
+// Color de advertencia para estados pendientes (Dorado/Ámbar)
+val WarningColor = Color(0xFFFFA000)

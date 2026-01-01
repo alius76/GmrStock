@@ -284,7 +284,7 @@ class HomeScreenContent(
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
-                                    label = "Mantenimiento de clientes",
+                                    label = "Gestión de clientes",
                                     icon = Icons.Default.People,
                                     onClick = {
                                         showMaintenanceDialog = false
@@ -300,14 +300,6 @@ class HomeScreenContent(
                                     }
                                 )
                                 MaintenanceOption(
-                                    label = "Gestión de comandas",
-                                    icon = Icons.Default.CalendarMonth,
-                                    onClick = {
-                                        showMaintenanceDialog = false
-                                        localNavigator.push(ComandaScreen(currentDatabaseUrl,currentUserEmail))
-                                    }
-                                )
-                                MaintenanceOption(
                                     label = "Devoluciones",
                                     icon = Icons.Default.AssignmentReturn,
                                     onClick = {
@@ -315,6 +307,15 @@ class HomeScreenContent(
                                         localNavigator.push(DevolucionesScreen(currentDatabaseUrl))
                                     }
                                 )
+                                MaintenanceOption(
+                                    label = "Gestión de comandas",
+                                    icon = Icons.Default.CalendarMonth,
+                                    onClick = {
+                                        showMaintenanceDialog = false
+                                        localNavigator.push(ComandaScreen(currentDatabaseUrl,currentUserEmail))
+                                    }
+                                )
+
                             }
                         },
                         confirmButton = {},
@@ -338,6 +339,15 @@ class HomeScreenContent(
                         text = {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 MaintenanceOption(
+                                    label = "Producción",
+                                    icon = Icons.Default.Settings,
+                                    onClick = {
+                                        showSearchDialog = false
+                                        localNavigator.push(ProduccionRangoScreen(currentDatabaseUrl))
+                                    }
+                                )
+
+                                MaintenanceOption(
                                     label = "Informe de ventas",
                                     icon = Icons.Default.EuroSymbol,
                                     onClick = {
@@ -354,17 +364,10 @@ class HomeScreenContent(
                                         localNavigator.push(ReprocesarScreen(currentDatabaseUrl))
                                     }
                                 )
-                                MaintenanceOption(
-                                    label = "Producción",
-                                    icon = Icons.Default.ProductionQuantityLimits,
-                                    onClick = {
-                                        showSearchDialog = false
-                                        localNavigator.push(ProduccionRangoScreen(currentDatabaseUrl))
-                                    }
-                                )
+
                                 MaintenanceOption(
                                     label = "Trazabilidad",
-                                    icon = Icons.Default.ConfirmationNumber,
+                                    icon = Icons.Default.Timeline,
                                     onClick = {
                                         showSearchDialog = false
                                         showUnimplementedDialog = true

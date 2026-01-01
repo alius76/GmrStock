@@ -24,6 +24,8 @@ interface ComandaRepository {
      */
     suspend fun getComandaByNumber(number: String): Comanda?
 
+    suspend fun getComandaByLoteNumber(loteNumber: String): Comanda?
+
     /**
      * Consulta de Comandas Pendientes por Cliente.
      */
@@ -70,6 +72,8 @@ interface ComandaRepository {
      */
     suspend fun deleteComanda(comandaId: String): Boolean
 }
+
+
 
 // Implementación expect
 expect fun getComandaRepository(databaseUrl: String): ComandaRepository

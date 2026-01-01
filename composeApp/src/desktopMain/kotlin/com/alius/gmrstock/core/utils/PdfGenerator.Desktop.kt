@@ -24,6 +24,7 @@ actual object PdfGenerator {
     private val TextPrimaryPdf = Color(51, 51, 51)
     private val GrayPdfColor = Color(204, 204, 204)
     private val LightGrayBg = Color(245, 245, 245)
+    private val WarningPdfColor = Color(240, 154, 0)
 
     private fun String.pdfSafe(): String {
         return this.replace("\n", " ").replace("\r", " ").trim()
@@ -361,15 +362,39 @@ actual object PdfGenerator {
                 if (date != null && date < today) {
                     val labelWidth = 55f
                     val labelHeight = 14f
+                    val labelX = xOffset + columnWidth - labelWidth - 8f
+                    val labelY = innerY - 2f
+
+                    // 1. Dibujar el rectángulo de fondo
                     contentStream.setNonStrokingColor(ReservedPdfColor)
-                    contentStream.addRect(xOffset + columnWidth - labelWidth - 8f, innerY - 2f, labelWidth, labelHeight)
+                    contentStream.addRect(labelX, labelY, labelWidth, labelHeight)
                     contentStream.fill()
+
+                    // 2. Configurar el texto
                     contentStream.beginText()
-                    contentStream.setFont(PDType1Font.HELVETICA_BOLD, 7f)
+                    val fontSize = 7f
+                    val font = PDType1Font.HELVETICA_BOLD
+                    contentStream.setFont(font, fontSize)
                     contentStream.setNonStrokingColor(Color.WHITE)
-                    val labelTxt = "RETRASADA"
-                    val tw = PDType1Font.HELVETICA_BOLD.getStringWidth(labelTxt) / 1000 * 7f
-                    contentStream.newLineAtOffset(xOffset + columnWidth - 8f - (labelWidth + tw) / 2f + 5f, innerY + 1.5f)
+
+                    val labelTxt = "RETRASO"
+
+                    // --- CÁLCULO DE CENTRADO ---
+                    // Ancho real del texto
+                    val textWidth = font.getStringWidth(labelTxt) / 1000f * fontSize
+
+                    // El "Cap Height" o altura de las mayúsculas para centrar verticalmente
+                    // Usamos aproximadamente 0.7 del fontSize como altura visual de la fuente
+                    val textHeight = font.fontDescriptor.capHeight / 1000f * fontSize
+
+                    // Posición X: Inicio del rectángulo + (Mitad del rect - Mitad del texto)
+                    val centerX = labelX + (labelWidth - textWidth) / 2f
+
+                    // Posición Y: Inicio del rectángulo + (Mitad del rect - Mitad de la altura del texto)
+                    // Nota: El texto se dibuja desde la línea base (baseline)
+                    val centerY = labelY + (labelHeight - textHeight) / 2f
+
+                    contentStream.newLineAtOffset(centerX, centerY)
                     contentStream.showText(labelTxt)
                     contentStream.endText()
                 }
@@ -392,19 +417,19 @@ actual object PdfGenerator {
                 innerY -= 18f
                 val isAssigned = comanda.numberLoteComanda.isNotBlank()
                 contentStream.beginText()
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 9f)
-                contentStream.setNonStrokingColor(if (isAssigned) PrimaryPdfColor else ReservedPdfColor)
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 11f)
+                contentStream.setNonStrokingColor(if (isAssigned) PrimaryPdfColor else WarningPdfColor)
                 contentStream.newLineAtOffset(xOffset + 10f, innerY)
-                contentStream.showText(if (isAssigned) "Lote: ${comanda.numberLoteComanda}" else "PENDIENTE LOTE")
+                contentStream.showText(if (isAssigned) "Lote: ${comanda.numberLoteComanda}" else "PENDIENTE DE ASIGNAR")
                 contentStream.endText()
 
                 if (!comanda.remarkComanda.isNullOrBlank()) {
                     innerY -= 14f
                     contentStream.beginText()
-                    contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 8.5f)
+                    contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 8f)
                     contentStream.setNonStrokingColor(Color.GRAY)
                     contentStream.newLineAtOffset(xOffset + 10f, innerY)
-                    val obs = if (comanda.remarkComanda!!.length > 30) comanda.remarkComanda!!.take(27) + "..." else comanda.remarkComanda!!
+                    val obs = if (comanda.remarkComanda!!.length > 65) comanda.remarkComanda!!.take(62) + "..." else comanda.remarkComanda!!
                     contentStream.showText("Obs: ${obs.pdfSafe()}")
                     contentStream.endText()
                 }
@@ -414,7 +439,9 @@ actual object PdfGenerator {
         }
 
         contentStream.close()
-        savePdfDesktop(document, "Planning_Comandas")
+
+        val fileName = "Planning_Comandas_${System.currentTimeMillis()}"
+        savePdfDesktop(document, fileName)
     }
 
     // ============================================================

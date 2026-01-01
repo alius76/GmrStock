@@ -248,6 +248,34 @@ class ComandaRepositoryImpl(
             }
         }
 
+    override suspend fun getComandaByLoteNumber(loteNumber: String): Comanda? {
+        // Si el número es vacío, no buscamos nada
+        if (loteNumber.isBlank()) return null
+
+        val query = buildQueryPorLoteExacto(loteNumber)
+        // Usamos tu función ejecutarQuery que ya maneja el POST y el parseo
+        return ejecutarQuery(query).firstOrNull()
+    }
+
+    // Función auxiliar para construir el JSON de Firestore
+    private fun buildQueryPorLoteExacto(loteNumber: String): String {
+        return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "comanda" }],
+            "where": {
+                "fieldFilter": {
+                    "field": { "fieldPath": "numberLoteComanda" },
+                    "op": "EQUAL",
+                    "value": { "stringValue": "$loteNumber" }
+                }
+            },
+            "limit": 1
+        }
+    }
+    """.trimIndent()
+    }
+
     override suspend fun updateComandaBooked(
         comandaId: String,
         cliente: Cliente?,

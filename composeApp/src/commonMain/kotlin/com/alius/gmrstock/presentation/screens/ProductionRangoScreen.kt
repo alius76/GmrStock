@@ -32,6 +32,7 @@ import com.alius.gmrstock.ui.components.ProduccionTrendChart
 import com.alius.gmrstock.ui.components.UniversalDatePickerDialog
 import com.alius.gmrstock.ui.theme.BackgroundColor
 import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.WarningColor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.datetime.*
@@ -228,7 +229,7 @@ class ProduccionRangoScreen(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 KPICard(Modifier.weight(1f), "TOTAL", "${formatWeight(totalKilosGlobal)} kg", PrimaryColor)
-                                KPICard(Modifier.weight(1f), "DÍAS ACTIVOS", "$diasActivos", Color(0xFFFF9800))
+                                KPICard(Modifier.weight(1f), "DÍAS ACTIVOS", "$diasActivos", WarningColor)
                                 KPICard(Modifier.weight(1f), "MEDIA", "${formatWeight(promedioDiario)} kg", Color(0xFF2196F3))
                             }
                         }

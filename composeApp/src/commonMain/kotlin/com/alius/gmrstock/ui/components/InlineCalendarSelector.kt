@@ -21,13 +21,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alius.gmrstock.domain.model.Comanda
 import kotlinx.datetime.*
+import com.alius.gmrstock.ui.theme.PrimaryColor
+import com.alius.gmrstock.ui.theme.ReservedColor
+import com.alius.gmrstock.ui.theme.WarningColor
 
 @Composable
 fun InlineCalendarSelector(
     selectedDate: LocalDate,
     allComandas: List<Comanda>,
     onDateSelected: (LocalDate) -> Unit,
-    primaryColor: Color = Color(0xFF029083)
+    primaryColor: Color = PrimaryColor
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var viewMonth by remember { mutableStateOf(selectedDate.monthNumber) }
@@ -214,26 +217,18 @@ fun DayItem(
         modifier = modifier
             .aspectRatio(1f)
             .padding(2.dp)
-            // CAMBIO: Fondo con jerarquía mejorada
             .background(
                 color = when {
-                    isSelected -> primaryColor.copy(alpha = 0.2f) // Selección suave (transparente)
-                    isToday -> Color.LightGray.copy(alpha = 0.3f) // Hoy en gris claro
-                    statusColor != Color.Transparent -> statusColor.copy(alpha = 0.15f) // Estado suave
+                    statusColor != Color.Transparent -> statusColor.copy(alpha = 0.15f)
+                    isToday -> Color.LightGray.copy(alpha = 0.3f)
                     else -> Color.Transparent
                 },
                 shape = RoundedCornerShape(8.dp)
             )
-            // CAMBIO: Borde para dar estructura
             .border(
-                width = when {
-                    isSelected -> 2.dp // Borde más grueso para el seleccionado
-                    statusColor != Color.Transparent -> 1.5.dp
-                    isToday -> 1.dp
-                    else -> 0.dp
-                },
+                width = if (isSelected) 2.dp else if (statusColor != Color.Transparent || isToday) 1.dp else 0.dp,
                 color = when {
-                    isSelected -> primaryColor // El borde define la selección
+                    isSelected -> PrimaryColor // Borde Verde para selección
                     statusColor != Color.Transparent -> statusColor
                     isToday -> Color.Gray.copy(alpha = 0.5f)
                     else -> Color.Transparent
@@ -245,12 +240,8 @@ fun DayItem(
     ) {
         Text(
             text = date.dayOfMonth.toString(),
-            color = when {
-                isSelected -> primaryColor // Texto en color primario para resaltar selección
-                isToday -> Color.DarkGray
-                else -> Color.Black
-            },
-            fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) Color.Black else Color.DarkGray,
+            fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
             fontSize = 14.sp
         )
     }
@@ -262,22 +253,26 @@ private fun obtenerColorDia(
 ): Color {
     val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-    // Filtramos las comandas de este día concreto
     val comandasDelDia = allComandas.filter {
         it.dateBookedComanda?.toLocalDateTime(TimeZone.currentSystemDefault())?.date == date
     }
 
     if (comandasDelDia.isEmpty()) return Color.Transparent
 
-    // REGLA 1: Alguna pendiente (no vendida)
-    val tieneActivas = comandasDelDia.any { !it.fueVendidoComanda }
+    // 1. PRIORIDAD ROJA: Retraso
+    if (comandasDelDia.any { !it.fueVendidoComanda && date < hoy }) return ReservedColor
 
-    // REGLA 2: Pendiente y de fecha pasada (Retrasada)
-    val tieneRetrasadas = comandasDelDia.any { !it.fueVendidoComanda && date < hoy }
-
-    return when {
-        tieneRetrasadas -> Color(0xFFD32F2F) // Rojo
-        tieneActivas -> Color(0xFFF09A00)    // Naranja
-        else -> Color.Transparent
+    // 2. COMANDAS ACTIVAS
+    val activas = comandasDelDia.filter { !it.fueVendidoComanda }
+    if (activas.isNotEmpty()) {
+        // PRIORIDAD ÁMBAR: Si alguna activa no tiene lote
+        return if (activas.any { it.numberLoteComanda.isBlank() }) {
+            WarningColor
+        } else {
+            // TODO OK: Verde
+            PrimaryColor
+        }
     }
+
+    return Color.Transparent
 }

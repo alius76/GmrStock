@@ -1,6 +1,7 @@
 package com.alius.gmrstock
 
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
@@ -11,6 +12,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "GMR Stock v1.1.0 build 19",
+        icon = painterResource("icon.png"),
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
             width = 720.dp,
