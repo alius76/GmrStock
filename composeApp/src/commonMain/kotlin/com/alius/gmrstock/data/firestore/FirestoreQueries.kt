@@ -12,6 +12,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.plus
@@ -657,6 +658,42 @@ fun buildQueryRatiosPorRango(inicio: LocalDate, fin: LocalDate): String {
                             }
                         }
                     ]
+                }
+            },
+            "orderBy": [
+                { "field": { "fieldPath": "ratioDate" }, "direction": "ASCENDING" }
+            ]
+        }
+    }
+    """.trimIndent()
+}
+fun buildQueryRatiosUltimos12Meses(): String {
+    val zona = TimeZone.currentSystemDefault()
+    val ahora = Clock.System.now().toLocalDateTime(zona)
+
+    // Calculamos el mes de inicio para que sean 12 meses exactos
+    // Si estamos en el mes 1 de 2026, queremos empezar en el mes 2 de 2025
+    var startMonth = ahora.monthNumber + 1
+    var startYear = ahora.year - 1
+
+    if (startMonth > 12) {
+        startMonth = 1
+        startYear = ahora.year
+    }
+
+    // Primer día del mes de inicio a las 00:00:00
+    val inicio = LocalDateTime(startYear, startMonth, 1, 0, 0, 0)
+        .toInstant(zona)
+
+    return """
+    {
+        "structuredQuery": {
+            "from": [{ "collectionId": "ratio" }],
+            "where": {
+                "fieldFilter": {
+                    "field": { "fieldPath": "ratioDate" },
+                    "op": "GREATER_THAN_OR_EQUAL",
+                    "value": { "timestampValue": "$inicio" }
                 }
             },
             "orderBy": [

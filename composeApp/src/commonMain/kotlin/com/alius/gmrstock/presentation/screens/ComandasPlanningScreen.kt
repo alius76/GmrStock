@@ -140,25 +140,14 @@ class ComandasPlanningScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     PlanningFilter.entries.forEach { filter ->
-                        FilterChip(
-                            modifier = Modifier.weight(1f),
-                            selected = selectedFilter == filter,
-                            onClick = { selectedFilter = filter },
-                            label = {
-                                Text(
-                                    text = filter.name,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = PrimaryColor,
-                                selectedLabelColor = Color.White
+                        val label = filter.name.lowercase().replaceFirstChar { it.uppercase() }
+                        Box(modifier = Modifier.weight(1f)) {
+                            FilterChipCustom(
+                                label = label,
+                                isSelected = selectedFilter == filter,
+                                onClick = { selectedFilter = filter }
                             )
-                        )
+                        }
                     }
                 }
 
@@ -258,6 +247,26 @@ class ComandasPlanningScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun FilterChipCustom(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(30.dp),
+        color = if (isSelected) PrimaryColor else Color.Transparent,
+        border = BorderStroke(1.dp, if (isSelected) PrimaryColor else Color.LightGray.copy(alpha = 0.6f)),
+        modifier = Modifier.height(36.dp).fillMaxWidth() // fillMaxWidth para que el weight del Box funcione
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = label,
+                fontSize = 13.sp,
+                color = if (isSelected) Color.White else Color.Gray,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+            )
         }
     }
 }

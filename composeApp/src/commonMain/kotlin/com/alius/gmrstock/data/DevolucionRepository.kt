@@ -11,6 +11,7 @@ interface DevolucionRepository {
      * Obtiene todas las devoluciones registradas en el mes y año actual.
      */
     suspend fun obtenerDevolucionesDelMes(): List<Devolucion> // ⬅️ NUEVA FUNCIÓN
+    suspend fun obtenerDevolucionesDelAnioActual(): List<Devolucion>
 }
 
 /**

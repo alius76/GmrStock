@@ -4,6 +4,7 @@ import com.alius.gmrstock.data.firestore.buildQueryRatiosDelAnoActual
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelDia
 import com.alius.gmrstock.data.firestore.buildQueryRatiosDelMesActual
 import com.alius.gmrstock.data.firestore.buildQueryRatiosPorRango
+import com.alius.gmrstock.data.firestore.buildQueryRatiosUltimos12Meses
 import com.alius.gmrstock.data.mappers.RatioMapper
 import com.alius.gmrstock.domain.model.Ratio
 import io.github.aakira.napier.Napier
@@ -187,5 +188,12 @@ class RatioRepositoryImpl(
             emptyList()
         }
     }
+
+    // ✅ Nueva implementación para el año móvil (Rolling Year)
+    override suspend fun listarRatiosUltimos12Meses(): List<Ratio> =
+        ejecutarQuery(
+            query = buildQueryRatiosUltimos12Meses(),
+            etiqueta = "últimos 12 meses"
+        )
 }
 

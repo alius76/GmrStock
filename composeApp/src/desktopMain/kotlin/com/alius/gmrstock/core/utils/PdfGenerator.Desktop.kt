@@ -259,7 +259,7 @@ actual object PdfGenerator {
         }
 
         contentStream.close()
-        val fileName = "Reporte_Produccion_${System.currentTimeMillis()}"
+        val fileName = "Informe_Produccion_${System.currentTimeMillis()}"
         savePdfDesktop(document, fileName)
     }
 
@@ -479,7 +479,7 @@ actual object PdfGenerator {
         contentStream.setFont(PDType1Font.HELVETICA_BOLD, 20f)
         contentStream.setNonStrokingColor(DarkGrayPdfColor)
         contentStream.newLineAtOffset(margin, y)
-        contentStream.showText("REPORTE DE VENTAS".pdfSafe())
+        contentStream.showText("INFORME DE VENTAS".pdfSafe())
         contentStream.endText()
 
         val logoText = "GMR Stock"

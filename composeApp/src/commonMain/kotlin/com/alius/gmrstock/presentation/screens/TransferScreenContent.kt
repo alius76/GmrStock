@@ -107,7 +107,7 @@ fun TransferScreenContent(user: User, databaseUrl: String) {
             devolucionesDelMes = devolucionRepository.obtenerDevolucionesDelMes()
             println("DEBUG LOAD: devolucionesDelMes cargadas: ${devolucionesDelMes.size} elementos.")
 
-            devolucionesDelAnio = devolucionRepository.obtenerTodasLasDevoluciones()
+            devolucionesDelAnio = devolucionRepository.obtenerDevolucionesDelAnioActual()
             println("DEBUG LOAD: devolucionesDelAnio (Todas las devoluciones) cargadas: ${devolucionesDelAnio.size} elementos.")
 
             // Inspección del contenido cargado

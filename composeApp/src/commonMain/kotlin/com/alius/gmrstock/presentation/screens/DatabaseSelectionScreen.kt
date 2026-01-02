@@ -155,7 +155,7 @@ class DatabaseSelectionScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "GMR Stock v1.1.0 build 19 | © 2025",
+                        text = "GMR Stock v1.1.0 build 20 | © 2026",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Light,
                         color = TextSecondary.copy(alpha = 0.7f)

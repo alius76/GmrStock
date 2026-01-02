@@ -132,4 +132,22 @@ class DevolucionRepositoryImpl(
             } ?: false
         }
     }
+
+    /**
+     * 🔑 NUEVA IMPLEMENTACIÓN: Filtra las devoluciones para que solo pertenezcan
+     * al año actual (2026), descartando registros de años anteriores (2025).
+     */
+    override suspend fun obtenerDevolucionesDelAnioActual(): List<Devolucion> {
+        val systemTimeZone = TimeZone.currentSystemDefault()
+        val now = Clock.System.now().toLocalDateTime(systemTimeZone)
+        val currentYear = now.year
+
+        return obtenerTodasLasDevoluciones().filter { devolucion ->
+            devolucion.devolucionFecha?.let { instant ->
+                val devolucionDateTime = instant.toLocalDateTime(systemTimeZone)
+                // Solo permitimos el año actual
+                devolucionDateTime.year == currentYear
+            } ?: false
+        }
+    }
 }

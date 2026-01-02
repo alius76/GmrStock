@@ -44,7 +44,7 @@ actual object PdfGenerator {
         loteNombresMap: Map<String, String>
     ) {
         // Nombre de archivo con marca de tiempo igual que en Android
-        val fileName = "Reporte_Produccion_${Clock.System.now().toEpochMilliseconds()}.pdf"
+        val fileName = "Informe_Produccion_${Clock.System.now().toEpochMilliseconds()}.pdf"
         val paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
         val cacheDirectory = paths.first() as String
         val filePath = cacheDirectory + "/" + fileName
@@ -300,7 +300,7 @@ actual object PdfGenerator {
         dateRange: String,
         desgloseMateriales: Map<String, Double>
     ) {
-        val fileName = "Reporte_Ventas_${Clock.System.now().toEpochMilliseconds()}.pdf"
+        val fileName = "Informe_Ventas_${Clock.System.now().toEpochMilliseconds()}.pdf"
         val paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, true)
         val cacheDirectory = paths.first() as String
         val filePath = cacheDirectory + "/" + fileName
@@ -323,7 +323,7 @@ actual object PdfGenerator {
         }
 
         // --- CABECERA ---
-        drawText("REPORTE DE VENTAS", margin, currentY, UIFont.boldSystemFontOfSize(20.0), darkGrayColor)
+        drawText("INFORME DE VENTAS", margin, currentY, UIFont.boldSystemFontOfSize(20.0), darkGrayColor)
 
         val logoText = "GMR Stock"
         val logoWidth = (logoText as NSString).sizeWithAttributes(

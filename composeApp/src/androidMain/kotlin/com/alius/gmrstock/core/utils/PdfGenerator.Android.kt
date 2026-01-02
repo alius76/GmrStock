@@ -238,7 +238,7 @@ actual object PdfGenerator {
         }
 
         pdfDocument.finishPage(page)
-        saveAndSharePdf(pdfDocument, "Reporte_Produccion_${Clock.System.now().toEpochMilliseconds()}")
+        saveAndSharePdf(pdfDocument, "Informe_Produccion_${Clock.System.now().toEpochMilliseconds()}")
     }
 
     // ============================================================
@@ -417,7 +417,7 @@ actual object PdfGenerator {
         paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         paint.textSize = 20f
         paint.color = DarkGrayPdfColor
-        canvas.drawText("REPORTE DE VENTAS", margin, y, paint)
+        canvas.drawText("INFORME DE VENTAS", margin, y, paint)
 
         // Logo a la derecha alineado con el título
         paint.color = PrimaryPdfColor
