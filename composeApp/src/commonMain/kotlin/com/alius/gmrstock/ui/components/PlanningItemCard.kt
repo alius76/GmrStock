@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Scale // Icono de la balanza clásica
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,7 +33,7 @@ fun PlanningItemCard(
     val isAssigned = comanda.numberLoteComanda.isNotBlank()
     val lotNumber = if (isAssigned) comanda.numberLoteComanda else "PENDIENTE"
 
-    // Usamos PrimaryColor (Verde/Azul) si tiene lote, y WarningColor (Ámbar) si está pendiente
+    // Usamos PrimaryColor si tiene lote, y WarningColor si está pendiente
     val indicatorColor = if (isAssigned) PrimaryColor else WarningColor
 
     Card(
@@ -44,7 +46,7 @@ fun PlanningItemCard(
         border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.4f))
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            // --- Barra de Color Lateral (Refleja estado de lote) ---
+            // --- Barra de Color Lateral ---
             Box(
                 modifier = Modifier
                     .width(5.dp)
@@ -53,10 +55,10 @@ fun PlanningItemCard(
             )
 
             Column(modifier = Modifier.padding(10.dp)) {
-                // Nombre del Cliente
+                // Nombre del Cliente (12.sp)
                 Text(
                     text = comanda.bookedClientComanda?.cliNombre?.uppercase() ?: "SIN CLIENTE",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -73,38 +75,44 @@ fun PlanningItemCard(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Fila Inferior: Etiqueta de Lote y Peso Total
+                // --- PESO CON ICONO DE BALANZA CLÁSICA (Tamaño 10.sp) ---
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Badge con el número de Lote o texto "PENDIENTE"
-                    Surface(
-                        color = indicatorColor.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Text(
-                            text = lotNumber,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = indicatorColor,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-
-                    // Peso formateado
+                    Icon(
+                        imageVector = Icons.Default.Scale,
+                        contentDescription = "Peso",
+                        modifier = Modifier.size(13.dp),
+                        tint = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "${formatWeight(comanda.totalWeightComanda.toDoubleOrNull() ?: 0.0)} Kg",
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.DarkGray
                     )
                 }
 
-                // --- Sección de Observaciones (Solo si existen y está expandido) ---
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Etiqueta de Lote (Tamaño 11.sp)
+                Surface(
+                    color = indicatorColor.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = lotNumber,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = indicatorColor,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+
+                // --- Sección de Observaciones ---
                 AnimatedVisibility(
                     visible = isExpanded && comanda.remarkComanda.isNotBlank(),
                     enter = expandVertically() + fadeIn(),
