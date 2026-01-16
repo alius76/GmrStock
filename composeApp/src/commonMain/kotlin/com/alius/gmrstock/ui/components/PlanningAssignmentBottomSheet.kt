@@ -67,9 +67,13 @@ fun PlanningAssignmentBottomSheet(
                 // 2. 🔥 NUEVA LÓGICA: Cargamos todas las comandas para ver cuáles lotes están ya "comprometidos"
                 val todasLasComandas = comandaRepository.listarTodasComandas()
 
-                // Creamos un Set de números de lote que ya están asignados a OTRAS comandas
+                // 🔹 Cambiado: ignoramos las comandas que ya fueron vendidas
                 val lotesOcupadosEnOtrasComandas = todasLasComandas
-                    .filter { it.idComanda != selectedComanda.idComanda && it.numberLoteComanda.isNotBlank() }
+                    .filter {
+                        it.idComanda != selectedComanda.idComanda && // ignoramos la comanda actual
+                                it.numberLoteComanda.isNotBlank() &&         // solo comandas con lote asignado
+                                !it.fueVendidoComanda                         // ignoramos comandas vendidas
+                    }
                     .map { it.numberLoteComanda }
                     .toSet()
 

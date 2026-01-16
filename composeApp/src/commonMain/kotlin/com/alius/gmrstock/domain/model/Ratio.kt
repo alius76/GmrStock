@@ -1,5 +1,9 @@
 package com.alius.gmrstock.domain.model
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class Ratio(
     val ratioId: String,
     val ratioDate: Long,          // timestamp en millis

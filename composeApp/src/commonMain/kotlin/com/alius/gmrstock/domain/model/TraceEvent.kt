@@ -1,7 +1,9 @@
 package com.alius.gmrstock.domain.model
 
 import kotlinx.datetime.Instant
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class TraceEvent(
     val date: Instant?,
     val type: TraceEventType,
@@ -15,6 +17,7 @@ data class TraceEvent(
 /**
  * Normalización de Big Bags para la vista de trazabilidad.
  */
+@Serializable
 data class TraceBigBag(
     val number: String,
     val weight: String
