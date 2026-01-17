@@ -17,6 +17,17 @@ class MainActivity : ComponentActivity() {
             App()
         }
     }
+
+    // 🛡️ SOLUCIÓN PARA EL ERROR DE LA TERCERA VEZ
+    // Sobrescribimos el guardado de estado para que sea nulo.
+    // Esto evita que Voyager intente serializar lambdas u objetos complejos
+    // en el Bundle de Android, que es lo que causa el BadParcelableException.
+    override fun onSaveInstanceState(outState: Bundle) {
+        // No llamamos a super.onSaveInstanceState(outState)
+        // O simplemente pasamos un bundle vacío para "limpiar" el rastro.
+        val emptyBundle = Bundle()
+        super.onSaveInstanceState(emptyBundle)
+    }
 }
 
 @Preview
