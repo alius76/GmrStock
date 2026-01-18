@@ -510,7 +510,14 @@ fun LoteCard(
             if (isLoteReservedOrBlocked) {
                 isComandaLoading = true
                 try {
-                    linkedComanda = comandaRepository.getComandaByLoteNumber(lote.number)
+                    val comanda = comandaRepository.getComandaByLoteNumber(lote.number)
+
+                    linkedComanda = if (comanda != null && !comanda.fueVendidoComanda) {
+                        comanda
+                    } else {
+                        null
+                    }
+
                 } catch (e: Exception) {
                     linkedComanda = null
                 } finally {
@@ -518,6 +525,7 @@ fun LoteCard(
                 }
             }
         }
+
 
         AlertDialog(
             onDismissRequest = { showReservedDialog = false },
