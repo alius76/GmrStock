@@ -11,7 +11,7 @@ import androidx.compose.ui.window.application
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "GMR Stock v1.1.0 build 20",
+        title = "GMR Stock v1.1.0 build 21",
         icon = painterResource("icon.png"),
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
