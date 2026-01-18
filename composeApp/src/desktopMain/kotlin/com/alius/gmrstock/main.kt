@@ -15,10 +15,11 @@ fun main() = application {
         icon = painterResource("icon.png"),
         state = WindowState(
             position = WindowPosition.Aligned(Alignment.Center),
-            width = 720.dp,
-            height = 960.dp
+            width = 800.dp,
+            height = 900.dp
         )
     ) {
+        window.minimumSize = java.awt.Dimension(500, 700)
         App()
     }
 }
